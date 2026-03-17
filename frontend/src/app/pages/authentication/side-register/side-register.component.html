@@ -1,0 +1,121 @@
+<div class="blank-layout-container justify-content-center align-items-center bg-light">
+  <div class="position-relative row w-100 h-100 bg-gredient justify-content-center">
+    <div class="col-lg-4 d-flex align-items-center">
+      <mat-card class="cardWithShadow boxed-auth">
+        <mat-card-content class="p-32">
+          <div class="text-center">
+            <a [routerLink]="['/dashboard']">
+              <img src="./assets/images/logos/dark-logo.svg" class="align-middle m-2" alt="logo" />
+            </a>
+          </div>
+
+          <div class="row m-t-24 custom-row">
+            <div class="col-12">
+              <button mat-stroked-button class="w-100">
+                <div class="d-flex align-items-center justify-content-center">
+                  <img src="/assets/images/svgs/google-icon.svg" alt="google" width="16" class="m-r-8" />
+                  Sign up with Google
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div class="or-border m-t-30">Create account with email</div>
+
+          <form class="m-t-30" [formGroup]="form" (ngSubmit)="submit()">
+            <!-- First Name -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">First Name</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input matInput formControlName="firstName" placeholder="First Name" />
+            </mat-form-field>
+
+            <!-- Last Name -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Last Name</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input matInput formControlName="lastName" placeholder="Last Name" />
+            </mat-form-field>
+
+            <!-- Username -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Username</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input matInput formControlName="username" placeholder="Username" />
+            </mat-form-field>
+
+            <!-- Email -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Email</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input matInput type="email" formControlName="email" placeholder="Email" />
+            </mat-form-field>
+
+            <!-- Phone -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Phone Number</mat-label>
+            <div class="d-flex align-items-center m-b-12">
+              <div class="p-2 border rounded-start bg-light d-flex align-items-center">
+                <span class="m-r-4">🇹🇳</span>
+                <span class="f-s-13 text-muted">+216</span>
+              </div>
+              <mat-form-field appearance="outline" class="flex-grow-1 m-0" color="primary">
+                <input
+                  matInput
+                  formControlName="phone"
+                  placeholder="Enter phone number"
+                />
+              </mat-form-field>
+            </div>
+
+            <!-- Role -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Select Role</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <mat-select formControlName="role" placeholder="Select Role">
+                <mat-option value="Admin">Admin</mat-option>
+                <mat-option value="Physician">Physician</mat-option>
+                <mat-option value="Nurse">Nurse</mat-option>
+                <mat-option value="Coordinator">Coordinator</mat-option>
+                <mat-option value="Patient">Patient</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Password -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Password</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input
+                matInput
+                type="password"
+                formControlName="password"
+                placeholder="Password"
+              />
+            </mat-form-field>
+
+            <!-- Repeat Password -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Repeat Password</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input
+                matInput
+                type="password"
+                formControlName="repeatPassword"
+                placeholder="Repeat Password"
+              />
+            </mat-form-field>
+
+            <!-- Profile Photo -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Profile Photo</mat-label>
+            <input
+              type="file"
+              class="form-control m-b-16"
+              (change)="form.get('profilePhoto')?.setValue($any($event.target).files[0] || null)"
+            />
+
+            <button mat-flat-button color="primary" class="w-100" type="submit">
+              Create Account
+            </button>
+          </form>
+          <span class="d-block f-w-500 text-center m-t-24">Already have an Account?
+
+            <a [routerLink]="['/authentication/login']" class="text-decoration-none text-primary f-w-500 f-s-14">
+              Sign In</a>
+          </span>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
