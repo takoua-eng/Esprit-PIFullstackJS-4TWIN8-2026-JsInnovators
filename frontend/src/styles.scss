@@ -5,3 +5,183 @@ body {
     height: 100%;
     margin: 0;
 }
+/*
+.login-container {
+  height: 100vh;
+  background: #f5f7fb;
+}
+
+.login-card {
+  width: 900px;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+.left-side {
+  background: #f5f7fb;
+  padding: 40px;
+}
+
+.left-side img {
+  max-width: 320px;
+}
+
+.right-side {
+  padding: 40px;
+}
+
+.title {
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  color: gray;
+  margin-bottom: 20px;
+}
+
+.social-btn {
+  width: 50%;
+}
+
+.divider {
+  text-align: center;
+  margin: 15px 0;
+  color: #999;
+}
+
+.login-btn {
+  height: 45px;
+  border-radius: 25px;
+}
+
+.register {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.forgot {
+  cursor: pointer;
+  color: #1976d2;
+}
+.social-btn{
+width: 48%;
+height: 42px;
+border-radius: 20px;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+}
+*/
+.login-wrapper{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#f4f7fb;
+}
+
+.login-card{
+width:950px;
+border-radius:20px;
+overflow:hidden;
+box-shadow:0 15px 40px rgba(0,0,0,0.08);
+}
+
+.login-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+}
+
+.login-image{
+background:#f7f9fc;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:10px;      /* réduit l’espace autour de l’image */
+min-height:450px;  /* augmente la hauteur de la zone */
+}
+
+.login-image img{
+width:100%;
+max-width:500px;   /* augmente la taille maximale de l’image */
+height:auto;
+}
+
+.login-form{
+padding:40px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.logo{
+max-width:170px;
+margin-bottom:20px;
+}
+
+.title{
+font-weight:700;
+margin-bottom:5px;
+}
+
+.subtitle{
+color:#777;
+margin-bottom:20px;
+}
+
+.social-login{
+display:flex;
+gap:12px;
+margin-bottom:15px;
+}
+
+.social-btn{
+flex:1;
+height:42px;
+border-radius:25px;
+}
+
+.divider{
+text-align:center;
+color:#999;
+margin:10px 0 20px;
+}
+
+.full{
+width:100%;
+margin-bottom:15px;
+}
+
+.form-links{
+display:flex;
+justify-content:space-between;
+margin-bottom:20px;
+}
+
+.login-btn{
+width:100%;
+height:45px;
+border-radius:25px;
+font-weight:600;
+}
+
+.remember-row{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin:10px 0 20px 0;
+}
+
+.forgot-link{
+color:#1976d2;
+font-size:14px;
+text-decoration:none;
+}
+
+.forgot-link:hover{
+text-decoration:underline;
+}

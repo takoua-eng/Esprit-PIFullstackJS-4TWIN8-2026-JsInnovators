@@ -39,4 +39,8 @@ export class AppSideLoginComponent {
       this.router.navigate(['/dashboard']);
     }
   }
+
+  loginWithFaceID() {
+  alert("Face ID authentication coming soon");
+}
 }

@@ -1,90 +1,87 @@
-<div class="blank-layout-container justify-content-center align-items-center bg-light">
-  <div class="row w-100 justify-content-center align-items-center m-0" style="min-height: 100vh;">
-    <div class="col-xl-8 col-lg-9 col-md-10">
-      <!-- Single split card -->
-      <mat-card class="cardWithShadow" style="border-radius: 18px; overflow: hidden;">
-        <div class="row g-0">
-          <!-- Left: login form (white) -->
-          <div class="col-lg-6 col-md-6 bg-white">
-            <mat-card-content class="p-32">
-              <h2 class="f-w-700 m-b-4">Login</h2>
-              <p class="text-muted m-b-24">Create account</p>
+<div class="login-wrapper">
 
-              <form [formGroup]="form" (ngSubmit)="submit()">
-                <!-- Email / Username -->
-                <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Email</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input
-                    matInput
-                    formControlName="uname"
-                    placeholder="Email"
-                  />
-                </mat-form-field>
+  <mat-card class="login-card">
 
-                <!-- Password -->
-                <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Password</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input
-                    matInput
-                    type="password"
-                    formControlName="password"
-                    placeholder="Password"
-                  />
-                </mat-form-field>
+    <div class="login-grid">
 
-                <!-- Role -->
-                <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Role</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <mat-select formControlName="role" placeholder="Select Role">
-                    <mat-option value="Admin">Admin</mat-option>
-                    <mat-option value="Physician">Physician</mat-option>
-                    <mat-option value="Nurse">Nurse</mat-option>
-                    <mat-option value="Coordinator">Coordinator</mat-option>
-                    <mat-option value="Patient">Patient</mat-option>
-                  </mat-select>
-                </mat-form-field>
+      <!-- LEFT SIDE (illustration) -->
+      <div class="login-image">
 
-                <div class="d-flex align-items-center m-b-16">
-                  <a
-                    [routerLink]="['/authentication/register']"
-                    class="text-primary f-w-500 text-decoration-none f-s-14"
-                  >
-                    Create account
-                  </a>
-                  <a
-                    [routerLink]="['/']"
-                    class="text-primary f-w-500 text-decoration-none m-l-auto f-s-14"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
+        <img src="assets/images/login.png" alt="login-image" />
 
-                <button mat-flat-button color="primary" class="px-5" type="submit">
-                  Login
-                </button>
-              </form>
-            </mat-card-content>
-          </div>
+      </div>
 
-          <!-- Right: blue side with logo & slogan -->
-          <div class="col-lg-6 col-md-6" style="background-color: #468ecf; color: #fff;">
-            <mat-card-content class="h-100 d-flex flex-column justify-content-center align-items-center p-40">
-              <img
-                src="assets/images/medifollow-logo.png"
-                alt="MediFollow"
-                class="m-b-24"
-                style="max-width: 200px;"
-              />
-              <h3 class="f-w-600 m-b-8 text-center">
-                Monitoring Health, Anytime, Anywhere
-              </h3>
-              <p class="f-s-14 text-center text-white-75 m-0 px-4">
-                Secure post‑hospitalization remote monitoring platform for patients and care teams.
-              </p>
-            </mat-card-content>
-          </div>
+      <!-- RIGHT SIDE (form) -->
+      <div class="login-form">
+
+
+
+        <h2 class="title">Welcome to MediFollow</h2>
+        <p class="subtitle">Your health monitoring dashboard</p>
+
+        <!-- SOCIAL LOGIN -->
+        <div class="social-login">
+
+          <button mat-stroked-button class="social-btn">
+            <mat-icon>login</mat-icon>
+            Google
+          </button>
+
+          <button mat-stroked-button class="social-btn" (click)="loginWithFaceID()">
+            <mat-icon>face</mat-icon>
+            Face ID
+          </button>
+
         </div>
-      </mat-card>
-    </div>
+
+        <div class="divider">or sign in with</div>
+
+        <!-- FORM -->
+        <form [formGroup]="form" (ngSubmit)="submit()">
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="uname" placeholder="Email">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" formControlName="password">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Role</mat-label>
+            <mat-select formControlName="role">
+              <mat-option value="Admin">Admin</mat-option>
+              <mat-option value="Physician">Physician</mat-option>
+              <mat-option value="Nurse">Nurse</mat-option>
+              <mat-option value="Coordinator">Coordinator</mat-option>
+              <mat-option value="Patient">Patient</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+  <div class="remember-row">
+
+    <mat-checkbox formControlName="remember">
+      Keep me logged in
+    </mat-checkbox>
+
+    <a routerLink="/forgot-password" class="forgot-link">
+      Forgot Password ?
+    </a>
+
   </div>
+
+          <button mat-flat-button color="primary" class="login-btn" type="submit">
+            Sign In
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </mat-card>
+
 </div>
