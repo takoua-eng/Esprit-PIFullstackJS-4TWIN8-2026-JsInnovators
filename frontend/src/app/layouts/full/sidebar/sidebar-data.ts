@@ -51,7 +51,7 @@ export const navItems: NavItem[] = [
       },
     ],
   },
-  {
+ /* {
     displayName: 'Dashboard 1',
     iconName: 'layout-dashboard',
     route: 'https://spike-angular-pro-main.netlify.app/dashboards/dashboard1',
@@ -923,7 +923,7 @@ export const navItems: NavItem[] = [
     chipClass: 'bg-light-primary text-primary',
     chipContent: 'PRO',
   },
-
+*/
   {
     navCap: 'Auth',
   },
@@ -931,8 +931,8 @@ export const navItems: NavItem[] = [
     displayName: 'Login',
     iconName: 'login',
     bgcolor: 'secondary',
-    route: '/authentication',
-    children: [
+    route: '/authentication/login',
+    /*children: [
       {
         displayName: 'Login',
         iconName: 'point',
@@ -949,14 +949,14 @@ export const navItems: NavItem[] = [
         chipContent: 'PRO',
         route: 'https://spike-angular-pro-main.netlify.app/authentication/login',
       },
-    ],
+    ],*/
   },
   {
     displayName: 'Register',
     iconName: 'user-plus',
     bgcolor: 'warning',
-    route: '/authentication',
-    children: [
+    route: '/authentication/register',
+  /*  children: [
       {
         displayName: 'Register',
         iconName: 'point',
@@ -973,15 +973,15 @@ export const navItems: NavItem[] = [
         chipContent: 'PRO',
         route: 'https://spike-angular-pro-main.netlify.app/authentication/side-register',
       },
-    ],
+    ],*/
   },
   {
     displayName: 'Forgot Pwd',
     iconName: 'rotate',
     bgcolor: 'success',
     
-    route: '/authentication',
-    children: [
+    route: '/authentication/forgot-password',
+   /* children: [
       {
         displayName: 'Side Forgot Pwd',
         iconName: 'point',
@@ -1002,9 +1002,9 @@ export const navItems: NavItem[] = [
         chipContent: 'PRO',
         route: 'https://spike-angular-pro-main.netlify.app/authentication/boxed-forgot-pwd',
       },
-    ],
+    ],*/
   },
-  {
+ /* {
     displayName: 'Two Steps',
     iconName: 'zoom-code',
     bgcolor: 'error',
@@ -1033,7 +1033,7 @@ export const navItems: NavItem[] = [
       },
     ],
   },
-  {
+ {
     displayName: 'Error',
     iconName: 'alert-circle',
     route: 'https://spike-angular-pro-main.netlify.app/authentication/error',
@@ -1052,5 +1052,5 @@ export const navItems: NavItem[] = [
     chip: true,
     chipClass: 'bg-light-primary text-primary',
     chipContent: 'PRO',
-  },
+  },*/
 ];
