@@ -185,3 +185,155 @@ text-decoration:none;
 .forgot-link:hover{
 text-decoration:underline;
 }
+
+/* Custom Dialog Styles */
+.dialog-backdrop {
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+}
+
+.custom-dialog-panel {
+  border-radius: 16px !important;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden;
+  max-width: 95vw !important;
+  max-height: 95vh !important;
+
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+    border-radius: 16px;
+    max-width: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .mat-mdc-dialog-surface {
+    border-radius: 16px;
+    max-height: 100% !important;
+    overflow: hidden;
+  }
+}
+
+/* Smooth scrollbar for dialog content */
+.custom-dialog-panel ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-dialog-panel ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.custom-dialog-panel ::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.custom-dialog-panel ::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* High contrast mode for visually impaired users - improved accessibility with cyan/blue */
+.high-contrast {
+  background-color: #000000 !important;
+  color: #00d4ff !important;
+}
+
+.high-contrast * {
+  background-color: #000000 !important;
+  color: #00d4ff !important;
+  border-color: #00d4ff !important;
+}
+
+.high-contrast button,
+.high-contrast a,
+.high-contrast mat-button,
+.high-contrast mat-raised-button,
+.high-contrast mat-stroked-button {
+  background-color: #000000 !important;
+  color: #00d4ff !important;
+  border: 2px solid #00d4ff !important;
+  font-weight: bold !important;
+}
+
+.high-contrast button:hover,
+.high-contrast a:hover,
+.high-contrast mat-button:hover,
+.high-contrast mat-raised-button:hover,
+.high-contrast mat-stroked-button:hover {
+  background-color: #00d4ff !important;
+  color: #000000 !important;
+  border: 2px solid #00d4ff !important;
+}
+
+.high-contrast mat-card,
+.high-contrast .mat-card,
+.high-contrast mat-toolbar,
+.high-contrast .mat-toolbar,
+.high-contrast .app-topstrip,
+.high-contrast table {
+  background-color: #000000 !important;
+  color: #00d4ff !important;
+  border: 2px solid #00d4ff !important;
+}
+
+.high-contrast table th,
+.high-contrast th {
+  background-color: #0a2a3a !important;
+  color: #00d4ff !important;
+  border: 1px solid #00d4ff !important;
+  font-weight: bold !important;
+}
+
+.high-contrast table td,
+.high-contrast td {
+  background-color: #000000 !important;
+  color: #00d4ff !important;
+  border: 1px solid #00d4ff !important;
+}
+
+.high-contrast img {
+  filter: contrast(180%) brightness(1.1) !important;
+  border: 2px solid #00d4ff !important;
+}
+
+.high-contrast input,
+.high-contrast textarea,
+.high-contrast .mat-form-field,
+.high-contrast mat-form-field {
+  background-color: #0a2a3a !important;
+  color: #00d4ff !important;
+  border: 2px solid #00d4ff !important;
+}
+
+.high-contrast .text-muted {
+  color: #00d4ff !important;
+}
+
+.high-contrast .bg-light-success {
+  background-color: #000000 !important;
+  color: #00d4ff !important;
+}
+
+.high-contrast .text-success,
+.high-contrast .bg-light-warning {
+  color: #00d4ff !important;
+  background-color: #000000 !important;
+}
+
+.high-contrast a {
+  color: #00d4ff !important;
+  text-decoration: underline !important;
+}
+
+.high-contrast a:hover {
+  color: #000000 !important;
+  background-color: #00d4ff !important;
+}
+
+.high-contrast .mat-table,
+.high-contrast .mat-row,
+.high-contrast .mat-cell,
+.high-contrast th,
+.high-contrast td {
+  border-color: #ffffff !important;
+}

@@ -1,8 +1,16 @@
 import { Routes } from '@angular/router';
 import { StarterComponent } from './starter/starter.component';
-import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+
 import { AdminUsersComponent } from './admin-users/admin-users.component';
 import { AdminProfileComponent } from './admin-profile/admin-profile.component';
+
+// Import des composants admin spécifiques
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { Patients } from './admin/patients/patients';
+import { MedecinsComponent } from './admin/medecins/medecins';
+import { CoordinateursComponent } from './admin/coordinateurs/coordinateurs';
+import { NursesComponent } from './admin/nurses/nurses';
+import { AuditorsComponent } from './admin/auditors/auditors';
 
 export const PagesRoutes: Routes = [
   {
@@ -16,20 +24,17 @@ export const PagesRoutes: Routes = [
       ],
     },
   },
+
   {
     path: 'admin',
     component: AdminDashboardComponent,
     data: {
       title: 'Admin Dashboard',
-      urls: [
-        { title: 'Dashboard', url: '/dashboard' },
-        { title: 'Admin' },
-      ],
     },
   },
   {
     path: 'admin/patients',
-    component: AdminUsersComponent,
+    component: Patients,
     data: {
       title: 'Patients',
       role: 'Patient',
@@ -37,7 +42,7 @@ export const PagesRoutes: Routes = [
   },
   {
     path: 'admin/physicians',
-    component: AdminUsersComponent,
+    component: MedecinsComponent,
     data: {
       title: 'Physicians',
       role: 'Physician',
@@ -45,7 +50,7 @@ export const PagesRoutes: Routes = [
   },
   {
     path: 'admin/nurses',
-    component: AdminUsersComponent,
+    component: NursesComponent,
     data: {
       title: 'Nurses',
       role: 'Nurse',
@@ -53,7 +58,7 @@ export const PagesRoutes: Routes = [
   },
   {
     path: 'admin/coordinators',
-    component: AdminUsersComponent,
+    component: CoordinateursComponent,
     data: {
       title: 'Coordinators',
       role: 'Coordinator',
@@ -61,7 +66,7 @@ export const PagesRoutes: Routes = [
   },
   {
     path: 'admin/auditors',
-    component: AdminUsersComponent,
+    component: AuditorsComponent,
     data: {
       title: 'Auditors',
       role: 'Auditor',

@@ -16,8 +16,8 @@ import {
 } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideClientHydration } from '@angular/platform-browser';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 // icons
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -45,11 +45,20 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(),
     provideAnimationsAsync(),
     importProvidersFrom(
+      TranslateModule.forRoot({
+        fallbackLang: 'en',
+      }),
       FormsModule,
       ReactiveFormsModule,
       MaterialModule,
       TablerIconsModule.pick(TablerIcons),
       NgScrollbarModule,
     ),
+    provideTranslateHttpLoader({
+      prefix: './assets/i18n/',
+      suffix: '.json',
+      enforceLoading: false,
+      useHttpBackend: false,
+    }),
   ],
 };

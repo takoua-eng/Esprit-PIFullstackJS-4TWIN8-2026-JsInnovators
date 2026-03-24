@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from 'src/app/material.module';
 import { AppProfitExpensesComponent } from 'src/app/components/profit-expenses/profit-expenses.component';
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -19,6 +20,7 @@ interface AdminUserRow {
     MaterialModule,
     AppProfitExpensesComponent,
     TablerIconsModule,
+    TranslateModule,
   ],
   templateUrl: './admin-dashboard.component.html',
 })

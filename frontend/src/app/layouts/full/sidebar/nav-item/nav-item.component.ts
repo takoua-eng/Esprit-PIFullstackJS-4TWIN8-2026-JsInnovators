@@ -19,7 +19,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-nav-item',
   imports: [TranslateModule, TablerIconsModule, MaterialModule, CommonModule],
   templateUrl: './nav-item.component.html',
-  styleUrls: [],
+  styleUrls: ['./nav-item.component.scss'],
 })
 export class AppNavItemComponent implements OnChanges {
   @Output() notify: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -31,7 +31,10 @@ export class AppNavItemComponent implements OnChanges {
   @HostBinding('attr.aria-expanded') ariaExpanded = this.expanded;
   @Input() depth: any;
 
-  constructor(public navService: NavService, public router: Router) {}
+  constructor(
+    public navService: NavService,
+    public router: Router,
+  ) {}
 
   ngOnChanges() {
     const url = this.navService.currentUrl();

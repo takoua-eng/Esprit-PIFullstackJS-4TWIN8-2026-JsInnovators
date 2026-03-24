@@ -2,10 +2,10 @@ import { NavItem } from './nav-item/nav-item';
 
 export const navItems: NavItem[] = [
   {
-    navCap: 'Admin',
+    navCap: 'ADMIN',
   },
   {
-    displayName: 'Dashboard',
+    displayName: 'DASHBOARD',
     iconName: 'gauge',
     route: '/dashboard/admin',
     bgcolor: 'primary',
@@ -14,37 +14,37 @@ export const navItems: NavItem[] = [
     chipContent: 'NEW',
   },
   {
-    displayName: 'Users',
+    displayName: 'USERS',
     iconName: 'users',
     route: '/dashboard/admin',
     bgcolor: 'secondary',
     children: [
       {
-        displayName: 'Patients',
+        displayName: 'PATIENTS',
         iconName: 'notes',
         route: '/dashboard/admin/patients',
         bgcolor: 'tranparent',
       },
       {
-        displayName: 'Physicians',
+        displayName: 'PHYSICIANS',
         iconName: 'stethoscope',
         route: '/dashboard/admin/physicians',
         bgcolor: 'tranparent',
       },
       {
-        displayName: 'Nurses',
+        displayName: 'NURSES',
         iconName: 'nurse',
         route: '/dashboard/admin/nurses',
         bgcolor: 'tranparent',
       },
       {
-        displayName: 'Coordinators',
+        displayName: 'COORDINATORS',
         iconName: 'users-group',
         route: '/dashboard/admin/coordinators',
         bgcolor: 'tranparent',
       },
       {
-        displayName: 'Auditors',
+        displayName: 'AUDITORS',
         iconName: 'check',
         route: '/dashboard/admin/auditors',
         bgcolor: 'tranparent',

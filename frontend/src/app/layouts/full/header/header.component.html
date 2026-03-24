@@ -17,13 +17,24 @@
 
   <span class="flex-1-auto"></span>
 
-  <!-- profile -->
-  <button
-    class="rounded-pill"
-    mat-mini-fab
-    aria-label="Profile"
-    [routerLink]="['/dashboard/profile']"
-  >
+  <!-- profile menu -->
+  <button mat-icon-button [matMenuTriggerFor]="profileMenu" aria-label="User menu">
     <img src="/assets/images/profile/user-1.jpg" class="rounded-circle object-cover d-block" width="35" />
   </button>
+
+  <mat-menu #profileMenu="matMenu" xPosition="before">
+    <div class="px-4 py-2">
+      <div class="f-w-600">{{ 'APP_NAME' | translate }}</div>
+      <div class="text-muted f-s-12">{{ 'ADMIN' | translate }}</div>
+    </div>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="goToProfile()">
+      <i-tabler name="user" class="icon-16"></i-tabler>
+      <span>{{ 'PROFILE' | translate }}</span>
+    </button>
+    <button mat-menu-item (click)="logout()">
+      <i-tabler name="logout" class="icon-16"></i-tabler>
+      <span>{{ 'LOGOUT' | translate }}</span>
+    </button>
+  </mat-menu>
 </mat-toolbar>

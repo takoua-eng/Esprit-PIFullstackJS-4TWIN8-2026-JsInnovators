@@ -6,7 +6,7 @@ import { CoreService } from 'src/app/services/core.service';
   imports: [],
   template: `
     <a href="/" class="logodark d-flex align-items-center m-2" style="text-decoration: none;">
-      <span class="f-w-600 f-s-18 text-dark">Admin Dashboard</span>
+      <span class="f-w-600 f-s-18 text-dark"></span>
     </a>
   `,
 })

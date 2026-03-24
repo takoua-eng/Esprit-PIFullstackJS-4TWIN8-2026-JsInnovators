@@ -5,8 +5,8 @@
       <mat-card-content class="p-16">
         <i-tabler name="users-group" class="icon-24 d-block m-b-8"></i-tabler>
         <div class="f-w-700 f-s-22 m-b-4">4</div>
-        <div class="f-s-14 f-w-600 m-b-2">Patients</div>
-        <div class="f-s-12" style="opacity: 0.85;">Registered patients in follow-up</div>
+        <div class="f-s-14 f-w-600 m-b-2">{{ 'PATIENTS_CARD' | translate }}</div>
+        <div class="f-s-12" style="opacity: 0.85;">{{ 'REGISTERED_PATIENTS' | translate }}</div>
       </mat-card-content>
     </mat-card>
   </div>
@@ -15,8 +15,8 @@
       <mat-card-content class="p-16">
         <i-tabler name="stethoscope" class="icon-24 d-block m-b-8"></i-tabler>
         <div class="f-w-700 f-s-22 m-b-4">3</div>
-        <div class="f-s-14 f-w-600 m-b-2">Doctors</div>
-        <div class="f-s-12" style="opacity: 0.85;">Specialist physicians</div>
+        <div class="f-s-14 f-w-600 m-b-2">{{ 'DOCTORS_CARD' | translate }}</div>
+        <div class="f-s-12" style="opacity: 0.85;">{{ 'SPECIALIST_DOCTORS' | translate }}</div>
       </mat-card-content>
     </mat-card>
   </div>
@@ -25,8 +25,8 @@
       <mat-card-content class="p-16">
         <i-tabler name="nurse" class="icon-24 d-block m-b-8"></i-tabler>
         <div class="f-w-700 f-s-22 m-b-4">2</div>
-        <div class="f-s-14 f-w-600 m-b-2">Nurses</div>
-        <div class="f-s-12" style="opacity: 0.9;">Nursing staff</div>
+        <div class="f-s-14 f-w-600 m-b-2">{{ 'NURSES_CARD' | translate }}</div>
+        <div class="f-s-12" style="opacity: 0.9;">{{ 'NURSING_STAFF' | translate }}</div>
       </mat-card-content>
     </mat-card>
   </div>
@@ -35,8 +35,8 @@
       <mat-card-content class="p-16">
         <i-tabler name="shield-lock" class="icon-24 d-block m-b-8"></i-tabler>
         <div class="f-w-700 f-s-22 m-b-4">5</div>
-        <div class="f-s-14 f-w-600 m-b-2">Other Users</div>
-        <div class="f-s-12" style="opacity: 0.9;">Admins, Coordinators, Auditors</div>
+        <div class="f-s-14 f-w-600 m-b-2">{{ 'OTHER_USERS_CARD' | translate }}</div>
+        <div class="f-s-12" style="opacity: 0.9;">{{ 'OTHER_USERS_DESC' | translate }}</div>
       </mat-card-content>
     </mat-card>
   </div>
@@ -49,9 +49,9 @@
       <mat-card-content>
         <div class="d-flex justify-content-between align-items-center">
           <div>
-            <mat-card-title>Traffic</mat-card-title>
+            <mat-card-title>{{ 'TRAFFIC' | translate }}</mat-card-title>
             <mat-card-subtitle class="f-s-13 text-muted">
-              January – December 2023
+              {{ 'JAN_TO_DEC_2023' | translate }}
             </mat-card-subtitle>
           </div>
           <div class="btn-group">
@@ -61,7 +61,7 @@
               [ngClass]="{'bg-primary text-white': viewMode === 'day'}"
               (click)="viewMode = 'day'"
             >
-              Day
+              {{ 'DAY' | translate }}
             </button>
             <button
               mat-stroked-button
@@ -69,14 +69,14 @@
               [ngClass]="{'bg-primary text-white': viewMode === 'month'}"
               (click)="viewMode = 'month'"
             >
-              Month
+              {{ 'MONTH' | translate }}
             </button>
             <button
               mat-stroked-button
               [ngClass]="{'bg-primary text-white': viewMode === 'year'}"
               (click)="viewMode = 'year'"
             >
-              Year
+              {{ 'YEAR' | translate }}
             </button>
           </div>
         </div>
@@ -88,24 +88,24 @@
         <!-- Metrics row adapted to MediFollow terminology -->
         <div class="row m-t-16">
           <div class="col-md-2 m-b-8">
-            <div class="f-s-12 text-muted">Visits</div>
-            <div class="f-w-600 f-s-14">29,703 Sessions (40%)</div>
+            <div class="f-s-12 text-muted">{{ 'VISITS' | translate }}</div>
+            <div class="f-w-600 f-s-14">29,703 {{ 'SESSIONS' | translate }} (40%)</div>
           </div>
           <div class="col-md-2 m-b-8">
-            <div class="f-s-12 text-muted">Unique users</div>
-            <div class="f-w-600 f-s-14">24,093 Users (20%)</div>
+            <div class="f-s-12 text-muted">{{ 'UNIQUE_USERS' | translate }}</div>
+            <div class="f-w-600 f-s-14">24,093 {{ 'USERS' | translate }} (20%)</div>
           </div>
           <div class="col-md-2 m-b-8">
-            <div class="f-s-12 text-muted">Page views</div>
-            <div class="f-w-600 f-s-14">78,706 Views (60%)</div>
+            <div class="f-s-12 text-muted">{{ 'PAGE_VIEWS' | translate }}</div>
+            <div class="f-w-600 f-s-14">78,706 {{ 'VIEWS' | translate }} (60%)</div>
           </div>
           <div class="col-md-2 m-b-8">
-            <div class="f-s-12 text-muted">New patients</div>
-            <div class="f-w-600 f-s-14">22,123 Patients (80%)</div>
+            <div class="f-s-12 text-muted">{{ 'NEW_PATIENTS' | translate }}</div>
+            <div class="f-w-600 f-s-14">22,123 {{ 'PATIENTS' | translate }} (80%)</div>
           </div>
           <div class="col-md-2 m-b-8">
-            <div class="f-s-12 text-muted">Follow-up completion</div>
-            <div class="f-w-600 f-s-14">Average rate (40.15%)</div>
+            <div class="f-s-12 text-muted">{{ 'FOLLOWUP_RATE' | translate }}</div>
+            <div class="f-w-600 f-s-14">{{ 'AVERAGE_RATE' | translate }} (40.15%)</div>
           </div>
         </div>
       </mat-card-content>

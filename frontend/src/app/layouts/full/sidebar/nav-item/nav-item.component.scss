@@ -1,0 +1,22 @@
+.menu-list-item {
+  min-width: 220px !important;
+  overflow: visible !important;
+}
+
+.menu-list-item span {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: inline-block !important;
+  white-space: nowrap;
+  color: inherit !important;
+}
+
+.arrow-icon {
+  min-width: 40px;
+}
+
+@media (max-width: 1200px) {
+  .menu-list-item {
+    min-width: 200px !important;
+  }
+}
