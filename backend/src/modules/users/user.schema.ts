@@ -1,14 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Role } from '../roles/role.schema';
+import * as mongoose from 'mongoose';
 
 export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop({ required: true, unique: true })
-  userId: string; // e.g. mediflow1, mediflow2 (never reused after delete)
 
+  _id: Types.ObjectId;
+
+  // 👤 Infos personnelles
   @Prop({ required: true })
   firstName: string;
 
@@ -27,19 +28,21 @@ export class User {
   @Prop()
   dateOfBirth?: Date;
 
-  @Prop()
+  @Prop({ enum: ['male', 'female'] })
   gender?: string;
 
+  // 🔐 Auth
   @Prop({ required: true })
   password: string;
 
-  @Prop({ type: String, default: null })
-  resetToken: string | null;
+@Prop({ type: String, default: null })
+resetToken: string | null;
 
-  // ⚠️ Ici on stocke juste l'id du rôle
-  @Prop({ type: Types.ObjectId, ref: Role.name })
-  role: Types.ObjectId | Role;
+  // 🔗 Role (relation)
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Role', default: null })
+  role: Types.ObjectId | null;
 
+  // 🏥 Infos médicales
   @Prop()
   medicalRecordNumber?: string;
 
@@ -49,9 +52,11 @@ export class User {
   @Prop()
   department?: string;
 
-  @Prop()
-  assignedPatients?: string;
+  // 👥 Liste des patients (relation)
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] })
+  assignedPatients: Types.ObjectId[];
 
+  // 📍 Contact
   @Prop()
   address?: string;
 
@@ -60,20 +65,3 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-// Computed age from dateOfBirth (in years)
-UserSchema.virtual('age').get(function (this: UserDocument) {
-  const dob = this.dateOfBirth;
-  if (!dob) return undefined;
-  const today = new Date();
-  const birth = new Date(dob);
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-  return age;
-});
-
-UserSchema.set('toJSON', { virtuals: true });
-UserSchema.set('toObject', { virtuals: true });

@@ -25,64 +25,73 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
-  // Mot de passe oublié
+  // 🔹 Mot de passe oublié
   async forgotPassword(email: string) {
-    const user = await this.userModel.findOne({ email }).exec();
+    const user = await this.userModel
+      .findOne({ email })
+      .populate<{ role_id: Role }>('role_id') // populate correct
+      .exec();
+
     if (!user) throw new BadRequestException('Email non trouvé');
 
     const token = randomBytes(32).toString('hex');
 
-    user.resetToken = token;
+    // ⚠️ stocker le token dans resetToken
+    (user as any).resetToken = token;
+
     await user.save();
 
-    await this.sendResetEmail(email, token); // 👈 AJOUT
+    await this.sendResetEmail(email, token);
 
     return { message: 'Email de réinitialisation envoyé' };
   }
 
-  // Réinitialisation mot de passe
+  // 🔹 Réinitialisation mot de passe
   async resetPassword(token: string, newPassword: string) {
     const user = await this.userModel.findOne({ resetToken: token }).exec();
     if (!user) throw new BadRequestException('Token invalide');
 
     user.password = await bcrypt.hash(newPassword, 10);
-    user.resetToken = null;
+    (user as any).resetToken = null;
+
     await user.save();
 
     return { message: 'Mot de passe réinitialisé avec succès' };
   }
 
-  // Sign Up (uses UsersService so new user gets userId mediflow1, mediflow2, ...)
+  // 🔹 Sign Up
   async signUp(signUpDto: SignUpDto): Promise<User> {
     return this.usersService.createUser(signUpDto as CreateUserDto);
   }
 
+  // 🔹 Sign In
   // Sign In
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
     const { email, password } = signInDto;
-
-    const user = await this.userModel
-      .findOne({ email })
-      .populate('role')
-      .exec();
+const user = await this.userModel
+  .findOne({ email })
+  .populate<{ role_id: Role }>('role_id') // ✅ correct
+  .exec();
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
       throw new UnauthorizedException('Invalid credentials');
 
-    const payload = {
-      sub: (user as { userId?: string }).userId ?? user._id,
-      email: user.email,
-      role: user.role['name'],
-    };
+const payload = {
+  sub: user._id,
+  email: user.email,
+  role: (user.role_id as Role).name, // ✅ type-safe
+};
+
     const accessToken = this.jwtService.sign(payload);
 
     return { accessToken };
   }
 
+  // 🔹 Envoi email réinitialisation
   private async sendResetEmail(email: string, token: string) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -101,11 +110,11 @@ export class AuthService {
       to: email,
       subject: 'Réinitialisation du mot de passe',
       html: `
-      <h3>Réinitialisation du mot de passe</h3>
-      <p>Cliquez sur le lien ci-dessous :</p>
-      <a href="${resetLink}">${resetLink}</a>
-      <p>Ce lien expire bientôt.</p>
-    `,
+        <h3>Réinitialisation du mot de passe</h3>
+        <p>Cliquez sur le lien ci-dessous :</p>
+        <a href="${resetLink}">${resetLink}</a>
+        <p>Ce lien expire bientôt.</p>
+      `,
     });
   }
 }
