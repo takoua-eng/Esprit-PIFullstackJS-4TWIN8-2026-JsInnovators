@@ -26,19 +26,21 @@ export class AppSideLoginComponent {
   }
 
   submit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const role = this.form.value.role;
-
-    if (role === 'Admin') {
-      this.router.navigate(['/dashboard/admin']);
-    } else {
-      this.router.navigate(['/dashboard']);
-    }
+  if (this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
   }
+
+  const role = this.form.value.role;
+
+  if (role === 'Admin') {
+    this.router.navigate(['/dashboard/admin']);
+  } else if (role === 'Coordinator') {
+    this.router.navigate(['/dashboard/coordinator']);
+  } else {
+    this.router.navigate(['/dashboard']);
+  }
+}
 
   loginWithFaceID() {
   alert("Face ID authentication coming soon");
