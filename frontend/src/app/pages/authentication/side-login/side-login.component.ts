@@ -12,8 +12,7 @@ import { ReactiveFormsModule } from '@angular/forms';
   templateUrl: './side-login.component.html',
 })
 export class AppSideLoginComponent {
-
-  constructor( private router: Router) {}
+  constructor(private router: Router) {}
 
   form = new FormGroup({
     uname: new FormControl('', [Validators.required, Validators.minLength(3)]),
@@ -26,23 +25,26 @@ export class AppSideLoginComponent {
   }
 
   submit() {
-  if (this.form.invalid) {
-    this.form.markAllAsTouched();
-    return;
-  }
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
-  const role = this.form.value.role;
+    const role = this.form.value.role ?? 'Admin';
 
-  if (role === 'Admin') {
-    this.router.navigate(['/dashboard/admin']);
-  } else if (role === 'Coordinator') {
-    this.router.navigate(['/dashboard/coordinator']);
-  } else {
-    this.router.navigate(['/dashboard']);
+    // très important
+    localStorage.setItem('user_role', role);
+
+    if (role === 'Admin') {
+      this.router.navigate(['/dashboard/admin']);
+    } else if (role === 'Coordinator') {
+      this.router.navigate(['/dashboard/coordinator']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
   }
-}
 
   loginWithFaceID() {
-  alert("Face ID authentication coming soon");
-}
+    alert('Face ID authentication coming soon');
+  }
 }

@@ -11,7 +11,7 @@ import { MedecinsComponent } from './admin/medecins/medecins';
 import { CoordinateursComponent } from './admin/coordinateurs/coordinateurs';
 import { NursesComponent } from './admin/nurses/nurses';
 import { AuditorsComponent } from './admin/auditors/auditors';
-import { CoordinatorDashboard } from './coordinator/coordinator-dashboard/coordinator-dashboard.component';
+import { CoordinatorDashboardComponent } from './coordinator/coordinator-dashboard/coordinator-dashboard.component';
 
 
 export const PagesRoutes: Routes = [
@@ -84,7 +84,7 @@ export const PagesRoutes: Routes = [
 
   {
   path: 'coordinator',
-  component: CoordinatorDashboard,
+  component: CoordinatorDashboardComponent,
   data: {
     title: 'Coordinator Dashboard',
   },

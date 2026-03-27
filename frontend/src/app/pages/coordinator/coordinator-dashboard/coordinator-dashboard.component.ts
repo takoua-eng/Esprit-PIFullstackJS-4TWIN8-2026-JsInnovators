@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from 'src/app/material.module';
+import { TablerIconsModule } from 'angular-tabler-icons';
 import {
   CoordinatorDashboardSummary,
   CoordinatorPatientRow,
@@ -10,14 +11,15 @@ import {
 @Component({
   selector: 'app-coordinator-dashboard',
   standalone: true,
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, TablerIconsModule],
   templateUrl: './coordinator-dashboard.component.html',
+  styleUrls: ['./coordinator-dashboard.component.scss'],
 })
-export class CoordinatorDashboard implements OnInit {
+export class CoordinatorDashboardComponent implements OnInit {
   private coordinatorService = inject(CoordinatorService);
 
-  // remplace cet ID par un vrai _id coordinator de ta base
-  coordinatorId = 'PUT_REAL_COORDINATOR_ID_HERE';
+  // IMPORTANT : remplace par le vrai _id du coordinator user dans MongoDB
+  coordinatorId = '69c32545a5201407afd209cf';
 
   summary: CoordinatorDashboardSummary = {
     totalAssignedPatients: 0,
