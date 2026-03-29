@@ -45,6 +45,17 @@ export class UsersController {
     return this.usersService.getAllUsers();
   }
 
+  /** Patient accounts only (for nurse-assisted entry). Must stay before @Get(':id'). */
+  @Get('patients')
+  findPatients() {
+    return this.usersService.findByRoleName('Patient');
+  }
+
+  @Get('nurses')
+  findNurses() {
+    return this.usersService.findByRoleName('Nurse');
+  }
+
   // 🔹 Get one user by id
   @Get(':id')
   findOne(@Param('id') id: string): Promise<User> {

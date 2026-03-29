@@ -20,6 +20,10 @@ async function bootstrap() {
     .addTag('users', 'User CRUD and avatar')
     .addTag('roles', 'Role CRUD')
     .addTag('upload', 'File upload')
+    .addTag('alerts', 'Clinical alerts (list, acknowledge)')
+    .addTag('reminders', 'Patient reminders (list, complete)')
+    .addTag('vitals', 'Vital signs (nurse-assisted entry, verify)')
+    .addTag('symptoms', 'Symptom reports (nurse-assisted entry, verify)')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

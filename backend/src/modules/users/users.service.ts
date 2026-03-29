@@ -106,4 +106,25 @@ async deleteUser(id: string): Promise < void> {
 
   return user;
 }
+
+  /** Users with the given role name (e.g. Patient) — for nurse data entry / lists. */
+  async findByRoleName(
+    roleName: string,
+  ): Promise<
+    { _id: string; firstName: string; lastName: string; email: string }[]
+  > {
+    const role = await this.roleModel.findOne({ name: roleName }).exec();
+    if (!role) return [];
+    const users = await this.userModel
+      .find({ role: role._id })
+      .select('firstName lastName email')
+      .lean()
+      .exec();
+    return users.map((u) => ({
+      _id: (u._id as Types.ObjectId).toString(),
+      firstName: u.firstName,
+      lastName: u.lastName,
+      email: u.email,
+    }));
+  }
 }
