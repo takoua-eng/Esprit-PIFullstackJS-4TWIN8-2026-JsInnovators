@@ -1,4 +1,6 @@
 <div class="coordinator-dashboard-container">
+
+  <!-- WELCOME CARD -->
   <div class="row">
     <div class="col-lg-12">
       <mat-card class="welcome-card">
@@ -8,110 +10,287 @@
             Coordinator Dashboard
           </mat-card-title>
         </mat-card-header>
-
         <mat-card-content class="welcome-content">
           <p class="welcome-text">Welcome to the MediFollow coordinator space</p>
-          <p class="subtitle">
-            Monitor assigned patients, track incomplete entries, and supervise follow-up activity.
-          </p>
+          <p class="subtitle">Track patients, verify data completeness and manage reminders.</p>
         </mat-card-content>
       </mat-card>
     </div>
   </div>
 
-  <div class="row mt-4">
-    <div class="col-lg-3 col-md-6">
-      <mat-card class="stats-card purple-card">
-        <mat-card-content>
-          <div class="icon-box">
-            <i-tabler name="users-group"></i-tabler>
-          </div>
-          <h3>{{ summary.totalAssignedPatients }}</h3>
-          <p>Assigned Patients</p>
+  <!-- KPI CARDS -->
+  <div class="row m-b-24">
+    <div class="col-md-3 m-b-16">
+      <mat-card class="stats-card purple-card clickable"
+        (click)="navigateTo('/dashboard/coordinator/patients')"
+        matTooltip="View assigned patients">
+        <mat-card-content class="p-16">
+          <i-tabler name="users-group" class="kpi-icon d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">{{ dashboardData.summary.totalAssignedPatients }}</div>
+          <div class="f-s-14 f-w-600 m-b-2">Assigned Patients</div>
+          <div class="f-s-12 stat-subtitle">Patients under this coordinator</div>
         </mat-card-content>
       </mat-card>
     </div>
 
-    <div class="col-lg-3 col-md-6">
-      <mat-card class="stats-card blue-card">
-        <mat-card-content>
-          <div class="icon-box">
-            <i-tabler name="clipboard-alert"></i-tabler>
-          </div>
-          <h3>{{ summary.incompleteEntries }}</h3>
-          <p>Incomplete Entries</p>
+    <div class="col-md-3 m-b-16">
+      <mat-card class="stats-card red-card clickable"
+        (click)="navigateTo('/dashboard/coordinator/compliance')"
+        matTooltip="Patients missing vitals today">
+        <mat-card-content class="p-16">
+          <i-tabler name="activity-heartbeat" class="kpi-icon d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">{{ dashboardData.summary.missingVitalsToday }}</div>
+          <div class="f-s-14 f-w-600 m-b-2">Missing Vitals Today</div>
+          <div class="f-s-12 stat-subtitle">Patients without vital entry</div>
         </mat-card-content>
       </mat-card>
     </div>
 
-    <div class="col-lg-3 col-md-6">
-      <mat-card class="stats-card yellow-card">
-        <mat-card-content>
-          <div class="icon-box">
-            <i-tabler name="bell-ringing"></i-tabler>
-          </div>
-          <h3>{{ summary.remindersSentToday }}</h3>
-          <p>Reminders Sent</p>
+    <div class="col-md-3 m-b-16">
+      <mat-card class="stats-card yellow-card clickable"
+        (click)="navigateTo('/dashboard/coordinator/reminders')"
+        matTooltip="Reminders sent today">
+        <mat-card-content class="p-16">
+          <i-tabler name="bell-ringing" class="kpi-icon d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">{{ dashboardData.summary.remindersSentToday }}</div>
+          <div class="f-s-14 f-w-600 m-b-2">Reminders Sent Today</div>
+          <div class="f-s-12 stat-subtitle">Notifications sent this day</div>
         </mat-card-content>
       </mat-card>
     </div>
 
-    <div class="col-lg-3 col-md-6">
-      <mat-card class="stats-card red-card">
-        <mat-card-content>
-          <div class="icon-box">
-            <i-tabler name="alert-circle"></i-tabler>
-          </div>
-          <h3>{{ summary.activeAlerts }}</h3>
-          <p>Active Alerts</p>
+    <div class="col-md-3 m-b-16">
+      <mat-card class="stats-card blue-card clickable"
+        (click)="navigateTo('/dashboard/coordinator/reminders')"
+        matTooltip="Pending reminders">
+        <mat-card-content class="p-16">
+          <i-tabler name="clock" class="kpi-icon d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">{{ dashboardData.summary.pendingReminders }}</div>
+          <div class="f-s-14 f-w-600 m-b-2">Pending Reminders</div>
+          <div class="f-s-12 stat-subtitle">Scheduled and not yet sent</div>
         </mat-card-content>
       </mat-card>
     </div>
   </div>
 
-  <div class="row mt-4">
-    <div class="col-lg-12">
-      <mat-card class="table-card">
+  <!-- CHARTS ROW 1 -->
+  <div class="row m-b-24">
+    <div class="col-lg-7">
+      <mat-card class="cardWithShadow chart-card h-100">
         <mat-card-content>
-          <div class="table-header">
+          <div class="chart-header">
             <div>
-              <h3>My Assigned Patients</h3>
-              <p>Patients currently followed by this coordinator</p>
+              <mat-card-title>Patients by Department</mat-card-title>
+              <mat-card-subtitle>Distribution across medical departments</mat-card-subtitle>
+            </div>
+            <div class="chart-badge">{{ dashboardData.summary.departmentsCovered }} dept.</div>
+          </div>
+          <div *ngIf="!departmentChart" class="chart-loading">Loading chart...</div>
+          <apx-chart *ngIf="departmentChart"
+            [series]="departmentChart.series"
+            [chart]="departmentChart.chart"
+            [colors]="departmentChart.colors"
+            [dataLabels]="departmentChart.dataLabels"
+            [plotOptions]="departmentChart.plotOptions"
+            [xaxis]="departmentChart.xaxis"
+            [yaxis]="departmentChart.yaxis"
+            [stroke]="departmentChart.stroke"
+            [tooltip]="departmentChart.tooltip"
+            [legend]="departmentChart.legend"
+            [grid]="departmentChart.grid">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-lg-5">
+      <mat-card class="cardWithShadow chart-card h-100">
+        <mat-card-content>
+          <div class="chart-header">
+            <div>
+              <mat-card-title>Profile Completeness</mat-card-title>
+              <mat-card-subtitle>Patient data quality overview</mat-card-subtitle>
+            </div>
+            <div class="chart-badge green">{{ dashboardData.summary.completeProfiles }}/{{ dashboardData.summary.totalAssignedPatients }}</div>
+          </div>
+
+          <div class="completeness-legend">
+            <div class="legend-item">
+              <span class="legend-dot green"></span>
+              <span>Phone, address, emergency contact & email filled</span>
             </div>
           </div>
 
-          <div *ngIf="patients.length === 0" class="empty-state">
-            <i-tabler name="users-off" class="empty-icon"></i-tabler>
-            <h4>No assigned patients yet</h4>
-            <p>
-              Once patients are linked to this coordinator in the database, they will appear here.
-            </p>
+          <div *ngIf="!completenessChart" class="chart-loading">Loading chart...</div>
+          <apx-chart *ngIf="completenessChart"
+            [series]="completenessChart.series"
+            [chart]="completenessChart.chart"
+            [colors]="completenessChart.colors"
+            [labels]="completenessChart.labels"
+            [dataLabels]="completenessChart.dataLabels"
+            [legend]="completenessChart.legend"
+            [plotOptions]="completenessChart.plotOptions"
+            [stroke]="completenessChart.stroke"
+            [tooltip]="completenessChart.tooltip">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- COMPLIANCE SECTION -->
+  <div class="row m-b-24">
+    <div class="col-lg-7">
+      <mat-card class="cardWithShadow chart-card">
+        <mat-card-content>
+          <div class="chart-header">
+            <div>
+              <mat-card-title>Today's Compliance</mat-card-title>
+              <mat-card-subtitle>Vitals & symptoms submission status per patient</mat-card-subtitle>
+            </div>
+            <button mat-flat-button color="primary" class="details-btn"
+              (click)="navigateTo('/dashboard/coordinator/compliance')">
+              <i-tabler name="arrow-right" class="icon-16"></i-tabler>
+              Full details
+            </button>
           </div>
 
-          <div class="table-responsive" *ngIf="patients.length > 0">
-            <table mat-table [dataSource]="patients" class="w-100">
+          <div class="compliance-rate-bar">
+            <div class="rate-label">
+              <span>Overall compliance rate</span>
+              <span class="rate-value" [class.rate-good]="complianceRate >= 80"
+                [class.rate-warn]="complianceRate < 80">{{ complianceRate }}%</span>
+            </div>
+            <div class="rate-track">
+              <div class="rate-fill"
+                [style.width.%]="complianceRate"
+                [class.fill-good]="complianceRate >= 80"
+                [class.fill-warn]="complianceRate < 80">
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!complianceChart" class="chart-loading">Loading chart...</div>
+          <apx-chart *ngIf="complianceChart"
+            [series]="complianceChart.series"
+            [chart]="complianceChart.chart"
+            [colors]="complianceChart.colors"
+            [plotOptions]="complianceChart.plotOptions"
+            [dataLabels]="complianceChart.dataLabels"
+            [xaxis]="complianceChart.xaxis"
+            [yaxis]="complianceChart.yaxis"
+            [tooltip]="complianceChart.tooltip"
+            [legend]="complianceChart.legend"
+            [grid]="complianceChart.grid">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-lg-5">
+      <mat-card class="cardWithShadow compliance-table-card">
+        <mat-card-content>
+          <div class="chart-header m-b-16">
+            <div>
+              <mat-card-title>Compliance Status</mat-card-title>
+              <mat-card-subtitle>Today's submission overview</mat-card-subtitle>
+            </div>
+            <span class="compliance-count">
+              {{ complianceData.length }} patients
+            </span>
+          </div>
+
+          <div *ngIf="complianceData.length === 0" class="empty-state-sm">
+            <i-tabler name="clipboard-off" class="empty-sm-icon"></i-tabler>
+            <p>No compliance data yet</p>
+          </div>
+
+          <div class="compliance-list" *ngIf="complianceData.length > 0">
+            <div class="compliance-row" *ngFor="let row of complianceData"
+              [class.row-compliant]="row.isFullyCompliant"
+              [class.row-incomplete]="!row.isFullyCompliant">
+
+              <div class="patient-info">
+                <div class="patient-avatar" [class.avatar-good]="row.isFullyCompliant"
+                  [class.avatar-warn]="!row.isFullyCompliant">
+                  {{ row.name.charAt(0) }}
+                </div>
+                <div>
+                  <div class="patient-name">{{ row.name }}</div>
+                  <div class="patient-dept">{{ row.department }}</div>
+                </div>
+              </div>
+
+              <div class="compliance-indicators">
+                <div class="indicator" [class.submitted]="row.vitalsSubmitted"
+                  [class.missing]="!row.vitalsSubmitted"
+                  matTooltip="{{ row.vitalsSubmitted ? 'Vitals submitted' : 'Vitals missing' }}">
+                  <i-tabler name="heart-rate-monitor" class="ind-icon"></i-tabler>
+                  <span class="ind-label">Vitals</span>
+                </div>
+                <div class="indicator" [class.submitted]="row.symptomsSubmitted"
+                  [class.missing]="!row.symptomsSubmitted"
+                  matTooltip="{{ row.symptomsSubmitted ? 'Symptoms submitted' : 'Symptoms missing' }}">
+                  <i-tabler name="mood-sick" class="ind-icon"></i-tabler>
+                  <span class="ind-label">Symptoms</span>
+                </div>
+              </div>
+
+              <span class="status-badge" [ngClass]="row.isFullyCompliant ? 'good' : 'warn'">
+                {{ row.isFullyCompliant ? '✓ OK' : '⚠ Incomplete' }}
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- RECENT PATIENTS -->
+  <div class="row">
+    <div class="col-lg-12">
+      <mat-card class="cardWithShadow table-card">
+        <mat-card-content>
+          <div class="table-header d-flex align-items-center justify-content-between">
+            <div>
+              <mat-card-title>Recently Updated Patients</mat-card-title>
+              <mat-card-subtitle>Latest patients linked to this coordinator</mat-card-subtitle>
+            </div>
+            <button mat-stroked-button color="primary"
+              (click)="navigateTo('/dashboard/coordinator/patients')">
+              View all
+            </button>
+          </div>
+
+          <div *ngIf="recentPatients.length === 0" class="empty-state">
+            <i-tabler name="users-off" class="empty-icon"></i-tabler>
+            <h4>No assigned patients yet</h4>
+            <p>Ask the admin to assign patients to this coordinator.</p>
+          </div>
+
+          <div class="table-responsive" *ngIf="recentPatients.length > 0">
+            <table mat-table [dataSource]="recentPatients" class="w-100">
               <ng-container matColumnDef="name">
                 <th mat-header-cell *matHeaderCellDef>Name</th>
                 <td mat-cell *matCellDef="let row">{{ row.name }}</td>
               </ng-container>
-
               <ng-container matColumnDef="email">
                 <th mat-header-cell *matHeaderCellDef>Email</th>
                 <td mat-cell *matCellDef="let row">{{ row.email }}</td>
               </ng-container>
-
               <ng-container matColumnDef="department">
                 <th mat-header-cell *matHeaderCellDef>Department</th>
                 <td mat-cell *matCellDef="let row">{{ row.department }}</td>
               </ng-container>
-
               <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef>Status</th>
                 <td mat-cell *matCellDef="let row">
-                  <span class="status-badge">{{ row.status }}</span>
+                  <span class="status-badge"
+                    [ngClass]="row.status === 'Complete' ? 'good' : 'warn'">
+                    {{ row.status }}
+                  </span>
                 </td>
               </ng-container>
-
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
             </table>
@@ -120,4 +299,5 @@
       </mat-card>
     </div>
   </div>
+
 </div>

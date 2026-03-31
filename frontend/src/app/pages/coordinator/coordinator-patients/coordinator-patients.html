@@ -1,0 +1,62 @@
+<div class="patients-container">
+  <mat-card class="welcome-card">
+    <mat-card-header>
+      <mat-card-title class="page-title">
+        <i-tabler name="users-group" class="title-icon"></i-tabler>
+        My Assigned Patients
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p class="subtitle">All patients currently assigned to this coordinator.</p>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="cardWithShadow table-card">
+    <mat-card-content>
+
+      <div *ngIf="patients.length === 0" class="empty-state">
+        <i-tabler name="users-off" class="empty-icon"></i-tabler>
+        <h4>No assigned patients</h4>
+        <p>Ask the admin to assign patients to this coordinator.</p>
+      </div>
+
+      <div class="table-responsive" *ngIf="patients.length > 0">
+        <table mat-table [dataSource]="patients" class="w-100">
+
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let row">{{ row.email }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="department">
+            <th mat-header-cell *matHeaderCellDef>Department</th>
+            <td mat-cell *matCellDef="let row">{{ row.department }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="medicalRecordNumber">
+            <th mat-header-cell *matHeaderCellDef>Medical Record</th>
+            <td mat-cell *matCellDef="let row">{{ row.medicalRecordNumber || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="status-badge" [ngClass]="row.status === 'Complete' ? 'good' : 'warn'">
+                {{ row.status }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+
+    </mat-card-content>
+  </mat-card>
+</div>

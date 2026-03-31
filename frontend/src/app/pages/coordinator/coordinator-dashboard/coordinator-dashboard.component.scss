@@ -2,16 +2,16 @@
   padding: 24px;
 }
 
+// ── Welcome ───────────────────────────────────────────────────
 .welcome-card {
   background: linear-gradient(135deg, #0ea5a4 0%, #2563eb 100%);
   color: white;
   margin-bottom: 24px;
   border-radius: 18px;
-  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.22);
+  border: none;
 
-  mat-card-header {
-    margin-bottom: 12px;
-  }
+  mat-card-header { margin-bottom: 12px; }
 
   .dashboard-title {
     display: flex;
@@ -20,147 +20,293 @@
     font-size: 28px;
     font-weight: 700;
     margin: 0;
+    color: white;
   }
 
-  .title-icon {
-    width: 32px;
-    height: 32px;
-  }
+  .title-icon { width: 32px; height: 32px; }
 
   .welcome-content {
     padding-top: 0 !important;
-
-    .welcome-text {
-      font-size: 18px;
-      font-weight: 500;
-      margin: 0 0 8px 0;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      opacity: 0.92;
-      margin: 0;
-    }
+    .welcome-text { font-size: 18px; font-weight: 500; margin: 0 0 8px 0; color: white; }
+    .subtitle { font-size: 14px; opacity: 0.88; margin: 0; color: white; }
   }
 }
 
+// ── KPI cards ─────────────────────────────────────────────────
 .stats-card {
   border-radius: 18px;
   color: white;
-  min-height: 155px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  min-height: 160px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.25s ease;
   border: none;
 
-  &:hover {
-    transform: translateY(-4px);
+  &.clickable {
+    cursor: pointer;
+    &:hover { transform: translateY(-5px); box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16); }
   }
 
-  .icon-box {
-    margin-bottom: 12px;
-
-    i-tabler {
-      width: 26px;
-      height: 26px;
-    }
-  }
-
-  h3 {
-    font-size: 30px;
-    font-weight: 700;
-    margin: 0 0 6px 0;
-  }
-
-  p {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 500;
-    opacity: 0.95;
-  }
+  .kpi-icon { width: 28px; height: 28px; opacity: 0.92; }
 }
 
-.purple-card {
-  background: linear-gradient(135deg, #6d5dfc 0%, #5b4ce0 100%);
-}
+.stat-subtitle { opacity: 0.82; }
+.purple-card { background: linear-gradient(135deg, #6d5dfc 0%, #5b4ce0 100%); }
+.blue-card { background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%); }
+.yellow-card { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.red-card { background: linear-gradient(135deg, #ef7d57 0%, #e85d3f 100%); }
 
-.blue-card {
-  background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);
-}
-
-.yellow-card {
-  background: linear-gradient(135deg, #f6c453 0%, #f59e0b 100%);
-}
-
-.red-card {
-  background: linear-gradient(135deg, #ef7d57 0%, #e85d3f 100%);
-}
-
-.table-card {
+// ── Charts ────────────────────────────────────────────────────
+.chart-card {
   border-radius: 18px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
   border: none;
-
-  .table-header {
-    margin-bottom: 16px;
-
-    h3 {
-      margin: 0 0 6px 0;
-      font-size: 24px;
-      font-weight: 700;
-    }
-
-    p {
-      margin: 0;
-      color: #6b7280;
-      font-size: 14px;
-    }
-  }
+  margin-bottom: 16px;
 }
 
-.status-badge {
+.h-100 { height: 100%; }
+
+.chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.chart-badge {
   display: inline-block;
-  padding: 6px 12px;
+  padding: 4px 12px;
   border-radius: 999px;
   background: #e0f2fe;
   color: #0369a1;
   font-size: 12px;
+  font-weight: 700;
+
+  &.green {
+    background: #dcfce7;
+    color: #166534;
+  }
+}
+
+.chart-loading {
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+// ── Completeness legend ────────────────────────────────────────
+.completeness-legend {
+  margin-bottom: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.green { background: #10b981; }
+  &.orange { background: #ef7d57; }
+}
+
+// ── Compliance rate bar ────────────────────────────────────────
+.compliance-rate-bar {
+  margin: 8px 0 16px 0;
+}
+
+.rate-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.rate-value {
+  font-size: 15px;
+  font-weight: 700;
+
+  &.rate-good { color: #10b981; }
+  &.rate-warn { color: #f59e0b; }
+}
+
+.rate-track {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.rate-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+
+  &.fill-good { background: #10b981; }
+  &.fill-warn { background: #f59e0b; }
+}
+
+// ── Details button ────────────────────────────────────────────
+.details-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+// ── Compliance list ───────────────────────────────────────────
+.compliance-table-card {
+  border-radius: 18px;
+  border: none;
+}
+
+.compliance-count {
+  font-size: 13px;
+  color: #6b7280;
   font-weight: 600;
 }
 
+.compliance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.compliance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+
+  &:hover { background: #f1f5f9; }
+  &.row-compliant { border-left: 4px solid #10b981; }
+  &.row-incomplete { border-left: 4px solid #f59e0b; }
+}
+
+.patient-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 140px;
+}
+
+.patient-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+
+  &.avatar-good { background: #dcfce7; color: #166534; }
+  &.avatar-warn { background: #fef3c7; color: #92400e; }
+}
+
+.patient-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+
+.patient-dept {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.compliance-indicators {
+  display: flex;
+  gap: 8px;
+}
+
+.indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: default;
+
+  .ind-icon { width: 18px; height: 18px; }
+  .ind-label { font-size: 11px; font-weight: 600; }
+
+  &.submitted {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  &.missing {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+// ── Status badges ─────────────────────────────────────────────
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.good { background: #dcfce7; color: #166534; }
+  &.warn { background: #fef3c7; color: #92400e; }
+}
+
+// ── Table ─────────────────────────────────────────────────────
+.table-card { border-radius: 18px; border: none; }
+.table-header { margin-bottom: 16px; }
+
+// ── Empty states ──────────────────────────────────────────────
 .empty-state {
   text-align: center;
   padding: 36px 12px;
   color: #6b7280;
 
-  .empty-icon {
-    width: 52px;
-    height: 52px;
-    margin-bottom: 12px;
-    color: #94a3b8;
-  }
-
-  h4 {
-    margin: 0 0 8px 0;
-    font-size: 20px;
-    color: #1f2937;
-  }
-
-  p {
-    margin: 0;
-    font-size: 14px;
-  }
+  .empty-icon { width: 52px; height: 52px; margin-bottom: 12px; color: #94a3b8; }
+  h4 { margin: 0 0 8px 0; font-size: 20px; color: #1f2937; }
+  p { margin: 0; font-size: 14px; }
 }
 
+.empty-state-sm {
+  text-align: center;
+  padding: 32px 12px;
+  color: #94a3b8;
+
+  .empty-sm-icon { width: 36px; height: 36px; margin-bottom: 8px; }
+  p { margin: 0; font-size: 14px; }
+}
+
+// ── Responsive ────────────────────────────────────────────────
 @media (max-width: 768px) {
-  .coordinator-dashboard-container {
-    padding: 16px;
-  }
-
-  .welcome-card .dashboard-title {
-    font-size: 22px;
-  }
-
-  .stats-card {
-    margin-bottom: 12px;
-  }
+  .coordinator-dashboard-container { padding: 16px; }
+  .welcome-card .dashboard-title { font-size: 22px; }
+  .stats-card { margin-bottom: 12px; }
+  .compliance-row { flex-wrap: wrap; gap: 8px; }
+  .patient-info { min-width: 120px; }
 }

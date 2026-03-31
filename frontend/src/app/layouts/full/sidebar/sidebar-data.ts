@@ -60,20 +60,26 @@ export const adminNavItems: NavItem[] = [
 ];
 
 export const coordinatorNavItems: NavItem[] = [
-  {
-    navCap: 'COORDINATOR',
-  },
+  { navCap: 'COORDINATOR' },
   {
     displayName: 'DASHBOARD',
     iconName: 'layout-dashboard',
     route: '/dashboard/coordinator',
-    bgcolor: 'primary',
+  },
+  {
+    displayName: 'MY PATIENTS',
+    iconName: 'users-group',
+    route: '/dashboard/coordinator/patients',
+  },
+  {
+    displayName: 'REMINDERS',
+    iconName: 'bell-ringing',
+    route: '/dashboard/coordinator/reminders',
   },
   {
     displayName: 'PROFILE',
     iconName: 'user',
     route: '/dashboard/profile',
-    bgcolor: 'success',
   },
 ];
 
