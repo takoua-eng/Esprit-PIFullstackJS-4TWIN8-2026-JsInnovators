@@ -15,10 +15,12 @@ export const routes: Routes = [
       { path: 'landing', component: LandingComponent },
 
       // Admin Coordinator : composant seul, indépendant
-      {
-        path: 'admin/coordinator',
-        component: CoordinatorDashboardComponent,
-      },
+{
+  path: 'admin/coordinator',
+  component: FullComponent,
+  loadChildren: () =>
+    import('./pages/pages.routes').then((m) => m.CoordinatorRoutes),
+},
 
       // Dashboard principal pour utilisateurs + sous-admin
       {

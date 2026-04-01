@@ -28,29 +28,34 @@ export const adminNavItems: NavItem[] = [
 ];
 
 // Sidebar pour le coordinator
+
 export const coordinatorNavItems: NavItem[] = [
   { navCap: 'COORDINATOR' },
+
   {
     displayName: 'DASHBOARD',
     iconName: 'gauge',
-    route: '/dashboard/coordinator',
+    route: '/admin/coordinator',
     bgcolor: 'primary',
     chip: true,
     chipClass: 'bg-primary text-white',
     chipContent: 'NEW',
   },
+
   {
-    displayName: 'MANAGE',
-    iconName: 'users',
-    route: '/dashboard/coordinator',
-    bgcolor: 'secondary',
-    children: [
-      { displayName: 'PATIENTS', iconName: 'notes', route: '/dashboard/coordinator/patients', bgcolor: 'transparent' },
-      { displayName: 'DOCTORS', iconName: 'stethoscope', route: '/dashboard/coordinator/physicians', bgcolor: 'transparent' },
-      { displayName: 'NURSES', iconName: 'nurse', route: '/dashboard/coordinator/nurses', bgcolor: 'transparent' },
-    ],
+    displayName: 'MY PATIENTS',
+    iconName: 'users-group',
+    route: '/admin/coordinator/patients',
+    bgcolor: 'transparent',
   },
 
-
+  {
+    displayName: 'REMINDERS',
+    iconName: 'bell-ringing',
+    route: '/admin/coordinator/reminders',
+    bgcolor: 'transparent',
+  },
 ];
+
+
 

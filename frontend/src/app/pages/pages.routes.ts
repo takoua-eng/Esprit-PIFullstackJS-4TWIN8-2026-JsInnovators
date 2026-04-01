@@ -82,26 +82,29 @@ export const AdminRoutes: Routes = [
     },
   },
 
-  {
-    path: 'coordinator',
-    component: CoordinatorDashboardComponent,
-    data: {
-      title: 'Coordinator Dashboard',
-    },
-  },
 
-  {
-    path: 'coordinator/reminders',
-    component: RemindersComponent,
-    data: { title: 'Reminders' },
-  },
-
-  {
-    path: 'coordinator/patients',
-    component: CoordinatorPatientsComponent,
-    data: { title: 'My Patients' },
-  },
 ];
+
+
+export const CoordinatorRoutes: Routes = [
+  {
+    path: '',
+    component: CoordinatorDashboardComponent,
+    data: { title: 'Coordinator Dashboard' }
+  },
+  {
+    path: 'patients',
+    component: CoordinatorPatientsComponent,
+    data: { title: 'My Patients' }
+  },
+  {
+    path: 'reminders',
+    component: RemindersComponent,
+    data: { title: 'Reminders' }
+  }
+];
+
+
 
 // ✅ SUPER ADMIN ROUTES - بدون 'super-admin' في البداية
 export const SuperAdminRoutes: Routes = [

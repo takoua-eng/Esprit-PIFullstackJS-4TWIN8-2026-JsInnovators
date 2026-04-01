@@ -23,6 +23,7 @@ const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
 
 @Component({
   selector: 'app-full',
+  standalone: true,
   imports: [
     RouterModule,
     AppNavItemComponent,
@@ -40,20 +41,15 @@ const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
 export class FullComponent implements OnInit {
   navItems: NavItem[] = [];
 
-  @ViewChild('leftsidenav')
-  public sidenav!: MatSidenav;
-
+  @ViewChild('leftsidenav') sidenav!: MatSidenav;
   @ViewChild('content', { static: true }) content!: MatSidenavContent;
 
-  resView = false;
   options = this.settings.getOptions();
   private layoutChangesSubscription = Subscription.EMPTY;
   private isMobileScreen = false;
   private isContentWidthFixed = true;
   private isCollapsedWidthFixed = false;
-  private htmlElement!: HTMLHtmlElement;
 
-  // ✅ Getter pour template
   get isOver(): boolean {
     return this.isMobileScreen;
   }
@@ -63,60 +59,55 @@ export class FullComponent implements OnInit {
     private router: Router,
     private breakpointObserver: BreakpointObserver
   ) {
-    this.htmlElement = document.querySelector('html')!;
-
-    // Observer les breakpoints
+    // Responsive
     this.layoutChangesSubscription = this.breakpointObserver
       .observe([MOBILE_VIEW, TABLET_VIEW])
       .subscribe((state) => {
         this.options.sidenavOpened = true;
         this.isMobileScreen = state.breakpoints[MOBILE_VIEW];
 
-        if (this.options.sidenavCollapsed === false) {
+        if (!this.options.sidenavCollapsed) {
           this.options.sidenavCollapsed = state.breakpoints[TABLET_VIEW];
         }
       });
 
-    // Scroll vers le haut à chaque navigation
+    // Scroll top
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
-        this.content.scrollTo({ top: 0 });
+        this.content?.scrollTo({ top: 0 });
       });
   }
 
-ngOnInit(): void {
-  this.setNavItemsBasedOnUrl(this.router.url); // initial
+  ngOnInit(): void {
+    this.updateSidebar(this.router.url);
 
-  this.router.events
-    .pipe(filter(event => event instanceof NavigationEnd))
-    .subscribe((event: any) => {
-      this.setNavItemsBasedOnUrl(event.urlAfterRedirects);
-    });
-}
-
-private setNavItemsBasedOnUrl(url: string) {
-  if (url.includes('/admin/coordinator')) {
-    this.navItems = coordinatorNavItems;
-  } else if (url.includes('/dashboard/admin')) {
-    this.navItems = adminNavItems;
-  } else {
-    this.navItems = adminNavItems; // fallback
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.updateSidebar(event.urlAfterRedirects);
+      });
   }
-}
+
+  // ✅ LOGIQUE FIX
+  private updateSidebar(url: string) {
+    if (url.startsWith('/dashboard/admin')) {
+      this.navItems = adminNavItems;
+
+    } else if (url.startsWith('/admin/coordinator')) {
+      this.navItems = coordinatorNavItems;
+
+    } else {
+      this.navItems = adminNavItems;
+    }
+  }
 
   ngOnDestroy() {
     this.layoutChangesSubscription.unsubscribe();
   }
 
   toggleCollapsed() {
-    this.isContentWidthFixed = false;
     this.options.sidenavCollapsed = !this.options.sidenavCollapsed;
-    this.resetCollapsedState();
-  }
-
-  resetCollapsedState(timer = 400) {
-    setTimeout(() => this.settings.setOptions(this.options), timer);
   }
 
   onSidenavClosedStart() {
@@ -124,7 +115,6 @@ private setNavItemsBasedOnUrl(url: string) {
   }
 
   onSidenavOpenedChange(isOpened: boolean) {
-    this.isCollapsedWidthFixed = !this.isOver;
     this.options.sidenavOpened = isOpened;
   }
 }
