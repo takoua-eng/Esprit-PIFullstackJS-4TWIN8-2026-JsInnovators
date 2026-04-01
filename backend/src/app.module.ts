@@ -14,6 +14,8 @@ import { User, UserSchema } from './modules/users/user.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
 import { UploadModule } from './modules/upload/upload.module';
+import { ServicesModule } from './services/services.module';
+import { Service, ServiceSchema } from './services/service.schema';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { UploadModule } from './modules/upload/upload.module';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Role.name, schema: RoleSchema },
+      { name: Service.name, schema: ServiceSchema },
     ]),
 
     // Modules applicatifs
@@ -34,6 +37,7 @@ import { UploadModule } from './modules/upload/upload.module';
     RolesModule,
     AuthModule,
     UploadModule,
+    ServicesModule,
   ],
 })
 export class AppModule implements NestModule {

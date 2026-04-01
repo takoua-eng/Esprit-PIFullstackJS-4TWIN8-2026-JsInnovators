@@ -6,7 +6,7 @@ import { MatCard, MatCardContent } from "@angular/material/card";
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [MatFormField, MatLabel, MatCard, ReactiveFormsModule, MatCardContent],
+  imports: [ ReactiveFormsModule],
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss',
 })

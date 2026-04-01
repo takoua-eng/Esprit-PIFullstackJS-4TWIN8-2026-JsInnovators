@@ -31,27 +31,27 @@ export class UsersService {
   }
 
   // Création d'un utilisateur
-async createUser(createUserDto: CreateUserDto): Promise<UserDocument> {
-  const { role, password, ...rest } = createUserDto;
+  async createUser(createUserDto: CreateUserDto): Promise<UserDocument> {
+    const { role, password, ...rest } = createUserDto;
 
-  // 🔍 chercher le rôle par NOM (role obligatoire)
-  const roleDoc = await this.roleModel.findOne({ name: role }).exec();
+    // 🔍 chercher le rôle par NOM (role obligatoire)
+    const roleDoc = await this.roleModel.findOne({ name: role }).exec();
 
-  if (!roleDoc) {
-    throw new NotFoundException(`Role ${role} not found`);
+    if (!roleDoc) {
+      throw new NotFoundException(`Role ${role} not found`);
+    }
+
+    // 🔐 hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new this.userModel({
+      ...rest,
+      role: roleDoc._id, // ✅ stocker ObjectId
+      password: hashedPassword,
+    });
+
+    return user.save();
   }
-
-  // 🔐 hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const user = new this.userModel({
-    ...rest,
-    role: roleDoc._id, // ✅ stocker ObjectId
-    password: hashedPassword,
-  });
-
-  return user.save();
-}
   // Récupérer tous les utilisateurs
   async getAllUsers(): Promise<UserDocument[]> {
     return this.userModel.find().populate('role').exec();
@@ -74,36 +74,141 @@ async createUser(createUserDto: CreateUserDto): Promise<UserDocument> {
   }
 
   // Modifier un utilisateur
-async updateUser(id: string, updateDto: any): Promise<UserDocument> {
-  const user = await this.userModel.findById(id).exec();
-  if (!user) throw new Error('User not found');
+  async updateUser(id: string, updateDto: any): Promise<UserDocument> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) throw new Error('User not found');
 
-  Object.assign(user, updateDto);
-  await user.save();
+    Object.assign(user, updateDto);
+    await user.save();
 
-  return user; // ✅ Important
-}
+    return user; // ✅ Important
+  }
   // Supprimer un utilisateur (counter is not decremented; ID never reused)
-async deleteUser(id: string): Promise < void> {
-      let result = await this.userModel.findOneAndDelete({ _id: id }).exec();
+  async deleteUser(id: string): Promise<any> {
+    const user = await this.userModel.findByIdAndDelete(id);
 
-      if(!result && Types.ObjectId.isValid(id)) {
-      result = await this.userModel.findByIdAndDelete(id).exec();
+    if (!user) {
+      throw new NotFoundException('Patient non trouvé');
     }
 
-    if (!result) {
-      throw new Error('User not found');
-    }
+    return { message: 'Patient supprimé avec succès' };
   }
 
 
   async updateUserAvatar(id: string, file: Express.Multer.File): Promise<UserDocument> {
-  const user = await this.userModel.findById(id).exec();
-  if (!user) throw new Error('User not found');
+    const user = await this.userModel.findById(id).exec();
+    if (!user) throw new Error('User not found');
 
-  user.photo = file.filename;
-  await user.save();
+    user.photo = file.filename;
+    await user.save();
 
-  return user;
+    return user;
+  }
+
+  //ajout patient avec photo
+  async createPatient(data: any, file: Express.Multer.File) {
+
+    const roleDoc = await this.roleModel.findOne({
+      name: { $regex: '^PATIENT$', $options: 'i' }
+    });
+
+    if (!roleDoc) {
+      throw new Error('Role PATIENT not found');
+    }
+
+    const patient = new this.userModel({
+      ...data,
+      role: roleDoc._id, // ✅ IMPORTANT
+      photo: file ? file.filename : null
+    });
+
+    return patient.save();
+  }
+
+  async getPatients() {
+    const roleDoc = await this.roleModel.findOne({
+      name: { $regex: '^PATIENT$', $options: 'i' }
+    });
+
+    if (!roleDoc) {
+      throw new Error('Role PATIENT not found');
+    }
+
+    return this.userModel
+      .find({ role: roleDoc._id })
+      .populate('role');
+  }
+
+  //create doctors: 
+  // Création d'un médecin avec photo (similaire à createPatient)
+  async createDoctor(data: any, file: Express.Multer.File) {
+    const roleDoc = await this.roleModel.findOne({
+      name: { $regex: '^doctor$', $options: 'i' } // insensible à la casse
+    });
+
+    if (!roleDoc) {
+      throw new Error('Role doctor not found');
+    }
+
+    const doctor = new this.userModel({
+      ...data,
+      role: roleDoc._id,
+      photo: file ? file.filename : null
+    });
+
+    return doctor.save();
+  }
+
+  async getDoctors() {
+  // 🔍 Chercher le rôle "doctor" insensible à la casse
+  const roleDoc = await this.roleModel.findOne({
+    name: { $regex: '^doctor$', $options: 'i' }
+  });
+
+  if (!roleDoc) {
+    throw new Error('Role DOCTOR not found');
+  }
+
+  // 🔹 Récupérer tous les users avec ce rôle
+  return this.userModel
+    .find({ role: roleDoc._id })
+    .populate('role')       // Populer les informations du rôle
+    .populate('serviceId'); // Populer le service si tu veux afficher son nom
 }
+
+async createCoordinator(data: any, file: Express.Multer.File) {
+
+  const roleDoc = await this.roleModel.findOne({
+    name: { $regex: '^coordinator$', $options: 'i' }
+  });
+
+  if (!roleDoc) {
+    throw new Error('Role COORDINATOR not found');
+  }
+
+  const coordinator = new this.userModel({
+    ...data,
+    role: roleDoc._id, // ✅ IMPORTANT (ObjectId du role)
+    photo: file ? file.filename : null
+  });
+
+  return coordinator.save();
+}
+
+async getCoordinators() {
+
+  const roleDoc = await this.roleModel.findOne({
+    name: { $regex: '^coordinator$', $options: 'i' }
+  });
+
+  if (!roleDoc) {
+    throw new Error('Role COORDINATOR not found');
+  }
+
+  return this.userModel
+    .find({ role: roleDoc._id })
+    .populate('role')
+    .populate('serviceId'); // optionnel si tu ajoutes service plus tard
+}
+
 }

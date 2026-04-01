@@ -5,7 +5,7 @@
   height: 100%;
 
   .dialog-header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, #6b7bc2 0%, #764ba2 100%);
     color: white;
     padding: 32px 40px;
     margin: -24px -24px 32px -24px;
@@ -33,6 +33,7 @@
     }
   }
 
+  /* 🔥 Coordinator form (même style exact) */
   .coordinator-form {
     padding: 0 20px 20px 20px;
     max-height: calc(100vh - 200px);
@@ -53,10 +54,8 @@
         border-bottom: 2px solid #e0e0e0;
 
         mat-icon {
-          color: #10b981;
+          color: #667eea;
           font-size: 24px;
-          width: 24px;
-          height: 24px;
         }
       }
     }
@@ -93,7 +92,7 @@
         }
 
         .mat-mdc-form-field-focus-overlay {
-          background-color: rgba(16, 185, 129, 0.1);
+          background-color: rgba(102, 126, 234, 0.1);
         }
 
         .mdc-notched-outline__leading,
@@ -103,16 +102,11 @@
           border-width: 2px;
         }
 
-        .mdc-notched-outline--notched .mdc-notched-outline__notch {
-          border-top: none;
-        }
-
         &.mat-focused {
           .mdc-notched-outline__leading,
           .mdc-notched-outline__notch,
           .mdc-notched-outline__trailing {
-            border-color: #10b981;
-            border-width: 2px;
+            border-color: #667eea;
           }
         }
 
@@ -124,10 +118,6 @@
         .mat-mdc-form-field-label {
           color: #666;
           font-size: 16px;
-        }
-
-        .mat-mdc-form-field-required-marker {
-          color: #f44336;
         }
 
         .mat-mdc-form-field-error {
@@ -158,13 +148,13 @@
     }
 
     .submit-button {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       font-weight: 500;
       padding: 14px 32px;
 
       &:hover:not(:disabled) {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
       }
 
       &:disabled {
@@ -182,230 +172,43 @@
       font-size: 16px;
       font-weight: 500;
       transition: all 0.3s ease;
-
-      mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-      }
     }
   }
 }
 
-// Responsive design
-@media (max-width: 768px) {
-  .dialog-container {
-    .dialog-header {
-      padding: 24px 20px;
-      margin: -16px -16px 24px -16px;
+/* 📸 Photo upload (identique) */
 
-      .dialog-title {
-        font-size: 24px;
-
-        .header-icon {
-          font-size: 28px;
-          width: 28px;
-          height: 28px;
-        }
-      }
-    }
-
-    .coordinator-form {
-      padding: 0 16px 16px 16px;
-    }
-
-    .dialog-actions {
-      padding: 20px;
-      flex-direction: column;
-
-      button {
-        width: 100%;
-        margin-bottom: 12px;
-      }
-    }
-  }
+.photo-row {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
 }
 
-// Custom scrollbar for form content
-.coordinator-form::-webkit-scrollbar {
-  width: 8px;
+.photo-upload {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #3f3f3f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: 0.3s;
 }
 
-.coordinator-form::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+.photo-upload:hover {
+  background: #555;
 }
 
-.coordinator-form::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+.camera-icon {
+  color: white;
+  font-size: 32px;
 }
 
-.coordinator-form::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-// Animation for form sections
-.form-section {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-
-  .dialog-header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    padding: 28px 30px;
-    margin: -20px -20px 24px -20px;
-    border-radius: 8px 8px 0 0;
-
-    .dialog-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 0 0 8px 0;
-      font-size: 26px;
-      font-weight: 600;
-
-      .header-icon {
-        font-size: 30px;
-        width: 30px;
-        height: 30px;
-      }
-    }
-
-    .dialog-subtitle {
-      margin: 0;
-      opacity: 0.9;
-      font-size: 15px;
-    }
-  }
-
-  .coordinator-form {
-    padding: 18px 24px 24px;
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
-
-    .form-section {
-      margin-bottom: 36px;
-
-      .section-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 18px;
-        font-weight: 600;
-        color: #047857;
-        margin: 0 0 20px 0;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #d1fae5;
-
-        mat-icon {
-          color: #10b981;
-        }
-      }
-    }
-
-    .form-row {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 16px;
-
-      .form-field {
-        flex: 1;
-
-        &.full-width {
-          width: 100%;
-        }
-      }
-
-      @media (max-width: 768px) {
-        flex-direction: column;
-        gap: 0;
-
-        .form-field {
-          margin-bottom: 12px;
-        }
-      }
-    }
-
-    .form-field {
-      width: 100%;
-
-      ::ng-deep {
-        .mat-mdc-input-element {
-          padding: 14px 12px;
-          font-size: 15px;
-        }
-
-        .mat-mdc-form-field-label {
-          font-size: 15px;
-          color: #6b7280;
-        }
-
-        .mat-mdc-form-field-error {
-          font-size: 13px;
-        }
-      }
-    }
-  }
-
-  .dialog-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 18px 24px 24px;
-    border-top: 1px solid #e5e7eb;
-    background: #f9fafb;
-
-    button {
-      border-radius: 8px;
-      font-weight: 600;
-      min-width: 140px;
-    }
-
-    .cancel-button {
-      color: #6b7280;
-      border: 1px solid #d1d5db;
-
-      &:hover {
-        background: #f3f4f6;
-      }
-    }
-
-    .submit-button {
-      background: #10b981;
-      color: #fff;
-
-      &:hover:not(:disabled) {
-        background: #059669;
-      }
-    }
-  }
-
-
-@media (max-width: 768px) {
-  .dialog-container {
-    .coordinator-form {
-      padding: 14px 16px 16px;
-    }
-
-    .dialog-actions {
-      flex-direction: column;
-      button {
-        width: 100%;
-        margin-bottom: 8px;
-      }
-    }
-  }
+.photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }

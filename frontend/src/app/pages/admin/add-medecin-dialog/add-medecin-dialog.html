@@ -1,118 +1,148 @@
 <div class="dialog-container">
+
   <div class="dialog-header">
     <h2 class="dialog-title">
       <mat-icon class="header-icon">medical_services</mat-icon>
-      Add Doctor Profile
+      Add New Doctor
     </h2>
-    <p class="dialog-subtitle">Fill in doctor details to register a new practitioner</p>
+    <p class="dialog-subtitle">Please fill in the doctor's information below</p>
   </div>
 
   <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()" class="doctor-form">
-    <div class="form-section">
-      <h3 class="section-title">
-        <mat-icon>badge</mat-icon>
-        Personal Details
-      </h3>
 
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>First Name</mat-label>
-          <input matInput formControlName="firstName" placeholder="John" />
-          <mat-icon matSuffix>person</mat-icon>
-          <mat-error *ngIf="doctorForm.get('firstName')?.invalid && doctorForm.get('firstName')?.touched">
-            {{ getErrorMessage('firstName') }}
-          </mat-error>
-        </mat-form-field>
+    <!-- PHOTO -->
+    <div class="form-row photo-row">
+      <div class="photo-upload" (click)="fileInput.click()">
 
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Last Name</mat-label>
-          <input matInput formControlName="lastName" placeholder="Doe" />
-          <mat-icon matSuffix>person</mat-icon>
-          <mat-error *ngIf="doctorForm.get('lastName')?.invalid && doctorForm.get('lastName')?.touched">
-            {{ getErrorMessage('lastName') }}
-          </mat-error>
-        </mat-form-field>
-      </div>
+        <img *ngIf="imagePreview; else cameraIcon" [src]="imagePreview" class="photo-img" />
 
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Email Address</mat-label>
-          <input matInput type="email" formControlName="email" placeholder="doctor@example.com" />
-          <mat-icon matSuffix>email</mat-icon>
-          <mat-error *ngIf="doctorForm.get('email')?.invalid && doctorForm.get('email')?.touched">
-            {{ getErrorMessage('email') }}
-          </mat-error>
-        </mat-form-field>
+        <ng-template #cameraIcon>
+          <mat-icon class="camera-icon">photo_camera</mat-icon>
+        </ng-template>
 
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Phone Number</mat-label>
-          <input matInput formControlName="phone" placeholder="+1 555 123 4567" />
-          <mat-icon matSuffix>phone</mat-icon>
-          <mat-error *ngIf="doctorForm.get('phone')?.invalid && doctorForm.get('phone')?.touched">
-            {{ getErrorMessage('phone') }}
-          </mat-error>
-        </mat-form-field>
+        <input #fileInput type="file" hidden accept="image/*" (change)="onFileSelected($event)" />
       </div>
     </div>
 
-    <div class="form-section">
-      <h3 class="section-title">
-        <mat-icon>medical_information</mat-icon>
-        Medical Details
-      </h3>
+    <!-- NAMES -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>First Name</mat-label>
+        <input matInput formControlName="firstName">
+      </mat-form-field>
 
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Specialty</mat-label>
-          <mat-select formControlName="specialty">
-            <mat-option *ngFor="let specialty of specialtyOptions" [value]="specialty">{{ specialty }}</mat-option>
-          </mat-select>
-          <mat-icon matSuffix>health_and_safety</mat-icon>
-          <mat-error *ngIf="doctorForm.get('specialty')?.invalid && doctorForm.get('specialty')?.touched">
-            {{ getErrorMessage('specialty') }}
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Department</mat-label>
-          <input matInput formControlName="department" placeholder="Cardiology" />
-          <mat-icon matSuffix>apartment</mat-icon>
-          <mat-error *ngIf="doctorForm.get('department')?.invalid && doctorForm.get('department')?.touched">
-            {{ getErrorMessage('department') }}
-          </mat-error>
-        </mat-form-field>
-      </div>
-
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>License Number</mat-label>
-          <input matInput formControlName="licenseNumber" placeholder="DOC-123456" />
-          <mat-icon matSuffix>badge</mat-icon>
-          <mat-error *ngIf="doctorForm.get('licenseNumber')?.invalid && doctorForm.get('licenseNumber')?.touched">
-            {{ getErrorMessage('licenseNumber') }}
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Years of Experience</mat-label>
-          <input matInput type="number" formControlName="yearsExperience" placeholder="10" />
-          <mat-icon matSuffix>schedule</mat-icon>
-          <mat-error *ngIf="doctorForm.get('yearsExperience')?.invalid && doctorForm.get('yearsExperience')?.touched">
-            {{ getErrorMessage('yearsExperience') }}
-          </mat-error>
-        </mat-form-field>
-      </div>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Last Name</mat-label>
+        <input matInput formControlName="lastName">
+      </mat-form-field>
     </div>
 
+    <!-- EMAIL + PASSWORD -->
+    <div class="form-row">
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Password</mat-label>
+
+        <input matInput type="password" formControlName="password">
+
+        <mat-icon matSuffix>lock</mat-icon>
+
+        <mat-error *ngIf="doctorForm.get('password')?.invalid && doctorForm.get('password')?.touched">
+          Password must be at least 6 characters
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Phone</mat-label>
+        <input matInput formControlName="phone">
+      </mat-form-field>
+
+    </div>
+
+    <!-- DATE + GENDER -->
+    <div class="form-row">
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Date of Birth</mat-label>
+
+        <input matInput [matDatepicker]="picker" formControlName="dateOfBirth" readonly (click)="picker.open()">
+
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Gender</mat-label>
+        <mat-select formControlName="gender">
+          <mat-option *ngFor="let g of genderOptions" [value]="g.value">
+            {{ g.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+    </div>
+
+    <!-- ADDRESS -->
+    <mat-form-field appearance="outline" class="form-field full-width">
+      <mat-label>Address</mat-label>
+      <textarea matInput formControlName="address"></textarea>
+    </mat-form-field>
+
+    <!-- DOCTOR INFO -->
+    <div class="form-row">
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Specialty</mat-label>
+        <mat-select formControlName="specialty">
+          <mat-option *ngFor="let s of specialtyOptions" [value]="s">
+            {{ s }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>License Number</mat-label>
+        <input matInput formControlName="licenseNumber">
+      </mat-form-field>
+
+    </div>
+
+    <div class="form-row">
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Years of Experience</mat-label>
+        <input matInput type="number" formControlName="yearsExperience">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Service</mat-label>
+        <mat-select formControlName="serviceId">
+          <mat-option *ngFor="let s of services" [value]="s._id">
+            {{ s.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+    </div>
+
+    <!-- ACTIONS -->
     <div class="dialog-actions">
-      <button mat-button type="button" (click)="onCancel()" class="cancel-button">
-        <mat-icon>close</mat-icon>
+
+      <button mat-button type="button" (click)="onCancel()">
         Cancel
       </button>
-      <button mat-raised-button color="primary" type="submit" [disabled]="doctorForm.invalid" class="submit-button">
-        <mat-icon>add</mat-icon>
+
+      <button mat-flat-button color="primary" type="submit" class="submit-button">
+        <mat-icon>save</mat-icon>
         Add Doctor
       </button>
+
     </div>
+
   </form>
 </div>

@@ -1,67 +1,67 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import * as mongoose from 'mongoose';
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: true })
+@Schema()
 export class User {
 
-  _id: Types.ObjectId;
-
-  // 👤 Infos personnelles
   @Prop({ required: true })
   firstName: string;
 
   @Prop({ required: true })
   lastName: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ unique: true })
   email: string;
 
-  @Prop()
-  photo?: string;
-
-  @Prop()
-  phone?: string;
-
-  @Prop()
-  dateOfBirth?: Date;
-
-  @Prop({ enum: ['male', 'female'] })
-  gender?: string;
-
-  // 🔐 Auth
   @Prop({ required: true })
   password: string;
 
-@Prop({ type: String, default: null })
-resetToken: string | null;
-
-  // 🔗 Role (relation)
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Role', default: null })
-  role: Types.ObjectId | null;
-
-  // 🏥 Infos médicales
   @Prop()
-  medicalRecordNumber?: string;
+  phone: string;
 
   @Prop()
-  specialization?: string;
+  gender: string;
 
   @Prop()
-  department?: string;
-
-  // 👥 Liste des patients (relation)
-  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] })
-  assignedPatients: Types.ObjectId[];
-
-  // 📍 Contact
-  @Prop()
-  address?: string;
+  dateOfBirth: Date;
 
   @Prop()
-  emergencyContact?: string;
+  address: string;
+
+  // 🔥 patient fields
+  @Prop()
+  medicalRecordNumber: string;
+
+  @Prop()
+  emergencyContact: string;
+
+  @Prop()
+  insuranceProvider: string;
+
+  @Prop()
+  insuranceNumber: string;
+
+  @Prop()
+  photo: string;
+
+  // relations
+  @Prop()
+  serviceId: string;
+
+  @Prop()
+  doctorId: string;
+
+  @Prop()
+  nurseId: string;
+
+  @Prop()
+  coordinatorId: string;
+
+@Prop({ type: Types.ObjectId, ref: 'Role', required: true })
+role: Types.ObjectId;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

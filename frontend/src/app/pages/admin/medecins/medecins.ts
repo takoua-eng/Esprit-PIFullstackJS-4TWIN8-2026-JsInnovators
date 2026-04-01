@@ -1,107 +1,137 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { TranslateModule } from '@ngx-translate/core';
-
-// Option 1 : Importer les modules Material individuellement (recommandé si MaterialModule est incomplet)
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { AddMedecinDialog, DoctorData } from '../add-medecin-dialog/add-medecin-dialog';
-
-// Option 2 : Si tu as un MaterialModule qui exporte déjà tout ça → décommente et utilise-le
-// import { MaterialModule } from 'src/app/material.module';
-
-interface UserRow {
-  name: string;
-  email: string;
-  service: string;
-  status: 'Active' | 'Inactive';
-}
+import { MaterialModule } from 'src/app/material.module';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { HttpClient } from '@angular/common/http';
+import { AddDoctorsDialog } from '../add-medecin-dialog/add-medecin-dialog';
+import Swal from 'sweetalert2';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-medecins',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatDialogModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTableModule,
-    MatTooltipModule,
-    TranslateModule,
-  ],
+  imports: [CommonModule, TranslateModule, MaterialModule, MatDialogModule],
   templateUrl: './medecins.html',
   styleUrls: ['./medecins.scss'],
 })
-export class MedecinsComponent {
+export class MedecinsComponent implements OnInit {
+
   private dialog = inject(MatDialog);
+  private http = inject(HttpClient);
 
-  displayedColumns: string[] = [
-    'name',
-    'email',
-    'service',
-    'status',
-    'actions',
-  ];
+  displayedColumns: string[] = ['name', 'email', 'service', 'status', 'actions'];
 
-  title = 'PHYSICIANS'; // key i18n for doctors page
+  dataSource = new MatTableDataSource<any>();
 
-  users: UserRow[] = [
-    {
-      name: 'Amira Zouari',
-      email: 'amira.z@hospital.tn',
-      service: 'Cardiologie',
-      status: 'Active',
-    },
-    {
-      name: 'Karim Hmidi',
-      email: 'karim.h@hospital.tn',
-      service: 'Réanimation',
-      status: 'Inactive',
-    },
-    {
-      name: 'Safa Ben Romdhane',
-      email: 'safa.br@hospital.tn',
-      service: 'Oncologie',
-      status: 'Active',
-    },
-    {
-      name: 'Nadia Jelali',
-      email: 'nadia.j@hospital.tn',
-      service: 'Pédiatrie',
-      status: 'Active',
-    },
-  ];
+  ngOnInit() {
+    this.loadDoctors();
 
+    // 🔥 filtre personnalisé (recherche intelligente)
+    this.dataSource.filterPredicate = (data: any, filter: string) => {
+      const search = filter.toLowerCase();
+      return (
+        data.firstName?.toLowerCase().includes(search) ||
+        data.lastName?.toLowerCase().includes(search) ||
+        data.email?.toLowerCase().includes(search) ||
+        data.phone?.toLowerCase().includes(search)
+      );
+    };
+  }
+
+  // 📥 GET DOCTORS
+  loadDoctors() {
+    this.http.get<any[]>('http://localhost:3000/users/doctors')
+      .subscribe({
+        next: (data) => {
+          this.dataSource.data = data;
+        },
+        error: (err) => console.error(err)
+      });
+  }
+
+  // ➕ ADD
   addUser() {
-    const dialogRef = this.dialog.open(AddMedecinDialog, {
+    const dialogRef = this.dialog.open(AddDoctorsDialog, {
       width: '95vw',
       maxWidth: '1200px',
       height: '95vh',
       maxHeight: '900px',
-      disableClose: false,
-      hasBackdrop: true,
-      backdropClass: 'dialog-backdrop',
-      panelClass: 'custom-dialog-panel',
-      data: {},
     });
 
-    dialogRef.afterClosed().subscribe((result: DoctorData | undefined) => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        const newDoctor: UserRow = {
-          name: `${result.firstName} ${result.lastName}`,
-          email: result.email,
-          service: result.specialty,
-          status: 'Active',
-        };
-
-        this.users = [newDoctor, ...this.users];
-        console.log('New doctor added:', result);
+        this.loadDoctors(); // 🔥 refresh
       }
     });
   }
+
+  // 🗑 DELETE
+  deleteUser(id: string) {
+    Swal.fire({
+      title: 'Supprimer ce médecin ?',
+      text: 'Cette action est irréversible !',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Oui, supprimer',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+
+      if (result.isConfirmed) {
+
+        this.http.delete(`http://localhost:3000/users/${id}`)
+          .subscribe({
+            next: () => {
+
+              // ✅ update table sans reload
+              this.dataSource.data = this.dataSource.data.filter(user => user._id !== id);
+
+              Swal.fire({
+                title: 'Supprimé !',
+                text: 'Le médecin a été supprimé avec succès.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+              });
+
+            },
+            error: (err) => {
+              console.error(err);
+
+              Swal.fire({
+                title: 'Erreur',
+                text: 'La suppression a échoué',
+                icon: 'error'
+              });
+            }
+          });
+      }
+    });
+  }
+
+  // ✏️ EDIT
+  editUser(user: any) {
+    const dialogRef = this.dialog.open(AddDoctorsDialog, {
+      width: '95vw',
+      maxWidth: '1200px',
+      height: '95vh',
+      maxHeight: '900px',
+      data: user
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadDoctors(); // refresh
+      }
+    });
+  }
+
+  // 🔍 SEARCH
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
 }

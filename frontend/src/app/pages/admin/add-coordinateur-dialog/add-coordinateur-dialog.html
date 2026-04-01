@@ -1,13 +1,28 @@
 <div class="dialog-container">
+
+  <!-- HEADER -->
   <div class="dialog-header">
     <h2 class="dialog-title">
-      <mat-icon class="header-icon">supervised_user_circle</mat-icon>
-      Add Coordinator
+      <mat-icon class="header-icon">supervisor_account</mat-icon>
+      Add New Coordinator
     </h2>
-    <p class="dialog-subtitle">Register a new coordinator to manage departments and projects</p>
+    <p class="dialog-subtitle">Please fill in the coordinator's information below</p>
   </div>
 
   <form [formGroup]="coordinatorForm" (ngSubmit)="onSubmit()" class="coordinator-form">
+
+    <!-- PHOTO -->
+    <div class="photo-row">
+      <div class="photo-upload" (click)="fileInput.click()">
+        <img *ngIf="imagePreview; else icon" [src]="imagePreview" class="photo-img">
+        <ng-template #icon>
+          <mat-icon class="camera-icon">photo_camera</mat-icon>
+        </ng-template>
+      </div>
+      <input type="file" #fileInput hidden (change)="onFileSelected($event)">
+    </div>
+
+    <!-- PERSONAL INFORMATION -->
     <div class="form-section">
       <h3 class="section-title">
         <mat-icon>person</mat-icon>
@@ -17,18 +32,16 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>First Name</mat-label>
-          <input matInput formControlName="firstName" placeholder="John" />
-          <mat-icon matSuffix>person</mat-icon>
-          <mat-error *ngIf="coordinatorForm.get('firstName')?.invalid && coordinatorForm.get('firstName')?.touched">
+          <input matInput formControlName="firstName">
+          <mat-error *ngIf="coordinatorForm.get('firstName')?.invalid">
             {{ getErrorMessage('firstName') }}
           </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Last Name</mat-label>
-          <input matInput formControlName="lastName" placeholder="Doe" />
-          <mat-icon matSuffix>person</mat-icon>
-          <mat-error *ngIf="coordinatorForm.get('lastName')?.invalid && coordinatorForm.get('lastName')?.touched">
+          <input matInput formControlName="lastName">
+          <mat-error *ngIf="coordinatorForm.get('lastName')?.invalid">
             {{ getErrorMessage('lastName') }}
           </mat-error>
         </mat-form-field>
@@ -36,51 +49,52 @@
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Email Address</mat-label>
-          <input matInput type="email" formControlName="email" placeholder="coordinator@example.com" />
-          <mat-icon matSuffix>email</mat-icon>
-          <mat-error *ngIf="coordinatorForm.get('email')?.invalid && coordinatorForm.get('email')?.touched">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email">
+          <mat-error *ngIf="coordinatorForm.get('email')?.invalid">
             {{ getErrorMessage('email') }}
           </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Phone Number</mat-label>
-          <input matInput formControlName="phone" placeholder="+1 555 123 4567" />
-          <mat-icon matSuffix>phone</mat-icon>
-          <mat-error *ngIf="coordinatorForm.get('phone')?.invalid && coordinatorForm.get('phone')?.touched">
+          <mat-label>Phone</mat-label>
+          <input matInput formControlName="phone">
+          <mat-error *ngIf="coordinatorForm.get('phone')?.invalid">
             {{ getErrorMessage('phone') }}
           </mat-error>
         </mat-form-field>
       </div>
     </div>
 
+    <!-- WORK INFORMATION -->
     <div class="form-section">
       <h3 class="section-title">
-        <mat-icon>work</mat-icon>
-        Role & Assignment
+        <mat-icon>business</mat-icon>
+        Work Information
       </h3>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Role</mat-label>
-          <mat-select formControlName="role">
-            <mat-option *ngFor="let role of roleOptions" [value]="role">{{ role }}</mat-option>
+          <mat-label>Department</mat-label>
+          <mat-select formControlName="department">
+            <mat-option *ngFor="let dept of departmentOptions" [value]="dept">
+              {{ dept }}
+            </mat-option>
           </mat-select>
-          <mat-icon matSuffix>assignment</mat-icon>
-          <mat-error *ngIf="coordinatorForm.get('role')?.invalid && coordinatorForm.get('role')?.touched">
-            {{ getErrorMessage('role') }}
+          <mat-error *ngIf="coordinatorForm.get('department')?.invalid">
+            {{ getErrorMessage('department') }}
           </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Department</mat-label>
-          <mat-select formControlName="department">
-            <mat-option *ngFor="let dept of departmentOptions" [value]="dept">{{ dept }}</mat-option>
+          <mat-label>Role</mat-label>
+          <mat-select formControlName="role">
+            <mat-option *ngFor="let role of roleOptions" [value]="role">
+              {{ role }}
+            </mat-option>
           </mat-select>
-          <mat-icon matSuffix>apartment</mat-icon>
-          <mat-error *ngIf="coordinatorForm.get('department')?.invalid && coordinatorForm.get('department')?.touched">
-            {{ getErrorMessage('department') }}
+          <mat-error *ngIf="coordinatorForm.get('role')?.invalid">
+            {{ getErrorMessage('role') }}
           </mat-error>
         </mat-form-field>
       </div>
@@ -88,33 +102,46 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Specialization</mat-label>
-          <input matInput formControlName="specialization" placeholder="e.g., Project Management" />
-          <mat-icon matSuffix>star</mat-icon>
-          <mat-error *ngIf="coordinatorForm.get('specialization')?.invalid && coordinatorForm.get('specialization')?.touched">
+          <input matInput formControlName="specialization">
+          <mat-error *ngIf="coordinatorForm.get('specialization')?.invalid">
             {{ getErrorMessage('specialization') }}
           </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Years of Experience</mat-label>
-          <input matInput type="number" formControlName="yearsExperience" placeholder="5" />
-          <mat-icon matSuffix>schedule</mat-icon>
-          <mat-error *ngIf="coordinatorForm.get('yearsExperience')?.invalid && coordinatorForm.get('yearsExperience')?.touched">
+          <input matInput type="number" formControlName="yearsExperience">
+          <mat-error *ngIf="coordinatorForm.get('yearsExperience')?.invalid">
             {{ getErrorMessage('yearsExperience') }}
           </mat-error>
         </mat-form-field>
       </div>
+
+      <!-- PASSWORD -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="password">
+          <mat-icon matSuffix>lock</mat-icon>
+          <mat-error *ngIf="coordinatorForm.get('password')?.invalid">
+            {{ getErrorMessage('password') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
     </div>
 
+    <!-- ACTIONS -->
     <div class="dialog-actions">
-      <button mat-button type="button" (click)="onCancel()" class="cancel-button">
-        <mat-icon>close</mat-icon>
+      <button mat-button type="button" class="cancel-button" (click)="onCancel()">
         Cancel
       </button>
-      <button mat-raised-button color="primary" type="submit" [disabled]="coordinatorForm.invalid" class="submit-button">
-        <mat-icon>add</mat-icon>
-        Add Coordinator
+
+      <button mat-raised-button class="submit-button" type="submit">
+        <mat-icon>save</mat-icon>
+        Save Coordinator
       </button>
     </div>
+
   </form>
 </div>
