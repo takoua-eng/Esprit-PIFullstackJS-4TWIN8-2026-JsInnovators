@@ -7,10 +7,12 @@ import {
   CoordinatorPatientRow,
 } from 'src/app/services/coordinator.service';
 
+import { TranslateModule } from '@ngx-translate/core';
+
 @Component({
   selector: 'app-coordinator-patients',
   standalone: true,
-  imports: [CommonModule, MaterialModule, TablerIconsModule],
+  imports: [CommonModule, MaterialModule, TablerIconsModule, TranslateModule],
   templateUrl: './coordinator-patients.html',
   styleUrls: ['./coordinator-patients.scss'],
 })
@@ -45,8 +47,8 @@ export class CoordinatorPatientsComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
-    if (status === 'Up to date') return 'good';
-    if (status === 'Incomplete today') return 'warn';
-    return 'neutral';
-  }
+  if (status === 'UP_TO_DATE') return 'good';
+  if (status === 'INCOMPLETE_TODAY') return 'warn';
+  return 'neutral';
+}
 }

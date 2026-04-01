@@ -12,10 +12,12 @@ import {
   buildReminderMessages,
 } from 'src/app/services/coordinator.service';
 
+import { TranslateModule } from '@ngx-translate/core';
+
 @Component({
   selector: 'app-reminders',
   standalone: true,
-  imports: [CommonModule, MaterialModule, TablerIconsModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, MaterialModule, TablerIconsModule, ReactiveFormsModule, FormsModule, TranslateModule],
   templateUrl: './reminders.html',
   styleUrls: ['./reminders.scss'],
 })
@@ -45,10 +47,10 @@ export class RemindersComponent implements OnInit {
   displayedColumns = ['patient', 'type', 'message', 'status', 'scheduledAt', 'actions'];
 
   typeOptions = [
-    { value: 'vital_entry', label: 'Vital Entry' },
-    { value: 'questionnaire', label: 'Questionnaire' },
-    { value: 'follow_up', label: 'Follow-up' },
-  ];
+  { value: 'vital_entry', label: 'VITAL_ENTRY' },
+  { value: 'questionnaire', label: 'QUESTIONNAIRE' },
+  { value: 'follow_up', label: 'FOLLOW_UP' },
+];
 
   ngOnInit(): void {
     this.loadReminders();

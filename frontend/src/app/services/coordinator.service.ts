@@ -176,12 +176,12 @@ export class CoordinatorService {
             missingSymptomFields: c?.missingSymptomFields ?? [],
             isFullyCompliant: c?.isFullyCompliant ?? false,
             status: c
-              ? c.isFullyCompliant
-                ? 'Up to date'
-                : c.vitalsSubmitted || c.symptomsSubmitted
-                ? 'Incomplete today'
-                : 'No data today'
-              : 'No data today',
+  ? c.isFullyCompliant
+    ? 'UP_TO_DATE'
+    : c.vitalsSubmitted || c.symptomsSubmitted
+    ? 'INCOMPLETE_TODAY'
+    : 'NO_DATA_TODAY'
+  : 'NO_DATA_TODAY',
           };
         });
         observer.next(result);

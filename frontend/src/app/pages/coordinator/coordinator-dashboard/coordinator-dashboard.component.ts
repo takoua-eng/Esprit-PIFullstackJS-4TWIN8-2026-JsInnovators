@@ -13,11 +13,12 @@ import {
 import { NgApexchartsModule } from 'ng-apexcharts';
 
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-coordinator-dashboard',
   standalone: true,
-  imports: [CommonModule, MaterialModule, TablerIconsModule, NgApexchartsModule, FormsModule],
+  imports: [CommonModule, MaterialModule, TablerIconsModule, NgApexchartsModule, FormsModule, TranslateModule],
   templateUrl: './coordinator-dashboard.component.html',
   styleUrls: ['./coordinator-dashboard.component.scss'],
 })

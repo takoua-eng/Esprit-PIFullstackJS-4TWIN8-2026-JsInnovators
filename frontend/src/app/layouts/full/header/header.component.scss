@@ -1,0 +1,84 @@
+.topbar {
+  gap: 8px;
+}
+
+// ── Language button ───────────────────────────────────────────
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 0 12px;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #374151;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #2563eb;
+    color: #2563eb;
+  }
+
+  .lang-flag {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .lang-label {
+    font-size: 13px;
+  }
+}
+
+.lang-active {
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.check-icon {
+  color: #2563eb;
+  margin-left: auto;
+}
+
+.m-l-auto {
+  margin-left: auto;
+}
+
+// ── High contrast button ──────────────────────────────────────
+.contrast-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 0 14px;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  color: #374151;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+  }
+}
+
+// ── High contrast overrides pour le header ────────────────────
+:host-context(.high-contrast) {
+  .lang-btn,
+  .contrast-btn {
+    background: #000000 !important;
+    color: #00d4ff !important;
+    border-color: #00d4ff !important;
+  }
+
+  .mat-toolbar {
+    background: #000000 !important;
+    border-bottom: 2px solid #00d4ff !important;
+  }
+}
