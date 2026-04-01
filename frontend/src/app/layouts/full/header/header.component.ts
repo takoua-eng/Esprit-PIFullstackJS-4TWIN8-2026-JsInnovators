@@ -34,18 +34,25 @@ export class HeaderComponent implements OnInit {
 
   appName = 'MediFollow';
   pendingAlertsCount = 0;
+  userRole: string | null = null;
 
   constructor(private router: Router, private translate: TranslateService, private patientService: PatientService) {}
 
-  ngOnInit() {
-    const patientId = this.patientService.getCurrentPatientId();
-    if (patientId) {
-      this.patientService.getPendingAlertsCount().subscribe({
-        next: (count) => (this.pendingAlertsCount = count),
-        error: () => {},
-      });
-    }
+  ngOnInit(): void {
+  // Langue (eux)
+  this.translate.onLangChange.subscribe(() => {});
+
+  // Rôle et alertes (toi)
+  this.userRole = localStorage.getItem('user_role');
+  const patientId = this.patientService.getCurrentPatientId();
+  if (patientId) {
+    this.patientService.getPendingAlertsCount().subscribe({
+      next: (count) => (this.pendingAlertsCount = count),
+      error: () => {},
+    });
   }
+}
+
 
   goToProfile() {
     this.router.navigate(['/dashboard/patient/profile']);

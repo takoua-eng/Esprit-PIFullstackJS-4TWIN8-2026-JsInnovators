@@ -45,19 +45,34 @@ export class FullComponent implements OnInit {
 
   @ViewChild('leftsidenav')
   public sidenav: MatSidenav;
+
   resView = false;
+
   @ViewChild('content', { static: true }) content!: MatSidenavContent;
   //get options from service
   options = this.settings.getOptions();
 
+  
   ngOnInit(): void {
-    const userRole = localStorage.getItem('user_role');
-    if (userRole === 'Patient') {
+    this.setNavItemsBasedOnUrl(this.router.url); // initial
+
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.setNavItemsBasedOnUrl(event.urlAfterRedirects);
+      });
+  }
+
+  private setNavItemsBasedOnUrl(url: string) {
+    if (url.includes('/patient')) {
       this.navItems = patientNavItems;
     } else {
-      this.navItems = adminNavItems;
+      this.navItems = adminNavItems; // fallback for admin and others
     }
   }
+
+
+
   private layoutChangesSubscription = Subscription.EMPTY;
   private isMobileScreen = false;
   private isContentWidthFixed = true;
@@ -75,12 +90,14 @@ export class FullComponent implements OnInit {
     private breakpointObserver: BreakpointObserver,
   ) {
     this.htmlElement = document.querySelector('html')!;
+
     this.layoutChangesSubscription = this.breakpointObserver
       .observe([MOBILE_VIEW, TABLET_VIEW])
       .subscribe((state) => {
         // SidenavOpened must be reset true when layout changes
         this.options.sidenavOpened = true;
         this.isMobileScreen = state.breakpoints[MOBILE_VIEW];
+
         if (this.options.sidenavCollapsed == false) {
           this.options.sidenavCollapsed = state.breakpoints[TABLET_VIEW];
         }
@@ -118,7 +135,7 @@ export class FullComponent implements OnInit {
   onSidenavOpenedChange(isOpened: boolean) {
     this.isCollapsedWidthFixed = !this.isOver;
     this.options.sidenavOpened = isOpened;
-    //this.settings.setOptions(this.options);
+    
   }
 
 }

@@ -14,6 +14,8 @@ import { CommonModule } from '@angular/common';
   templateUrl: './side-login.component.html',
 })
 export class AppSideLoginComponent {
+
+  
   isLoading = false;
   errorMessage = '';
 

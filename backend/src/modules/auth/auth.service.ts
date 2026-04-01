@@ -67,13 +67,14 @@ export class AuthService {
   }
 
   // 🔹 Sign In
-  // Sign In
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
     const { email, password } = signInDto;
+
 const user = await this.userModel
   .findOne({ email })
-  .populate<{ role: Role }>('role')
+  .populate('role') // ✅ صحيح
   .exec();
+  
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const isPasswordValid = await bcrypt.compare(password, user.password);

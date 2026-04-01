@@ -59,6 +59,8 @@ export const adminNavItems: NavItem[] = [
   },
 ];
 
+
+
 export const patientNavItems: NavItem[] = [
   {
     navCap: 'PATIENT',
