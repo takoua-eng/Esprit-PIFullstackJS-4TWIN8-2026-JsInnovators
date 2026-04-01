@@ -15,6 +15,7 @@ import { Role, RoleSchema } from './modules/roles/role.schema';
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
 import { UploadModule } from './modules/upload/upload.module';
 import { ServicesModule } from './modules/service/services/services.module';
+import { CoordinatorModule } from './modules/coordinator/coordinator.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ServicesModule } from './modules/service/services/services.module';
     AuthModule,
     UploadModule,
     ServicesModule,
+    CoordinatorModule,
   ],
 })
 export class AppModule implements NestModule {

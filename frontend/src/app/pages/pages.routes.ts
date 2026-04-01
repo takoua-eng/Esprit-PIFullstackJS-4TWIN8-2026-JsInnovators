@@ -3,12 +3,17 @@ import { Routes } from '@angular/router';
 
 // Admin Components
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+
 import { AdminProfileComponent } from './admin-profile/admin-profile.component';
-import { Patients as AdminPatients } from './admin/patients/patients';
-import { MedecinsComponent as AdminMedecins } from './admin/medecins/medecins';
-import { NursesComponent as AdminNurses } from './admin/nurses/nurses';
-import { CoordinateursComponent as AdminCoordinateurs } from './admin/coordinateurs/coordinateurs';
-import { AuditorsComponent as AdminAuditors } from './admin/auditors/auditors';
+
+import { Patients } from './admin/patients/patients';
+import { MedecinsComponent } from './admin/medecins/medecins';
+import { CoordinateursComponent } from './admin/coordinateurs/coordinateurs';
+import { NursesComponent } from './admin/nurses/nurses';
+import { AuditorsComponent } from './admin/auditors/auditors';
+import { CoordinatorDashboardComponent } from './coordinator/coordinator-dashboard/coordinator-dashboard.component';
+import { RemindersComponent } from './coordinator/reminders/reminders';
+import { CoordinatorPatientsComponent } from './coordinator/coordinator-patients/coordinator-patients';
 
 // Super Admin Components
 import { SuperAdminDashboardComponent } from './super-admin/superadmin-dashboard/superadmin-dashboard.component';
@@ -22,13 +27,80 @@ import { AuditorsComponent as SuperAuditors } from './super-admin/auditors/audit
 
 // ✅ ADMIN ROUTES - بدون 'admin' في البداية
 export const AdminRoutes: Routes = [
-  { path: '', component: AdminDashboardComponent }, // /admin
-  { path: 'profile', component: AdminProfileComponent }, // /admin/profile
-  { path: 'patients', component: AdminPatients }, // /admin/patients
-  { path: 'medecins', component: AdminMedecins }, // /admin/medecins
-  { path: 'nurses', component: AdminNurses }, // /admin/nurses
-  { path: 'coordinateurs', component: AdminCoordinateurs }, // /admin/coordinateurs
-  { path: 'auditors', component: AdminAuditors }, // /admin/auditors
+  {
+    path: 'admin',
+    component: AdminDashboardComponent,
+    data: {
+      title: 'Admin Dashboard',
+    },
+  },
+  {
+    path: 'admin/patients',
+    component: Patients,
+    data: {
+      title: 'Patients',
+      role: 'Patient',
+    },
+  },
+  {
+    path: 'admin/physicians',
+    component: MedecinsComponent,
+    data: {
+      title: 'Physicians',
+      role: 'Physician',
+    },
+  },
+  {
+    path: 'admin/nurses',
+    component: NursesComponent,
+    data: {
+      title: 'Nurses',
+      role: 'Nurse',
+    },
+  },
+  {
+    path: 'admin/coordinators',
+    component: CoordinateursComponent,
+    data: {
+      title: 'Coordinators',
+      role: 'Coordinator',
+    },
+  },
+  {
+    path: 'admin/auditors',
+    component: AuditorsComponent,
+    data: {
+      title: 'Auditors',
+      role: 'Auditor',
+    },
+  },
+  {
+    path: 'profile',
+    component: AdminProfileComponent,
+    data: {
+      title: 'Profile',
+    },
+  },
+
+  {
+    path: 'coordinator',
+    component: CoordinatorDashboardComponent,
+    data: {
+      title: 'Coordinator Dashboard',
+    },
+  },
+
+  {
+    path: 'coordinator/reminders',
+    component: RemindersComponent,
+    data: { title: 'Reminders' },
+  },
+
+  {
+    path: 'coordinator/patients',
+    component: CoordinatorPatientsComponent,
+    data: { title: 'My Patients' },
+  },
 ];
 
 // ✅ SUPER ADMIN ROUTES - بدون 'super-admin' في البداية

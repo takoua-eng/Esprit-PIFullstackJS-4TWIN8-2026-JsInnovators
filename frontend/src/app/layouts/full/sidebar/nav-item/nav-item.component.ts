@@ -23,40 +23,48 @@ import { CommonModule } from '@angular/common';
 })
 export class AppNavItemComponent implements OnChanges {
   @Output() notify: EventEmitter<boolean> = new EventEmitter<boolean>();
-
   @Input() item: NavItem | any;
 
-  expanded: any = false;
+  expanded: boolean = false;
 
   @HostBinding('attr.aria-expanded') ariaExpanded = this.expanded;
   @Input() depth: any;
 
-  constructor(
-    public navService: NavService,
-    public router: Router,
-  ) {}
+  constructor(public navService: NavService, public router: Router) {}
+
+  private normalizeRoute(route?: string): string {
+    if (!route) return '';
+    return route.startsWith('/') ? route : `/${route}`;
+  }
 
   ngOnChanges() {
     const url = this.navService.currentUrl();
-    if (this.item.route && url) {
-      this.expanded = url.indexOf(`/${this.item.route}`) === 0;
+    const route = this.normalizeRoute(this.item.route);
+
+    if (route && url) {
+      this.expanded = url.startsWith(route);
       this.ariaExpanded = this.expanded;
     }
   }
 
   onItemSelected(item: NavItem) {
     if (!item.children || !item.children.length) {
-      this.router.navigate([item.route]);
+      const route = this.normalizeRoute(item.route);
+      if (route) {
+        this.router.navigateByUrl(route);
+      }
     }
+
     if (item.children && item.children.length) {
       this.expanded = !this.expanded;
     }
-    //scroll
+
     window.scroll({
       top: 0,
       left: 0,
       behavior: 'smooth',
     });
+
     if (!this.expanded) {
       if (window.innerWidth < 1024) {
         this.notify.emit();

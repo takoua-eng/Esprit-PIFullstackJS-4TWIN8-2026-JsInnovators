@@ -1,6 +1,6 @@
 import { NavItem } from './nav-item/nav-item';
 
-export const navItems: NavItem[] = [
+export const adminNavItems: NavItem[] = [
   {
     navCap: 'ADMIN',
   },
@@ -9,9 +9,6 @@ export const navItems: NavItem[] = [
     iconName: 'gauge',
     route: '/admin',
     bgcolor: 'primary',
-    chip: true,
-    chipClass: 'bg-primary text-white',
-    chipContent: 'NEW',
   },
   {
     displayName: 'USERS',
@@ -28,24 +25,31 @@ export const navItems: NavItem[] = [
       {
         displayName: 'PHYSICIANS',
         iconName: 'stethoscope',
+
         route: '/admin/medecins',
         bgcolor: 'tranparent',
+
       },
       {
         displayName: 'NURSES',
         iconName: 'nurse',
+
         route: '/admin/nurses',
         bgcolor: 'tranparent',
+
       },
       {
         displayName: 'COORDINATORS',
         iconName: 'users-group',
+
         route: '/admin/coordinateurs',
         bgcolor: 'tranparent',
+
       },
       {
         displayName: 'AUDITORS',
         iconName: 'check',
+
         route: '/admin/auditors',
         bgcolor: 'tranparent',
       },
@@ -549,13 +553,18 @@ export const navItems: NavItem[] = [
         chip: true,
         chipClass: 'bg-light-primary text-primary',
         chipContent: 'PRO',
+=======
+        route: '/dashboard/admin/auditors',
+        bgcolor: 'transparent',
+>>>>>>> 1c046218a9ccdc0b83e79747692edcf85acf11a2
       },
     ],
   },
   {
-    navCap: 'Extra',
+    navCap: 'ACCOUNT',
   },
   {
+<<<<<<< HEAD
     displayName: 'Icons',
     iconName: 'mood-smile',
     route: '/extra/icons',
@@ -648,12 +657,14 @@ export const navItems: NavItem[] = [
     displayName: 'Form Horizontal',
     iconName: 'box-align-bottom',
     route: 'https://spike-angular-pro-main.netlify.app/forms/form-horizontal',
+=======
+    displayName: 'PROFILE',
+    iconName: 'user',
+    route: '/dashboard/profile',
+>>>>>>> 1c046218a9ccdc0b83e79747692edcf85acf11a2
     bgcolor: 'success',
-    external: true,
-    chip: true,
-    chipClass: 'bg-light-primary text-primary',
-    chipContent: 'PRO',
   },
+<<<<<<< HEAD
   {
     displayName: 'Form Vertical',
     iconName: 'box-align-left',
@@ -1059,4 +1070,38 @@ export const navItems: NavItem[] = [
     chipClass: 'bg-light-primary text-primary',
     chipContent: 'PRO',
   },*/
+
+
 ];
+
+export const coordinatorNavItems: NavItem[] = [
+  { navCap: 'COORDINATOR' },
+  {
+    displayName: 'DASHBOARD',
+    iconName: 'layout-dashboard',
+    route: '/dashboard/coordinator',
+  },
+  {
+    displayName: 'MY PATIENTS',
+    iconName: 'users-group',
+    route: '/dashboard/coordinator/patients',
+  },
+  {
+    displayName: 'REMINDERS',
+    iconName: 'bell-ringing',
+    route: '/dashboard/coordinator/reminders',
+  },
+  {
+    displayName: 'PROFILE',
+    iconName: 'user',
+    route: '/dashboard/profile',
+  },
+];
+
+export function getNavItemsForRole(role: string | null): NavItem[] {
+  if (role === 'Coordinator') {
+    return coordinatorNavItems;
+  }
+
+  return adminNavItems;
+}

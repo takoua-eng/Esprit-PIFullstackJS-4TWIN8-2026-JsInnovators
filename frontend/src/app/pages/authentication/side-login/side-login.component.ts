@@ -30,14 +30,17 @@ export class AppSideLoginComponent {
       return;
     }
 
-    const role = this.form.value.role as string;
+    const role = this.form.value.role ?? 'Admin';
+
+    // très important
     localStorage.setItem('user_role', role);
-    localStorage.setItem('auth_token', 'mock_' + role + '_' + Date.now());
 
     if (role === 'SuperAdmin') {
-      this.router.navigate(['/dashboard/super-admin']);
+      this.router.navigate(['/super-admin']);
     } else if (role === 'Admin') {
       this.router.navigate(['/dashboard/admin']);
+    } else if (role === 'Coordinator') {
+      this.router.navigate(['/admin/coordinator']);
     } else {
       this.router.navigate(['/dashboard']);
     }

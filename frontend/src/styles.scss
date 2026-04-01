@@ -1,192 +1,101 @@
-/* You can add global styles to this file, and also import other style files */
+/* ============================================================
+   MEDIFOLLLOW — GLOBAL STYLES
+   Angular Material + Custom Components + Accessibility
+   ============================================================ */
 
-html,
-body {
-    height: 100%;
-    margin: 0;
+/* ── Reset ─────────────────────────────────────────────────── */
+html, body {
+  height: 100%;
+  margin: 0;
 }
-/*
-.login-container {
+
+/* ============================================================
+   LOGIN PAGE
+   ============================================================ */
+
+.login-wrapper {
   height: 100vh;
-  background: #f5f7fb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f4f7fb;
 }
 
 .login-card {
-  width: 900px;
-  background: white;
+  width: 950px;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
 }
 
-.left-side {
-  background: #f5f7fb;
+.login-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.login-image {
+  background: #f7f9fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  min-height: 450px;
+
+  img {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+  }
+}
+
+.login-form {
   padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.left-side img {
-  max-width: 320px;
-}
+.logo { max-width: 170px; margin-bottom: 20px; }
+.title { font-weight: 700; margin-bottom: 5px; }
+.subtitle { color: #777; margin-bottom: 20px; }
 
-.right-side {
-  padding: 40px;
-}
+.social-login { display: flex; gap: 12px; margin-bottom: 15px; }
+.social-btn { flex: 1; height: 42px; border-radius: 25px; }
+.divider { text-align: center; color: #999; margin: 10px 0 20px; }
+.full { width: 100%; margin-bottom: 15px; }
 
-.title {
-  font-weight: 700;
-  margin-bottom: 5px;
-}
-
-.subtitle {
-  color: gray;
+.form-links {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.social-btn {
-  width: 50%;
-}
-
-.divider {
-  text-align: center;
-  margin: 15px 0;
-  color: #999;
-}
-
 .login-btn {
+  width: 100%;
   height: 45px;
   border-radius: 25px;
+  font-weight: 600;
 }
 
-.register {
-  margin-top: 15px;
-  text-align: center;
+.remember-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0 20px 0;
 }
 
-.forgot {
-  cursor: pointer;
+.forgot-link {
   color: #1976d2;
-}
-.social-btn{
-width: 48%;
-height: 42px;
-border-radius: 20px;
-display:flex;
-align-items:center;
-justify-content:center;
-gap:8px;
-}
-*/
-.login-wrapper{
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-background:#f4f7fb;
+  font-size: 14px;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
 }
 
-.login-card{
-width:950px;
-border-radius:20px;
-overflow:hidden;
-box-shadow:0 15px 40px rgba(0,0,0,0.08);
-}
+/* ============================================================
+   DIALOG
+   ============================================================ */
 
-.login-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-}
-
-.login-image{
-background:#f7f9fc;
-display:flex;
-align-items:center;
-justify-content:center;
-padding:10px;      /* réduit l’espace autour de l’image */
-min-height:450px;  /* augmente la hauteur de la zone */
-}
-
-.login-image img{
-width:100%;
-max-width:500px;   /* augmente la taille maximale de l’image */
-height:auto;
-}
-
-.login-form{
-padding:40px;
-display:flex;
-flex-direction:column;
-justify-content:center;
-}
-
-.logo{
-max-width:170px;
-margin-bottom:20px;
-}
-
-.title{
-font-weight:700;
-margin-bottom:5px;
-}
-
-.subtitle{
-color:#777;
-margin-bottom:20px;
-}
-
-.social-login{
-display:flex;
-gap:12px;
-margin-bottom:15px;
-}
-
-.social-btn{
-flex:1;
-height:42px;
-border-radius:25px;
-}
-
-.divider{
-text-align:center;
-color:#999;
-margin:10px 0 20px;
-}
-
-.full{
-width:100%;
-margin-bottom:15px;
-}
-
-.form-links{
-display:flex;
-justify-content:space-between;
-margin-bottom:20px;
-}
-
-.login-btn{
-width:100%;
-height:45px;
-border-radius:25px;
-font-weight:600;
-}
-
-.remember-row{
-display:flex;
-align-items:center;
-justify-content:space-between;
-margin:10px 0 20px 0;
-}
-
-.forgot-link{
-color:#1976d2;
-font-size:14px;
-text-decoration:none;
-}
-
-.forgot-link:hover{
-text-decoration:underline;
-}
-
-/* Custom Dialog Styles */
 .dialog-backdrop {
   background-color: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(6px);
@@ -213,127 +122,937 @@ text-decoration:underline;
   }
 }
 
-/* Smooth scrollbar for dialog content */
-.custom-dialog-panel ::-webkit-scrollbar {
+.custom-dialog-panel ::-webkit-scrollbar { width: 8px; }
+.custom-dialog-panel ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+.custom-dialog-panel ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+.custom-dialog-panel ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+
+/* ============================================================
+   HIGH CONTRAST MODE — ACCESSIBILITÉ WCAG AAA
+   ============================================================
+   Pourquoi ce mode existe :
+   Les personnes malvoyantes, souffrant de daltonisme ou ayant
+   des difficultés de perception des contrastes ont du mal à
+   utiliser les interfaces aux couleurs subtiles. Ce mode garantit
+   des ratios de contraste ≥ 7:1 (WCAG AAA) sur tous les éléments
+   interactifs et textuels — essentiel dans une app médicale.
+   ============================================================ */
+
+html.high-contrast {
+
+  /* ── Design tokens ────────────────────────────────────────── */
+  --hc-bg:        #0b0e17;   /* fond principal */
+  --hc-bg2:       #131825;   /* cartes */
+  --hc-bg3:       #1a2035;   /* éléments surélevés */
+  --hc-bg4:       #222840;   /* hover états */
+  --hc-text:      #eef2ff;   /* texte principal */
+  --hc-text2:     #8899bb;   /* texte secondaire */
+  --hc-accent:    #5ebbff;   /* bleu accent */
+  --hc-border:    #2e3a55;   /* bordures */
+  --hc-border2:   #3d4f72;   /* bordures interactives */
+  --hc-good:      #34d399;   /* vert succès */
+  --hc-warn:      #fbbf24;   /* orange avertissement */
+  --hc-danger:    #f87171;   /* rouge danger */
+  --hc-purple:    #a78bfa;   /* violet symptômes */
+
+  /* Fond et couleur de base */
+  background-color: var(--hc-bg) !important;
+  color: var(--hc-text) !important;
+}
+
+html.high-contrast body {
+  background-color: var(--hc-bg) !important;
+  color: var(--hc-text) !important;
+}
+
+/* Texte global */
+html.high-contrast * {
+  color: var(--hc-text) !important;
+}
+
+/* Fonds globaux — exclusions SVG pour ne pas casser les icônes */
+html.high-contrast *:not(svg):not(path):not(circle):not(polyline):not(line):not(rect):not(ellipse):not(i-tabler) {
+  background-color: var(--hc-bg) !important;
+  border-color: var(--hc-border) !important;
+}
+
+/* ── Layout principal ─────────────────────────────────────── */
+
+html.high-contrast .mat-sidenav-container,
+html.high-contrast .mainWrapper,
+html.high-contrast .contentWrapper,
+html.high-contrast .pageWrapper {
+  background-color: var(--hc-bg) !important;
+}
+
+/* Sidebar — fond légèrement différent pour la distinguer du contenu */
+html.high-contrast .mat-sidenav,
+html.high-contrast .sidebarNav {
+  background-color: #0d1120 !important;
+  border-right: 2px solid var(--hc-border2) !important;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Topstrip */
+html.high-contrast .app-topstrip {
+  background-color: #080b14 !important;
+  border-bottom: 2px solid var(--hc-border2) !important;
+}
+
+/* Header toolbar */
+html.high-contrast .mat-toolbar,
+html.high-contrast .topbar {
+  background-color: #080b14 !important;
+  border-bottom: 1px solid var(--hc-border) !important;
+}
+
+/* Branding */
+html.high-contrast .branding {
+  background-color: #0d1120 !important;
+  border-bottom: 1px solid var(--hc-border) !important;
+}
+
+/* ── Sidebar nav items ────────────────────────────────────── */
+
+html.high-contrast .nav-caption {
+  color: var(--hc-text2) !important;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+html.high-contrast .menu-list-item {
+  background-color: transparent !important;
+  border-radius: 8px;
+  margin: 2px 8px;
+  transition: background 0.15s ease;
+}
+
+html.high-contrast .menu-list-item:hover {
+  background-color: var(--hc-bg3) !important;
+  border-left: 3px solid var(--hc-border2) !important;
+}
+
+html.high-contrast .menu-list-item.activeMenu,
+html.high-contrast .menu-list-item.active {
+  background-color: var(--hc-bg4) !important;
+  border-left: 3px solid var(--hc-accent) !important;
+}
+
+/* ── Cards générales ──────────────────────────────────────── */
+
+html.high-contrast mat-card,
+html.high-contrast .mat-mdc-card,
+html.high-contrast .cardWithShadow,
+html.high-contrast .chart-card,
+html.high-contrast .action-card,
+html.high-contrast .form-card,
+html.high-contrast .table-card,
+html.high-contrast .compliance-table-card,
+html.high-contrast .profile-card {
+  background-color: var(--hc-bg2) !important;
+  border: 1px solid var(--hc-border) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ── KPI Cards — tint coloré par type ────────────────────── */
+
+html.high-contrast .stats-card.purple-card {
+  background: linear-gradient(135deg, #150e2a 0%, #1a1035 100%) !important;
+  border: 1px solid #7c3aed !important;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.3) !important;
+}
+
+html.high-contrast .stats-card.red-card {
+  background: linear-gradient(135deg, #1f0c0c 0%, #2a1010 100%) !important;
+  border: 1px solid #ef4444 !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3) !important;
+}
+
+html.high-contrast .stats-card.yellow-card {
+  background: linear-gradient(135deg, #1c1405 0%, #241b06 100%) !important;
+  border: 1px solid #fbbf24 !important;
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.3) !important;
+}
+
+html.high-contrast .stats-card.blue-card {
+  background: linear-gradient(135deg, #0a1525 0%, #0d1c30 100%) !important;
+  border: 1px solid #3b82f6 !important;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Welcome card */
+html.high-contrast .welcome-card {
+  background: linear-gradient(135deg, #0c1a2e 0%, #0d1f38 100%) !important;
+  border: 1px solid var(--hc-accent) !important;
+  box-shadow: 0 0 20px rgba(94, 187, 255, 0.1) !important;
+}
+
+/* ── Supprimer le hover noir sur les cards ────────────────── */
+/* C'est la cause principale du bug "tout noir" au survol */
+
+html.high-contrast .mat-mdc-card:hover {
+  background-color: var(--hc-bg3) !important;
+}
+
+html.high-contrast .stats-card.purple-card:hover {
+  background: linear-gradient(135deg, #1d1238 0%, #231545 100%) !important;
+}
+
+html.high-contrast .stats-card.red-card:hover {
+  background: linear-gradient(135deg, #2a1010 0%, #341414 100%) !important;
+}
+
+html.high-contrast .stats-card.yellow-card:hover {
+  background: linear-gradient(135deg, #241b06 0%, #2e2208 100%) !important;
+}
+
+html.high-contrast .stats-card.blue-card:hover {
+  background: linear-gradient(135deg, #0d1c30 0%, #10223c 100%) !important;
+}
+
+/* Neutraliser les overlays ripple Material qui causent le noir */
+html.high-contrast .mat-ripple-element {
+  background-color: rgba(94, 187, 255, 0.06) !important;
+}
+
+html.high-contrast .mdc-card__ripple::before,
+html.high-contrast .mdc-card__ripple::after,
+html.high-contrast .mat-mdc-focus-indicator::before {
+  background-color: transparent !important;
+}
+
+html.high-contrast .mat-mdc-card-actions {
+  background-color: transparent !important;
+}
+
+/* ── Icons Tabler ─────────────────────────────────────────── */
+
+html.high-contrast i-tabler svg path,
+html.high-contrast i-tabler svg polyline,
+html.high-contrast i-tabler svg line,
+html.high-contrast i-tabler svg circle,
+html.high-contrast i-tabler svg rect,
+html.high-contrast i-tabler svg ellipse {
+  stroke: var(--hc-accent) !important;
+  fill: none !important;
+}
+
+/* ── Status badges ────────────────────────────────────────── */
+
+html.high-contrast .status-badge.good {
+  background: #042d18 !important;
+  color: var(--hc-good) !important;
+  border: 1px solid var(--hc-good) !important;
+}
+
+html.high-contrast .status-badge.warn {
+  background: #1e1500 !important;
+  color: var(--hc-warn) !important;
+  border: 1px solid var(--hc-warn) !important;
+}
+
+html.high-contrast .status-badge.neutral {
+  background: var(--hc-bg3) !important;
+  color: var(--hc-text2) !important;
+  border: 1px solid var(--hc-border2) !important;
+}
+
+html.high-contrast .status-badge.pending {
+  background: #0d1a2e !important;
+  color: var(--hc-accent) !important;
+  border: 1px solid var(--hc-accent) !important;
+}
+
+/* ── Badges département / type / chart ────────────────────── */
+
+html.high-contrast .dept-badge {
+  background: #091828 !important;
+  color: var(--hc-accent) !important;
+  border: 1px solid var(--hc-accent) !important;
+}
+
+html.high-contrast .type-badge {
+  background: var(--hc-bg3) !important;
+  color: var(--hc-text) !important;
+  border: 1px solid var(--hc-border2) !important;
+}
+
+html.high-contrast .chart-badge {
+  background: var(--hc-bg3) !important;
+  color: var(--hc-accent) !important;
+  border: 1px solid var(--hc-border) !important;
+}
+
+html.high-contrast .chart-badge.green {
+  background: #042d18 !important;
+  color: var(--hc-good) !important;
+  border-color: var(--hc-good) !important;
+}
+
+html.high-contrast .chart-badge.orange {
+  background: #1e1500 !important;
+  color: var(--hc-warn) !important;
+  border-color: var(--hc-warn) !important;
+}
+
+html.high-contrast .active-badge,
+html.high-contrast .profile-role-badge {
+  background: #091828 !important;
+  color: var(--hc-accent) !important;
+  border: 1px solid var(--hc-accent) !important;
+}
+
+/* ── Missing field tags ───────────────────────────────────── */
+
+html.high-contrast .missing-field-tag {
+  background: #2a0808 !important;
+  color: var(--hc-danger) !important;
+  border: 1px solid var(--hc-danger) !important;
+}
+
+html.high-contrast .symptom-tag {
+  background: #18082e !important;
+  color: var(--hc-purple) !important;
+  border: 1px solid var(--hc-purple) !important;
+}
+
+html.high-contrast .field-group-label {
+  color: var(--hc-text2) !important;
+}
+
+html.high-contrast .symptoms-label {
+  color: var(--hc-purple) !important;
+}
+
+/* ── Submission indicators ────────────────────────────────── */
+
+html.high-contrast .submission-indicator.submitted {
+  background: #042d18 !important;
+  color: var(--hc-good) !important;
+  border: 1px solid var(--hc-good) !important;
+}
+
+html.high-contrast .submission-indicator.missing {
+  background: #2a0808 !important;
+  color: var(--hc-danger) !important;
+  border: 1px solid var(--hc-danger) !important;
+}
+
+html.high-contrast .indicator.submitted {
+  background: #042d18 !important;
+  color: var(--hc-good) !important;
+  border: 1px solid var(--hc-good) !important;
+}
+
+html.high-contrast .indicator.missing {
+  background: #2a0808 !important;
+  color: var(--hc-danger) !important;
+  border: 1px solid var(--hc-danger) !important;
+}
+
+/* ── Action rows ──────────────────────────────────────────── */
+
+html.high-contrast .action-row {
+  background: var(--hc-bg2) !important;
+}
+
+html.high-contrast .action-row.row-partial {
+  background: #1c1400 !important;
+  border-left: 3px solid var(--hc-warn) !important;
+}
+
+html.high-contrast .action-row.row-none {
+  background: #1f0808 !important;
+  border-left: 3px solid var(--hc-danger) !important;
+}
+
+/* ── Compliance rows ──────────────────────────────────────── */
+
+html.high-contrast .compliance-row {
+  background: var(--hc-bg2) !important;
+  border-left: 3px solid var(--hc-border) !important;
+}
+
+html.high-contrast .compliance-row.row-compliant {
+  background: #041e10 !important;
+  border-left-color: var(--hc-good) !important;
+}
+
+html.high-contrast .compliance-row.row-incomplete {
+  background: #1c1400 !important;
+  border-left-color: var(--hc-warn) !important;
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+
+html.high-contrast .mat-mdc-header-row,
+html.high-contrast th.mat-mdc-header-cell {
+  background: var(--hc-bg3) !important;
+  border-bottom: 2px solid var(--hc-border2) !important;
+}
+
+html.high-contrast .mat-mdc-row td {
+  border-bottom: 1px solid var(--hc-border) !important;
+}
+
+html.high-contrast tr.row-compliant td {
+  background: #041e10 !important;
+}
+
+html.high-contrast tr.row-incomplete td {
+  background: #1c1400 !important;
+}
+
+html.high-contrast .mat-mdc-row:hover td {
+  background: var(--hc-bg3) !important;
+}
+
+/* ── Progress bar compliance ──────────────────────────────── */
+
+html.high-contrast .rate-track {
+  background: var(--hc-bg3) !important;
+  border: 1px solid var(--hc-border) !important;
+}
+
+html.high-contrast .rate-fill.fill-good {
+  background: var(--hc-good) !important;
+}
+
+html.high-contrast .rate-fill.fill-warn {
+  background: var(--hc-warn) !important;
+}
+
+/* ── Reminder panel ───────────────────────────────────────── */
+
+html.high-contrast .reminder-panel {
+  background: #0c1828 !important;
+  border: 1px solid var(--hc-accent) !important;
+  box-shadow: 0 0 12px rgba(94, 187, 255, 0.1) !important;
+}
+
+html.high-contrast .reminder-preview {
+  background: var(--hc-bg3) !important;
+  border: 1px solid var(--hc-border2) !important;
+  color: var(--hc-text) !important;
+}
+
+html.high-contrast .reminder-panel-title {
+  color: var(--hc-accent) !important;
+}
+
+/* ── Legend bars ──────────────────────────────────────────── */
+
+html.high-contrast .legend-bar {
+  background: var(--hc-bg2) !important;
+  border: 1px solid var(--hc-border) !important;
+  border-radius: 10px;
+}
+
+/* Dots — garder les couleurs sémantiques */
+html.high-contrast .sub-dot.green,
+html.high-contrast .legend-dot.green { background: var(--hc-good) !important; }
+html.high-contrast .sub-dot.orange,
+html.high-contrast .legend-dot.orange { background: var(--hc-warn) !important; }
+html.high-contrast .sub-dot.red { background: var(--hc-danger) !important; }
+html.high-contrast .legend-dot.grey { background: var(--hc-text2) !important; }
+
+/* ── Avatars ──────────────────────────────────────────────── */
+
+html.high-contrast .patient-avatar.avatar-good {
+  background: #042d18 !important;
+  color: var(--hc-good) !important;
+  border: 2px solid var(--hc-good) !important;
+}
+
+html.high-contrast .patient-avatar.avatar-warn {
+  background: #1e1500 !important;
+  color: var(--hc-warn) !important;
+  border: 2px solid var(--hc-warn) !important;
+}
+
+html.high-contrast .patient-avatar.avatar-neutral {
+  background: var(--hc-bg3) !important;
+  color: var(--hc-text2) !important;
+  border: 1px solid var(--hc-border2) !important;
+}
+
+html.high-contrast .action-avatar {
+  background: var(--hc-bg3) !important;
+  color: var(--hc-warn) !important;
+  border: 1px solid var(--hc-warn) !important;
+}
+
+/* ── Profile ──────────────────────────────────────────────── */
+
+html.high-contrast .profile-card {
+  background: var(--hc-bg2) !important;
+  border: 1px solid var(--hc-border) !important;
+}
+
+html.high-contrast .field-icon-wrap {
+  background: var(--hc-bg3) !important;
+  border: 1px solid var(--hc-border) !important;
+}
+
+html.high-contrast .profile-field {
+  border-bottom-color: var(--hc-border) !important;
+}
+
+html.high-contrast .profile-field:hover {
+  background: var(--hc-bg3) !important;
+}
+
+html.high-contrast .role-dot {
+  background: var(--hc-good) !important;
+  border-color: var(--hc-bg2) !important;
+}
+
+html.high-contrast .profile-avatar {
+  border-color: var(--hc-accent) !important;
+  filter: brightness(0.85) !important;
+}
+
+/* ── Material Form Fields ─────────────────────────────────── */
+
+html.high-contrast .mdc-text-field {
+  background: var(--hc-bg2) !important;
+}
+
+html.high-contrast .mat-mdc-form-field-infix,
+html.high-contrast .mat-mdc-select-value,
+html.high-contrast .mdc-floating-label,
+html.high-contrast textarea,
+html.high-contrast input {
+  color: var(--hc-text) !important;
+  background: transparent !important;
+}
+
+html.high-contrast .mdc-notched-outline__leading,
+html.high-contrast .mdc-notched-outline__notch,
+html.high-contrast .mdc-notched-outline__trailing {
+  border-color: var(--hc-border2) !important;
+}
+
+html.high-contrast .mdc-text-field--focused .mdc-notched-outline__leading,
+html.high-contrast .mdc-text-field--focused .mdc-notched-outline__notch,
+html.high-contrast .mdc-text-field--focused .mdc-notched-outline__trailing {
+  border-color: var(--hc-accent) !important;
+}
+
+html.high-contrast .mat-mdc-select-arrow {
+  color: var(--hc-text2) !important;
+}
+
+/* ── Mat select dropdown ──────────────────────────────────── */
+
+html.high-contrast .mat-mdc-select-panel,
+html.high-contrast .mdc-menu-surface {
+  background: var(--hc-bg2) !important;
+  border: 1px solid var(--hc-border2) !important;
+}
+
+html.high-contrast .mat-mdc-option {
+  background: transparent !important;
+  color: var(--hc-text) !important;
+}
+
+html.high-contrast .mat-mdc-option:hover,
+html.high-contrast .mat-mdc-option.mat-mdc-option-active {
+  background: var(--hc-bg3) !important;
+}
+
+html.high-contrast .mdc-list-item__primary-text {
+  color: var(--hc-text) !important;
+}
+
+/* ── Mat Menu ─────────────────────────────────────────────── */
+
+html.high-contrast .mat-mdc-menu-panel {
+  background: var(--hc-bg2) !important;
+  border: 1px solid var(--hc-border2) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.high-contrast .mat-mdc-menu-item {
+  background: transparent !important;
+  color: var(--hc-text) !important;
+}
+
+html.high-contrast .mat-mdc-menu-item:hover {
+  background: var(--hc-bg3) !important;
+}
+
+html.high-contrast .mat-divider {
+  border-color: var(--hc-border) !important;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+
+html.high-contrast button {
+  background: transparent !important;
+  color: var(--hc-text) !important;
+}
+
+html.high-contrast button.mat-mdc-raised-button,
+html.high-contrast button.mat-mdc-flat-button,
+html.high-contrast button[mat-flat-button],
+html.high-contrast button[mat-raised-button] {
+  background: var(--hc-bg3) !important;
+  border: 1px solid var(--hc-border2) !important;
+  color: var(--hc-text) !important;
+}
+
+html.high-contrast button.mat-mdc-raised-button:hover,
+html.high-contrast button.mat-mdc-flat-button:hover,
+html.high-contrast button[mat-flat-button]:hover,
+html.high-contrast button[mat-raised-button]:hover {
+  background: var(--hc-bg4) !important;
+  border-color: var(--hc-accent) !important;
+}
+
+html.high-contrast button.mat-mdc-stroked-button,
+html.high-contrast button[mat-stroked-button] {
+  background: transparent !important;
+  border: 1px solid var(--hc-border2) !important;
+  color: var(--hc-text) !important;
+}
+
+html.high-contrast button.mat-mdc-stroked-button:hover,
+html.high-contrast button[mat-stroked-button]:hover {
+  background: var(--hc-bg3) !important;
+  border-color: var(--hc-accent) !important;
+}
+
+html.high-contrast button.mat-mdc-icon-button {
+  background: transparent !important;
+}
+
+html.high-contrast button.mat-mdc-icon-button:hover {
+  background: var(--hc-bg3) !important;
+}
+
+/* Bouton Remind spécifique */
+html.high-contrast .reminder-btn {
+  background: #0c1e38 !important;
+  color: var(--hc-accent) !important;
+  border: 1px solid var(--hc-accent) !important;
+}
+
+html.high-contrast .reminder-btn:hover {
+  background: #122644 !important;
+}
+
+/* Bouton primary Material */
+html.high-contrast .mat-mdc-button.mat-primary,
+html.high-contrast .mat-mdc-raised-button.mat-primary,
+html.high-contrast .mat-mdc-flat-button.mat-primary {
+  background: #0c1e38 !important;
+  color: var(--hc-accent) !important;
+  border: 1px solid var(--hc-accent) !important;
+}
+
+/* ── ApexCharts ───────────────────────────────────────────── */
+
+html.high-contrast .apexcharts-canvas {
+  background: transparent !important;
+}
+
+html.high-contrast .apexcharts-canvas svg {
+  background: transparent !important;
+}
+
+html.high-contrast .apexcharts-text tspan,
+html.high-contrast .apexcharts-legend-text,
+html.high-contrast .apexcharts-yaxis-label tspan,
+html.high-contrast .apexcharts-xaxis-label tspan,
+html.high-contrast .apexcharts-title-text {
+  fill: var(--hc-text) !important;
+  color: var(--hc-text) !important;
+}
+
+html.high-contrast .apexcharts-gridline {
+  stroke: var(--hc-border) !important;
+}
+
+html.high-contrast .apexcharts-axis-texts-g text {
+  fill: var(--hc-text2) !important;
+}
+
+html.high-contrast .apexcharts-tooltip {
+  background: var(--hc-bg2) !important;
+  border: 1px solid var(--hc-border2) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.high-contrast .apexcharts-tooltip-title {
+  background: var(--hc-bg3) !important;
+  border-bottom: 1px solid var(--hc-border) !important;
+  color: var(--hc-text) !important;
+}
+
+html.high-contrast .apexcharts-tooltip-text {
+  color: var(--hc-text) !important;
+}
+
+html.high-contrast .apexcharts-datalabel text,
+html.high-contrast .apexcharts-datalabels text {
+  fill: #ffffff !important;
+}
+
+html.high-contrast .apexcharts-pie-label {
+  fill: #ffffff !important;
+}
+
+/* Donut center label */
+html.high-contrast .apexcharts-datalabel-label,
+html.high-contrast .apexcharts-datalabel-value {
+  fill: var(--hc-text) !important;
+}
+
+html.high-contrast .apexcharts-legend-marker {
+  border-color: transparent !important;
+}
+
+/* ── Images ───────────────────────────────────────────────── */
+
+html.high-contrast img {
+  filter: brightness(0.8) contrast(1.1) !important;
+  background: transparent !important;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+
+html.high-contrast ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
+  background: var(--hc-bg) !important;
 }
 
-.custom-dialog-panel ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+html.high-contrast ::-webkit-scrollbar-track {
+  background: var(--hc-bg) !important;
+}
+
+html.high-contrast ::-webkit-scrollbar-thumb {
+  background: var(--hc-bg4) !important;
   border-radius: 4px;
+  border: 1px solid var(--hc-border) !important;
 }
 
-.custom-dialog-panel ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+html.high-contrast ::-webkit-scrollbar-thumb:hover {
+  background: var(--hc-border2) !important;
 }
 
-.custom-dialog-panel ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+/* ── Focus visible — accessibilité clavier ────────────────── */
+
+html.high-contrast *:focus-visible {
+  outline: 2px solid var(--hc-accent) !important;
+  outline-offset: 2px !important;
 }
 
-/* High contrast mode for visually impaired users - improved accessibility with cyan/blue */
-.high-contrast {
-  background-color: #000000 !important;
-  color: #00d4ff !important;
-}
+/* ── Mat badge ────────────────────────────────────────────── */
 
-.high-contrast * {
-  background-color: #000000 !important;
-  color: #00d4ff !important;
-  border-color: #00d4ff !important;
-}
-
-.high-contrast button,
-.high-contrast a,
-.high-contrast mat-button,
-.high-contrast mat-raised-button,
-.high-contrast mat-stroked-button {
-  background-color: #000000 !important;
-  color: #00d4ff !important;
-  border: 2px solid #00d4ff !important;
-  font-weight: bold !important;
-}
-
-.high-contrast button:hover,
-.high-contrast a:hover,
-.high-contrast mat-button:hover,
-.high-contrast mat-raised-button:hover,
-.high-contrast mat-stroked-button:hover {
-  background-color: #00d4ff !important;
+html.high-contrast .mat-badge-content {
+  background: var(--hc-accent) !important;
   color: #000000 !important;
-  border: 2px solid #00d4ff !important;
 }
 
-.high-contrast mat-card,
-.high-contrast .mat-card,
-.high-contrast mat-toolbar,
-.high-contrast .mat-toolbar,
-.high-contrast .app-topstrip,
-.high-contrast table {
-  background-color: #000000 !important;
-  color: #00d4ff !important;
-  border: 2px solid #00d4ff !important;
+/* ── Chip tags ────────────────────────────────────────────── */
+
+html.high-contrast .mat-mdc-chip {
+  background: var(--hc-bg3) !important;
+  border: 1px solid var(--hc-border2) !important;
+  color: var(--hc-text) !important;
 }
 
-.high-contrast table th,
-.high-contrast th {
-  background-color: #0a2a3a !important;
-  color: #00d4ff !important;
-  border: 1px solid #00d4ff !important;
-  font-weight: bold !important;
+/* ── Tooltip ──────────────────────────────────────────────── */
+
+html.high-contrast .mat-mdc-tooltip {
+  background: var(--hc-bg2) !important;
+  border: 1px solid var(--hc-border2) !important;
+  color: var(--hc-text) !important;
 }
 
-.high-contrast table td,
-.high-contrast td {
-  background-color: #000000 !important;
-  color: #00d4ff !important;
-  border: 1px solid #00d4ff !important;
+/* ── Subtext / muted ──────────────────────────────────────── */
+
+html.high-contrast .text-muted,
+html.high-contrast mat-card-subtitle,
+html.high-contrast .mat-mdc-card-subtitle,
+html.high-contrast .stat-subtitle,
+html.high-contrast .action-dept,
+html.high-contrast .patient-email,
+html.high-contrast .patient-dept,
+html.high-contrast .field-label,
+html.high-contrast .mini-label {
+  color: var(--hc-text2) !important;
+  opacity: 1 !important;
 }
 
-.high-contrast img {
-  filter: contrast(180%) brightness(1.1) !important;
-  border: 2px solid #00d4ff !important;
+/* ── Empty states ─────────────────────────────────────────── */
+
+html.high-contrast .empty-state,
+html.high-contrast .empty-state-sm,
+html.high-contrast .all-good-state {
+  background: transparent !important;
+  color: var(--hc-text2) !important;
 }
 
-.high-contrast input,
-.high-contrast textarea,
-.high-contrast .mat-form-field,
-.high-contrast mat-form-field {
-  background-color: #0a2a3a !important;
-  color: #00d4ff !important;
-  border: 2px solid #00d4ff !important;
+html.high-contrast .empty-state h4,
+html.high-contrast .all-good-state h4 {
+  color: var(--hc-text) !important;
 }
 
-.high-contrast .text-muted {
-  color: #00d4ff !important;
+html.high-contrast .all-good-icon {
+  color: var(--hc-good) !important;
 }
 
-.high-contrast .bg-light-success {
-  background-color: #000000 !important;
-  color: #00d4ff !important;
+/* ── Chart loading ────────────────────────────────────────── */
+
+html.high-contrast .chart-loading {
+  color: var(--hc-text2) !important;
+  background: transparent !important;
 }
 
-.high-contrast .text-success,
-.high-contrast .bg-light-warning {
-  color: #00d4ff !important;
-  background-color: #000000 !important;
+/* ============================================================
+   FIN HIGH CONTRAST
+   ============================================================ */
+
+
+   /* ── PATCH CRITIQUE — Sidebar visible + hover corrigé ── */
+
+/* 1. Neutraliser complètement la règle globale * qui écrase tout */
+html.high-contrast *:not(svg):not(path):not(circle):not(polyline):not(line):not(rect):not(ellipse):not(i-tabler) {
+  background-color: unset !important;
 }
 
-.high-contrast a {
-  color: #00d4ff !important;
-  text-decoration: underline !important;
+/* 2. Fond de base sur body seulement */
+html.high-contrast body {
+  background-color: var(--hc-bg) !important;
 }
 
-.high-contrast a:hover {
-  color: #000000 !important;
-  background-color: #00d4ff !important;
+/* 3. Sidebar — fond différent et visible */
+html.high-contrast .mat-sidenav,
+html.high-contrast .sidebarNav {
+  background-color: #0d1120 !important;
+  border-right: 2px solid #3d4f72 !important;
 }
 
-.high-contrast .mat-table,
-.high-contrast .mat-row,
-.high-contrast .mat-cell,
-.high-contrast th,
-.high-contrast td {
-  border-color: #ffffff !important;
+/* 4. Contenu principal */
+html.high-contrast .mat-sidenav-content,
+html.high-contrast .contentWrapper,
+html.high-contrast .pageWrapper {
+  background-color: var(--hc-bg) !important;
+}
+
+/* 5. Cards — fond card */
+html.high-contrast mat-card,
+html.high-contrast .mat-mdc-card {
+  background-color: #131825 !important;
+}
+
+/* 6. KPI cards */
+html.high-contrast .stats-card.purple-card {
+  background: linear-gradient(135deg, #150e2a, #1a1035) !important;
+}
+html.high-contrast .stats-card.red-card {
+  background: linear-gradient(135deg, #1f0c0c, #2a1010) !important;
+}
+html.high-contrast .stats-card.yellow-card {
+  background: linear-gradient(135deg, #1c1405, #241b06) !important;
+}
+html.high-contrast .stats-card.blue-card {
+  background: linear-gradient(135deg, #0a1525, #0d1c30) !important;
+}
+
+/* 7. KILLER du hover noir — neutraliser TOUS les pseudo-éléments Material */
+html.high-contrast .mdc-card__ripple,
+html.high-contrast .mdc-card__ripple::before,
+html.high-contrast .mdc-card__ripple::after,
+html.high-contrast .mat-mdc-card-ripple,
+html.high-contrast .mat-mdc-card-ripple::before,
+html.high-contrast .mat-mdc-card-ripple::after,
+html.high-contrast .mat-ripple,
+html.high-contrast .mat-ripple::before,
+html.high-contrast .mat-ripple::after,
+html.high-contrast .mat-mdc-focus-indicator,
+html.high-contrast .mat-mdc-focus-indicator::before,
+html.high-contrast .mat-mdc-focus-indicator::after,
+html.high-contrast .mdc-evolution-chip__ripple,
+html.high-contrast .mdc-evolution-chip__ripple::before,
+html.high-contrast .mdc-evolution-chip__ripple::after,
+html.high-contrast .mat-mdc-button-persistent-ripple,
+html.high-contrast .mat-mdc-button-persistent-ripple::before,
+html.high-contrast .mat-mdc-button-persistent-ripple::after {
+  background-color: transparent !important;
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+html.high-contrast .mat-ripple-element {
+  background-color: rgba(94, 187, 255, 0.06) !important;
+}
+
+/* 8. Hover des cards — couleur légère */
+html.high-contrast .stats-card.purple-card:hover {
+  background: linear-gradient(135deg, #1d1238, #231545) !important;
+}
+html.high-contrast .stats-card.red-card:hover {
+  background: linear-gradient(135deg, #2a1010, #341414) !important;
+}
+html.high-contrast .stats-card.yellow-card:hover {
+  background: linear-gradient(135deg, #241b06, #2e2208) !important;
+}
+html.high-contrast .stats-card.blue-card:hover {
+  background: linear-gradient(135deg, #0d1c30, #10223c) !important;
+}
+html.high-contrast mat-card:hover,
+html.high-contrast .chart-card:hover,
+html.high-contrast .cardWithShadow:hover {
+  background-color: #1a2035 !important;
+}
+
+/* 9. Topstrip */
+html.high-contrast .app-topstrip {
+  background-color: #080b14 !important;
+}
+
+/* 10. Toolbar */
+html.high-contrast .mat-toolbar,
+html.high-contrast .topbar {
+  background-color: #080b14 !important;
+}
+
+/* 11. Nav items sidebar — texte visible */
+html.high-contrast .menu-list-item span,
+html.high-contrast .menu-list-item a,
+html.high-contrast .nav-caption {
+  color: #eef2ff !important;
+}
+
+html.high-contrast .menu-list-item:hover {
+  background-color: #1a2035 !important;
+}
+
+html.high-contrast .menu-list-item.activeMenu {
+  background-color: #222840 !important;
+  border-left: 3px solid #5ebbff !important;
+}
+
+/* 12. Table rows */
+html.high-contrast .mat-mdc-row td {
+  background-color: #131825 !important;
+}
+html.high-contrast tr.row-compliant td {
+  background-color: #041e10 !important;
+}
+html.high-contrast tr.row-incomplete td {
+  background-color: #1c1400 !important;
+}
+html.high-contrast .mat-mdc-row:hover td {
+  background-color: #1a2035 !important;
+}
+html.high-contrast .mat-mdc-header-row,
+html.high-contrast th.mat-mdc-header-cell {
+  background-color: #1a2035 !important;
 }
