@@ -5,8 +5,7 @@ import { MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
 import { CoreService } from 'src/app/services/core.service';
 
 import { filter } from 'rxjs/operators';
-import { NavigationEnd, Router } from '@angular/router';
-import { RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
 
 import { NgScrollbarModule } from 'ngx-scrollbar';
@@ -16,8 +15,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { AppNavItemComponent } from './sidebar/nav-item/nav-item.component';
 import { AppTopstripComponent } from './top-strip/topstrip.component';
 
-
-import { getNavItemsForRole } from './sidebar/sidebar-data';
+import { adminNavItems, coordinatorNavItems } from './sidebar/sidebar-data';
 import { NavItem } from './sidebar/nav-item/nav-item';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
@@ -45,10 +43,9 @@ export class FullComponent implements OnInit {
   @ViewChild('leftsidenav')
   public sidenav!: MatSidenav;
 
-  resView = false;
-
   @ViewChild('content', { static: true }) content!: MatSidenavContent;
 
+  resView = false;
   options = this.settings.getOptions();
   private layoutChangesSubscription = Subscription.EMPTY;
   private isMobileScreen = false;
@@ -56,6 +53,7 @@ export class FullComponent implements OnInit {
   private isCollapsedWidthFixed = false;
   private htmlElement!: HTMLHtmlElement;
 
+  // ✅ Getter pour template
   get isOver(): boolean {
     return this.isMobileScreen;
   }
@@ -67,6 +65,7 @@ export class FullComponent implements OnInit {
   ) {
     this.htmlElement = document.querySelector('html')!;
 
+    // Observer les breakpoints
     this.layoutChangesSubscription = this.breakpointObserver
       .observe([MOBILE_VIEW, TABLET_VIEW])
       .subscribe((state) => {
@@ -78,7 +77,7 @@ export class FullComponent implements OnInit {
         }
       });
 
-
+    // Scroll vers le haut à chaque navigation
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -86,14 +85,25 @@ export class FullComponent implements OnInit {
       });
   }
 
+ngOnInit(): void {
+  this.setNavItemsBasedOnUrl(this.router.url); // initial
 
+  this.router.events
+    .pipe(filter(event => event instanceof NavigationEnd))
+    .subscribe((event: any) => {
+      this.setNavItemsBasedOnUrl(event.urlAfterRedirects);
+    });
+}
 
-
-  ngOnInit(): void {
-    const role = localStorage.getItem('user_role') || 'Admin';
-    this.navItems = getNavItemsForRole(role);
+private setNavItemsBasedOnUrl(url: string) {
+  if (url.includes('/admin/coordinator')) {
+    this.navItems = coordinatorNavItems;
+  } else if (url.includes('/dashboard/admin')) {
+    this.navItems = adminNavItems;
+  } else {
+    this.navItems = adminNavItems; // fallback
   }
-
+}
 
   ngOnDestroy() {
     this.layoutChangesSubscription.unsubscribe();
@@ -117,5 +127,4 @@ export class FullComponent implements OnInit {
     this.isCollapsedWidthFixed = !this.isOver;
     this.options.sidenavOpened = isOpened;
   }
-
 }

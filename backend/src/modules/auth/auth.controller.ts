@@ -10,10 +10,6 @@ import { ResetPasswordDto } from '../auth/dto/reset-password.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('signup')
-  signUp(@Body() signUpDto: SignUpDto): Promise<User> {
-    return this.authService.signUp(signUpDto);
-  }
 
   @Post('login')
   signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string }> {

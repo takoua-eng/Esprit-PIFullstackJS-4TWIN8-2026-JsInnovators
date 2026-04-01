@@ -4,6 +4,8 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { FullSuperComponent } from './pages/super-admin/full-super/full-super';
 import { LandingComponent } from './pages/landing/landing.component';
+import { CoordinatorDashboardComponent } from './pages/coordinator/coordinator-dashboard/coordinator-dashboard.component';
+
 
 export const routes: Routes = [
   {
@@ -12,38 +14,55 @@ export const routes: Routes = [
       { path: '', redirectTo: '/landing', pathMatch: 'full' },
       { path: 'landing', component: LandingComponent },
 
-      // ✅ ADMIN - مسار منفصل
+      // Admin Coordinator : composant seul, indépendant
       {
-        path: 'admin',
-        component: FullComponent,
-        loadChildren: () =>
-          import('./pages/pages.routes').then((m) => m.AdminRoutes), // ✅ عدّل هذا
+        path: 'admin/coordinator',
+        component: CoordinatorDashboardComponent,
       },
 
-      // ✅ UI Components
+      // Dashboard principal pour utilisateurs + sous-admin
       {
-        path: 'ui-components',
+        path: 'dashboard',
         component: FullComponent,
-        loadChildren: () =>
-          import('./pages/ui-components/ui-components.routes').then(
-            (m) => m.UiComponentsRoutes,
-          ),
+        children: [
+          // Dashboard utilisateur normal
+          {
+            path: '',
+            loadChildren: () =>
+              import('./pages/pages.routes').then((m) => m.PagesRoutes),
+          },
+
+          // Admin sous dashboard
+          {
+            path: 'admin',
+            loadChildren: () =>
+              import('./pages/pages.routes').then((m) => m.AdminRoutes),
+          },
+
+          // UI Components
+          {
+            path: 'ui-components',
+            loadChildren: () =>
+              import('./pages/ui-components/ui-components.routes').then(
+                (m) => m.UiComponentsRoutes
+              ),
+          },
+
+          // Extra pages
+          {
+            path: 'extra',
+            loadChildren: () =>
+              import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
+          },
+        ],
       },
 
-      // ✅ Extra
-      {
-        path: 'extra',
-        component: FullComponent,
-        loadChildren: () =>
-          import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
-      },
-
-      // ✅ SUPER ADMIN - مسار منفصل
+      // Super Admin séparé
       {
         path: 'super-admin',
         component: FullSuperComponent,
         loadChildren: () =>
-          import('./pages/pages.routes').then((m) => m.SuperAdminRoutes), // ✅ عدّل هذا
+          import('./pages/pages.routes').then((m) => m.SuperAdminRoutes),
       },
     ],
   },
@@ -57,10 +76,12 @@ export const routes: Routes = [
         path: 'authentication',
         loadChildren: () =>
           import('./pages/authentication/authentication.routes').then(
-            (m) => m.AuthenticationRoutes,
+            (m) => m.AuthenticationRoutes
           ),
       },
     ],
   },
+
+  // Fallback
   { path: '**', redirectTo: 'authentication/error' },
 ];
