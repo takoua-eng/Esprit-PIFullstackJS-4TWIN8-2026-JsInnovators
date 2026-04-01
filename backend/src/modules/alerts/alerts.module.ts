@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Alert, AlertSchema } from './alert.schema';
-import { User, UserSchema } from '../users/user.schema';
+import { User, UserSchema } from '../users/users.schema';
 import { Role, RoleSchema } from '../roles/role.schema';
 import { AlertsService } from './alerts.service';
 import { AlertsController } from './alerts.controller';

@@ -10,7 +10,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { User, UserSchema } from './modules/users/user.schema';
+import { User, UserSchema } from './modules/users/users.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
 import { UploadModule } from './modules/upload/upload.module';
@@ -18,11 +18,12 @@ import { AlertsModule } from './modules/alerts/alerts.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
 import { VitalsModule } from './modules/vitals/vitals.module';
 import { SymptomsModule } from './modules/symptoms/symptoms.module';
+import { ServicesModule } from './modules/service/services/services.module';
+import { CoordinatorModule } from './modules/coordinator/coordinator.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    // MongoDB: set MONGODB_URI in backend/.env (see .env.example). Default = local dev.
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -33,13 +34,11 @@ import { SymptomsModule } from './modules/symptoms/symptoms.module';
       inject: [ConfigService],
     }),
 
-    // Déclaration des modèles pour Mongoose
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Role.name, schema: RoleSchema },
     ]),
 
-    // Modules applicatifs
     UsersModule,
     RolesModule,
     AuthModule,
@@ -48,6 +47,8 @@ import { SymptomsModule } from './modules/symptoms/symptoms.module';
     RemindersModule,
     VitalsModule,
     SymptomsModule,
+    ServicesModule,
+    CoordinatorModule,
   ],
 })
 export class AppModule implements NestModule {

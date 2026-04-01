@@ -23,11 +23,14 @@ export class AppTopstripComponent {
     ];
 
     constructor(private translate: TranslateService) {
-      this.translate.onLangChange.subscribe((event) => {
-        this.selectedLanguage = event.lang;
-      });
-      this.setHighContrastClass();
-    }
+  this.translate.onLangChange.subscribe((event) => {
+    this.selectedLanguage = event.lang;
+  });
+
+  // Restaurer high contrast au démarrage
+  this.highContrastEnabled = localStorage.getItem('high_contrast') === 'true';
+  this.setHighContrastClass();
+}
 
     changeLanguage(lang: string) {
       this.selectedLanguage = lang;
@@ -43,8 +46,14 @@ export class AppTopstripComponent {
     }
 
     setHighContrastClass() {
-      document.documentElement.classList.toggle('high-contrast', this.highContrastEnabled);
-    }
+  if (this.highContrastEnabled) {
+    document.documentElement.classList.add('high-contrast');
+    document.body.classList.add('high-contrast');
+  } else {
+    document.documentElement.classList.remove('high-contrast');
+    document.body.classList.remove('high-contrast');
+  }
+}
 
 }
 

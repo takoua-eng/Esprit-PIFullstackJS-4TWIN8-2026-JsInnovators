@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Vital, VitalDocument } from './vital.schema';
-import { User, UserDocument } from '../users/user.schema';
+import { User, UserDocument } from '../users/users.schema';
 import { Role, RoleDocument } from '../roles/role.schema';
 
 export type VitalListItem = {

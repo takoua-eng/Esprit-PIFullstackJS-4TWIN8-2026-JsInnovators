@@ -1,0 +1,27 @@
+<!-- src/app/pages/super-admin/full-super/super-sidebar/super-sidebar.component.html -->
+<div class="d-flex align-items-center justify-content-between">
+  <div class="branding">
+    <!-- ✅ BrandingComponent سيعمل الآن بعد تصحيح المسار -->
+    <app-branding></app-branding>
+  </div>
+
+  <a
+    *ngIf="showToggle"
+    href="javascript:void(0)"
+    (click)="toggleMobileNav.emit()"
+    class="d-flex justify-content-center icon-40 align-items-center"
+  >
+    <i-tabler name="x" class="icon-20 d-flex"></i-tabler>
+  </a>
+</div>
+
+<ng-scrollbar class="position-relative" style="height: 100%">
+  <mat-nav-list class="sidebar-list">
+    <!-- ✅ AppNavItemComponent سيعمل الآن + استخدام navItems الخاصة -->
+    <app-nav-item
+      *ngFor="let item of navItems"
+      [item]="item"
+      (notify)="toggleMobileNav.emit()"
+    ></app-nav-item>
+  </mat-nav-list>
+</ng-scrollbar>

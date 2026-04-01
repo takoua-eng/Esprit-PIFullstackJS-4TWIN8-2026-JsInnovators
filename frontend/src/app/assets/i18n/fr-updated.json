@@ -1,0 +1,23 @@
+{
+  "DASHBOARD": "Tableau de bord",
+  "USERS": "Utilisateurs",
+  "PATIENTS": "Patients",
+  "PHYSICIANS": "Médecins",
+  "NURSES": "Infirmiers",
+  "COORDINATORS": "Coordinateurs",
+  "AUDITORS": "Auditeurs",
+  "ADMIN": "Admin",
+  "SUPER_ADMIN": "Super Admin",
+  "ADMIN_USERS": "Utilisateurs Admin",
+  "LANGUAGE": "Langue",
+  "ENABLE_HIGH_CONTRAST": "Haut Contraste",
+  "DISABLE_HIGH_CONTRAST": "Mode Normal",
+  "PROFILE": "Profil",
+  "LOGOUT": "Déconnexion",
+  "SUPER_ADMIN_MENU": "SUPER ADMIN",
+  "MANAGE_USERS": "Gestion Utilisateurs",
+  "ADMINS": "Admins",
+  "MEDECINS": "Médecins",
+  "REPORTS": "Rapports",
+  "SETTINGS": "Paramètres"
+}

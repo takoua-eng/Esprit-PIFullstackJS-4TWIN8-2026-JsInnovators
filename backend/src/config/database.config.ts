@@ -1,5 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { User } from '../modules/users/user.schema';
+import { User } from '../modules/users/users.schema';
 import { Role } from '../modules/roles/role.schema';
 
 export const databaseConfig: TypeOrmModuleOptions = {

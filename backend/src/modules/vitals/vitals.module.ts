@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Vital, VitalSchema } from './vital.schema';
-import { User, UserSchema } from '../users/user.schema';
+import { User, UserSchema } from '../users/users.schema';
 import { Role, RoleSchema } from '../roles/role.schema';
 import { VitalsService } from './vitals.service';
 import { VitalsController } from './vitals.controller';

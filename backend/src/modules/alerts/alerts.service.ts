@@ -7,7 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Alert, AlertDocument } from './alert.schema';
-import { User, UserDocument } from '../users/user.schema';
+import { User, UserDocument } from '../users/users.schema';
 import { Role, RoleDocument } from '../roles/role.schema';
 
 export type AlertListItem = {

@@ -1,0 +1,335 @@
+<div class="coordinator-dashboard-container">
+
+  <!-- WELCOME CARD -->
+  <div class="row">
+    <div class="col-lg-12">
+      <mat-card class="welcome-card">
+        <mat-card-header>
+          <mat-card-title class="dashboard-title">
+            <i-tabler name="user-heart" class="title-icon"></i-tabler>
+            {{ 'COORDINATOR_DASHBOARD' | translate }}
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="welcome-content">
+          <p class="welcome-text">{{ 'WELCOME_COORDINATOR' | translate }}</p>
+          <p class="subtitle">{{ 'TRACK_PATIENTS' | translate }}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="row m-b-24">
+    <div class="col-md-3 m-b-16">
+      <mat-card class="stats-card purple-card clickable"
+        (click)="navigateTo('/dashboard/coordinator/patients')"
+        [matTooltip]="'ASSIGNED_PATIENTS_TOOLTIP' | translate">
+        <mat-card-content class="p-16">
+          <i-tabler name="users-group" class="kpi-icon d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">{{ dashboardData.summary.totalAssignedPatients }}</div>
+          <div class="f-s-14 f-w-600 m-b-2">{{ 'ASSIGNED_PATIENTS' | translate }}</div>
+          <div class="f-s-12 stat-subtitle">{{ 'ASSIGNED_PATIENTS_DESC' | translate }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-md-3 m-b-16">
+      <mat-card class="stats-card red-card clickable"
+        (click)="navigateTo('/dashboard/coordinator/patients')"
+        [matTooltip]="'INCOMPLETE_VITALS_TOOLTIP' | translate">
+        <mat-card-content class="p-16">
+          <i-tabler name="heart-broken" class="kpi-icon d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">{{ dashboardData.summary.missingVitalsToday }}</div>
+          <div class="f-s-14 f-w-600 m-b-2">{{ 'INCOMPLETE_VITALS' | translate }}</div>
+          <div class="f-s-12 stat-subtitle">{{ 'INCOMPLETE_VITALS_DESC' | translate }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-md-3 m-b-16">
+      <mat-card class="stats-card yellow-card clickable"
+        (click)="navigateTo('/dashboard/coordinator/reminders')"
+        [matTooltip]="'REMINDERS_SENT_TOOLTIP' | translate">
+        <mat-card-content class="p-16">
+          <i-tabler name="bell-ringing" class="kpi-icon d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">{{ dashboardData.summary.remindersSentToday }}</div>
+          <div class="f-s-14 f-w-600 m-b-2">{{ 'REMINDERS_SENT_TODAY' | translate }}</div>
+          <div class="f-s-12 stat-subtitle">{{ 'REMINDERS_SENT_DESC' | translate }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-md-3 m-b-16">
+      <mat-card class="stats-card blue-card clickable"
+        (click)="navigateTo('/dashboard/coordinator/reminders')"
+        [matTooltip]="'PENDING_REMINDERS_TOOLTIP' | translate">
+        <mat-card-content class="p-16">
+          <i-tabler name="clock" class="kpi-icon d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">{{ dashboardData.summary.pendingReminders }}</div>
+          <div class="f-s-14 f-w-600 m-b-2">{{ 'PENDING_REMINDERS' | translate }}</div>
+          <div class="f-s-12 stat-subtitle">{{ 'PENDING_REMINDERS_DESC' | translate }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="row m-b-24">
+    <div class="col-lg-7">
+      <mat-card class="cardWithShadow chart-card">
+        <mat-card-content>
+          <div class="chart-header">
+            <div>
+              <mat-card-title>{{ 'PATIENTS_BY_DEPT' | translate }}</mat-card-title>
+              <mat-card-subtitle>{{ 'PATIENTS_BY_DEPT_SUB' | translate }}</mat-card-subtitle>
+            </div>
+            <div class="chart-badge">
+              {{ dashboardData.summary.departmentsCovered }} {{ 'DEPT' | translate }}
+            </div>
+          </div>
+          <div *ngIf="!departmentChart" class="chart-loading">{{ 'LOADING_CHART' | translate }}</div>
+          <apx-chart *ngIf="departmentChart"
+            [series]="departmentChart.series"
+            [chart]="departmentChart.chart"
+            [colors]="departmentChart.colors"
+            [dataLabels]="departmentChart.dataLabels"
+            [plotOptions]="departmentChart.plotOptions"
+            [xaxis]="departmentChart.xaxis"
+            [yaxis]="departmentChart.yaxis"
+            [legend]="departmentChart.legend"
+            [tooltip]="departmentChart.tooltip"
+            [grid]="departmentChart.grid">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-lg-5">
+      <mat-card class="cardWithShadow chart-card">
+        <mat-card-content>
+          <div class="chart-header">
+            <div>
+              <mat-card-title>{{ 'SUBMISSION_OVERVIEW' | translate }}</mat-card-title>
+              <mat-card-subtitle>{{ 'SUBMISSION_OVERVIEW_SUB' | translate }}</mat-card-subtitle>
+            </div>
+            <div class="chart-badge"
+              [class.green]="complianceRate >= 80"
+              [class.orange]="complianceRate < 80">
+              {{ complianceRate }}%
+            </div>
+          </div>
+          <div class="submission-legend">
+            <div class="sub-legend-item">
+              <span class="sub-dot green"></span>
+              <span>{{ 'FULLY_COMPLIANT_DESC' | translate }}</span>
+            </div>
+            <div class="sub-legend-item">
+              <span class="sub-dot orange"></span>
+              <span>{{ 'PARTIAL_DESC' | translate }}</span>
+            </div>
+            <div class="sub-legend-item">
+              <span class="sub-dot red"></span>
+              <span>{{ 'NO_SUBMISSION_DESC' | translate }}</span>
+            </div>
+          </div>
+          <div *ngIf="!submissionOverviewChart" class="chart-loading">{{ 'LOADING_CHART' | translate }}</div>
+          <apx-chart *ngIf="submissionOverviewChart"
+            [series]="submissionOverviewChart.series"
+            [chart]="submissionOverviewChart.chart"
+            [colors]="submissionOverviewChart.colors"
+            [labels]="submissionOverviewChart.labels"
+            [dataLabels]="submissionOverviewChart.dataLabels"
+            [legend]="submissionOverviewChart.legend"
+            [plotOptions]="submissionOverviewChart.plotOptions"
+            [stroke]="submissionOverviewChart.stroke"
+            [tooltip]="submissionOverviewChart.tooltip">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="row m-b-24">
+    <div class="col-lg-6">
+      <mat-card class="cardWithShadow chart-card">
+        <mat-card-content>
+          <div class="chart-header">
+            <div>
+              <mat-card-title>{{ 'SUBMISSION_STATUS_PER_PATIENT' | translate }}</mat-card-title>
+              <mat-card-subtitle>{{ 'SUBMISSION_STATUS_SUB' | translate }}</mat-card-subtitle>
+            </div>
+            <button mat-stroked-button color="primary" class="details-btn"
+              (click)="navigateTo('/dashboard/coordinator/patients')">
+              {{ 'VIEW_ALL' | translate }}
+            </button>
+          </div>
+          <div class="compliance-rate-bar">
+            <div class="rate-label">
+              <span>{{ 'FULLY_COMPLIANT_TODAY' | translate }}</span>
+              <span class="rate-value"
+                [class.rate-good]="complianceRate >= 80"
+                [class.rate-warn]="complianceRate < 80">
+                {{ complianceRate }}%
+              </span>
+            </div>
+            <div class="rate-track">
+              <div class="rate-fill"
+                [style.width.%]="complianceRate"
+                [class.fill-good]="complianceRate >= 80"
+                [class.fill-warn]="complianceRate < 80">
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!complianceChart" class="chart-loading">{{ 'LOADING_CHART' | translate }}</div>
+          <apx-chart *ngIf="complianceChart"
+            [series]="complianceChart.series"
+            [chart]="complianceChart.chart"
+            [colors]="complianceChart.colors"
+            [plotOptions]="complianceChart.plotOptions"
+            [dataLabels]="complianceChart.dataLabels"
+            [xaxis]="complianceChart.xaxis"
+            [yaxis]="complianceChart.yaxis"
+            [tooltip]="complianceChart.tooltip"
+            [legend]="complianceChart.legend"
+            [grid]="complianceChart.grid">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-lg-6">
+      <mat-card class="cardWithShadow chart-card">
+        <mat-card-content>
+          <div class="chart-header">
+            <div>
+              <mat-card-title>{{ 'MISSING_FIELDS_TODAY' | translate }}</mat-card-title>
+              <mat-card-subtitle>{{ 'MISSING_FIELDS_SUB' | translate }}</mat-card-subtitle>
+            </div>
+          </div>
+
+          <div *ngIf="missingFieldsChart === null && complianceData.length > 0" class="all-good-state">
+            <i-tabler name="circle-check" class="all-good-icon"></i-tabler>
+            <h4>{{ 'NO_MISSING_FIELDS' | translate }}</h4>
+            <p>{{ 'NO_MISSING_FIELDS_DESC' | translate }}</p>
+          </div>
+
+          <div *ngIf="!missingFieldsChart && complianceData.length === 0" class="chart-loading">
+            {{ 'LOADING' | translate }}...
+          </div>
+
+          <apx-chart *ngIf="missingFieldsChart"
+            [series]="missingFieldsChart.series"
+            [chart]="missingFieldsChart.chart"
+            [colors]="missingFieldsChart.colors"
+            [dataLabels]="missingFieldsChart.dataLabels"
+            [plotOptions]="missingFieldsChart.plotOptions"
+            [xaxis]="missingFieldsChart.xaxis"
+            [yaxis]="missingFieldsChart.yaxis"
+            [tooltip]="missingFieldsChart.tooltip"
+            [grid]="missingFieldsChart.grid">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- PATIENTS NEEDING ACTION -->
+  <div class="row">
+    <div class="col-lg-12">
+      <mat-card class="cardWithShadow action-card">
+        <mat-card-content>
+          <div class="chart-header m-b-16">
+            <div>
+              <mat-card-title>{{ 'PATIENTS_NEEDING_ACTION' | translate }}</mat-card-title>
+              <mat-card-subtitle>{{ 'PATIENTS_NEEDING_ACTION_SUB' | translate }}</mat-card-subtitle>
+            </div>
+            <span class="action-count"
+              [class.count-warn]="patientsNeedingAction.length > 0"
+              [class.count-good]="patientsNeedingAction.length === 0">
+              {{ patientsNeedingAction.length }}
+            </span>
+          </div>
+
+          <div *ngIf="patientsNeedingAction.length === 0" class="all-good-state">
+            <i-tabler name="circle-check" class="all-good-icon"></i-tabler>
+            <h4>{{ 'ALL_UP_TO_DATE' | translate }}</h4>
+            <p>{{ 'ALL_UP_TO_DATE_DESC' | translate }}</p>
+          </div>
+
+          <div class="action-list" *ngIf="patientsNeedingAction.length > 0">
+            <div *ngFor="let patient of patientsNeedingAction">
+              <div class="action-row"
+                [class.row-partial]="patient.vitalsSubmitted || patient.symptomsSubmitted"
+                [class.row-none]="!patient.vitalsSubmitted && !patient.symptomsSubmitted">
+
+                <div class="action-patient-info">
+                  <div class="action-avatar">{{ patient.name.charAt(0) }}</div>
+                  <div>
+                    <div class="action-name">{{ patient.name }}</div>
+                    <div class="action-dept">{{ patient.department }}</div>
+                  </div>
+                </div>
+
+                <div class="missing-detail-tags">
+                  <ng-container *ngIf="patient.missingVitalFields.length > 0">
+                    <span class="field-group-label">{{ 'VITALS' | translate }}:</span>
+                    <span class="missing-field-tag" *ngFor="let f of patient.missingVitalFields">
+                      {{ f }}
+                    </span>
+                  </ng-container>
+                  <ng-container *ngIf="patient.missingSymptomFields.length > 0">
+                    <span class="field-group-label symptoms-label">{{ 'SYMPTOMS' | translate }}:</span>
+                    <span class="missing-field-tag symptom-tag"
+                      *ngFor="let f of patient.missingSymptomFields">
+                      {{ f }}
+                    </span>
+                  </ng-container>
+                </div>
+
+                <button mat-flat-button class="reminder-btn"
+                  (click)="openReminderFor(patient)"
+                  [class.active]="selectedReminderId === patient._id">
+                  <i-tabler name="send" class="icon-14"></i-tabler>
+                  {{ 'REMIND' | translate }}
+                </button>
+              </div>
+
+              <div class="reminder-panel" *ngIf="selectedReminderId === patient._id">
+                <div class="reminder-panel-title">
+                  <i-tabler name="message" class="icon-16"></i-tabler>
+                  {{ 'CHOOSE_MESSAGE_FOR' | translate }} {{ patient.name }}
+                </div>
+
+                <mat-form-field appearance="outline" class="reminder-message-select">
+                  <mat-label>{{ 'REMINDER_MESSAGE' | translate }}</mat-label>
+                  <mat-select [(ngModel)]="selectedReminderMessage">
+                    <mat-option *ngFor="let opt of reminderMessageOptions" [value]="opt.value">
+                      {{ opt.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <div class="reminder-preview" *ngIf="selectedReminderMessage">
+                  {{ selectedReminderMessage }}
+                </div>
+
+                <div class="reminder-panel-actions">
+                  <button mat-flat-button color="primary" (click)="confirmReminder(patient)">
+                    <i-tabler name="send" class="icon-14"></i-tabler>
+                    {{ 'SEND' | translate }}
+                  </button>
+                  <button mat-stroked-button (click)="closeReminder()">
+                    {{ 'CANCEL' | translate }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+</div>

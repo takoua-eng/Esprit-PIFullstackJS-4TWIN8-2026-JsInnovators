@@ -1,0 +1,125 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2 class="dialog-title">
+      <mat-icon class="header-icon">assessment</mat-icon>
+      Add New Auditor
+    </h2>
+    <p class="dialog-subtitle">Please fill in the auditor's information below</p>
+  </div>
+
+  <form [formGroup]="auditorForm" (ngSubmit)="onSubmit()" class="auditor-form">
+    <!-- Personal Information Section -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <mat-icon>account_circle</mat-icon>
+        Personal Information
+      </h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>First Name</mat-label>
+          <input matInput formControlName="firstName" placeholder="Enter first name">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="auditorForm.get('firstName')?.invalid && auditorForm.get('firstName')?.touched">
+            {{ getErrorMessage('firstName') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Last Name</mat-label>
+          <input matInput formControlName="lastName" placeholder="Enter last name">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="auditorForm.get('lastName')?.invalid && auditorForm.get('lastName')?.touched">
+            {{ getErrorMessage('lastName') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Email Address</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="auditor@hospital.tn">
+          <mat-icon matSuffix>email</mat-icon>
+          <mat-error *ngIf="auditorForm.get('email')?.invalid && auditorForm.get('email')?.touched">
+            {{ getErrorMessage('email') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Phone Number</mat-label>
+          <input matInput formControlName="phone" placeholder="+216 XX XXX XXX">
+          <mat-icon matSuffix>phone</mat-icon>
+          <mat-error *ngIf="auditorForm.get('phone')?.invalid && auditorForm.get('phone')?.touched">
+            {{ getErrorMessage('phone') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Audit Qualifications Section -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <mat-icon>work</mat-icon>
+        Audit Qualifications
+      </h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Department</mat-label>
+          <mat-select formControlName="department">
+            <mat-option *ngFor="let dept of departmentOptions" [value]="dept">{{ dept }}</mat-option>
+          </mat-select>
+          <mat-icon matSuffix>domain</mat-icon>
+          <mat-error *ngIf="auditorForm.get('department')?.invalid && auditorForm.get('department')?.touched">
+            {{ getErrorMessage('department') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Primary Certification</mat-label>
+          <mat-select formControlName="certifications">
+            <mat-option *ngFor="let cert of certificationOptions" [value]="cert">{{ cert }}</mat-option>
+          </mat-select>
+          <mat-icon matSuffix>verified</mat-icon>
+          <mat-error *ngIf="auditorForm.get('certifications')?.invalid && auditorForm.get('certifications')?.touched">
+            {{ getErrorMessage('certifications') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Focus Area</mat-label>
+          <mat-select formControlName="focusArea">
+            <mat-option *ngFor="let area of focusAreaOptions" [value]="area">{{ area }}</mat-option>
+          </mat-select>
+          <mat-icon matSuffix>target</mat-icon>
+          <mat-error *ngIf="auditorForm.get('focusArea')?.invalid && auditorForm.get('focusArea')?.touched">
+            {{ getErrorMessage('focusArea') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Years of Experience</mat-label>
+          <input matInput type="number" formControlName="yearsExperience" placeholder="0" min="0" max="60">
+          <mat-icon matSuffix>timeline</mat-icon>
+          <mat-error *ngIf="auditorForm.get('yearsExperience')?.invalid && auditorForm.get('yearsExperience')?.touched">
+            {{ getErrorMessage('yearsExperience') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="dialog-actions">
+      <button mat-button type="button" (click)="onCancel()" class="cancel-button">
+        <mat-icon>close</mat-icon>
+        Cancel
+      </button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="auditorForm.invalid" class="submit-button">
+        <mat-icon>add</mat-icon>
+        Add Auditor
+      </button>
+    </div>
+  </form>
+</div>

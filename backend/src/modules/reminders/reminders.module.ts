@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Reminder, ReminderSchema } from './reminder.schema';
-import { User, UserSchema } from '../users/user.schema';
+import { User, UserSchema } from '../users/users.schema';
 import { Role, RoleSchema } from '../roles/role.schema';
 import { RemindersService } from './reminders.service';
 import { RemindersController } from './reminders.controller';

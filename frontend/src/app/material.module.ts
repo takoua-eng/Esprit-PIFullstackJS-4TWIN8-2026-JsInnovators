@@ -80,6 +80,7 @@ import { MatTableModule } from '@angular/material/table';
     MatPaginatorModule,
     MatSortModule,
     MatTableModule,
+    MatSlideToggleModule,
   ],
 })
 export class MaterialModule {}
