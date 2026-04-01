@@ -15,19 +15,16 @@
         <h2 class="title">Welcome to MediFollow</h2>
         <p class="subtitle">Your health monitoring dashboard</p>
 
-        <!-- SOCIAL LOGIN -->
-        <div class="social-login">
+        <div *ngIf="errorMessage" class="login-error" role="alert">
+          {{ errorMessage }}
+        </div>
 
-          <button mat-stroked-button class="social-btn">
+        <!-- SOCIAL LOGIN (placeholders; no backend yet) -->
+        <div class="social-login">
+          <button mat-stroked-button type="button" class="social-btn" disabled>
             <mat-icon>login</mat-icon>
             Google
           </button>
-
-          <button mat-stroked-button class="social-btn" (click)="loginWithFaceID()">
-            <mat-icon>face</mat-icon>
-            Face ID
-          </button>
-
         </div>
 
         <div class="divider">or sign in with</div>
@@ -86,9 +83,9 @@
             color="primary" 
             class="login-btn" 
             type="submit"
-            [disabled]="form.invalid">
+            [disabled]="form.invalid || loading">
 
-            Sign In
+            {{ loading ? 'Signing in…' : 'Sign In' }}
           </button>
 
         </form>

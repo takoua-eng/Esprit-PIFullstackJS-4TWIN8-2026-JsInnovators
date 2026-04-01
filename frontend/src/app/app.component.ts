@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { CoreService } from './services/core.service';
+import { pruneLocalStorageToWhitelist } from './core/app-storage';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +13,12 @@ import { TranslateService } from '@ngx-translate/core';
 export class AppComponent {
   title = 'MediFollow';
 
-  constructor(private translate: TranslateService) {
+  constructor(
+    private translate: TranslateService,
+    private core: CoreService,
+  ) {
+    pruneLocalStorageToWhitelist();
+    this.core.initUserRole();
     const savedLang = localStorage.getItem('app_language') || 'en';
     this.translate.addLangs(['en', 'fr', 'ar']);
     this.translate.setDefaultLang('en');

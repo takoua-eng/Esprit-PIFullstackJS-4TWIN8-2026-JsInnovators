@@ -4,10 +4,7 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/users.schema';
-import { UsersService } from '../users/users.service';
-import { SignUpDto } from '../auth/dto/SignUp.dto';
 import { SignInDto } from '../auth/dto/SignIn.dto';
-import { CreateUserDto } from '../auth/dto/create-user.dto';
 import { randomBytes } from 'crypto';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
@@ -16,7 +13,6 @@ import { ConfigService } from '@nestjs/config';
 export class AuthService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
-    private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -50,19 +46,55 @@ export class AuthService {
   
 
   // 🔹 Sign In
-  async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
-    const { email, password } = signInDto;
-    const user = await this.userModel.findOne({ email }).exec();
-    if (!user) throw new UnauthorizedException('Email ou mot de passe incorrect');
+  async signIn(
+    signInDto: SignInDto,
+  ): Promise<{ accessToken: string; role: string }> {
+    const rawEmail = signInDto?.email?.trim();
+    const password = signInDto?.password ?? '';
+    if (!rawEmail || !password) {
+      throw new UnauthorizedException('Email ou mot de passe incorrect');
+    }
+
+    // Case-insensitive email (do not filter isArchived here — we message explicitly)
+    const escaped = rawEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const user = await this.userModel
+      .findOne({
+        email: new RegExp(`^${escaped}$`, 'i'),
+      })
+      .populate<{ name: string }>('role')
+      .exec();
+    if (!user) {
+      throw new UnauthorizedException('Email ou mot de passe incorrect');
+    }
+
+    if (user.isArchived) {
+      throw new UnauthorizedException(
+        'Ce compte est archivé. Un administrateur doit le restaurer (isArchived: false) pour permettre la connexion.',
+      );
+    }
+
+    if (user.isActive === false) {
+      throw new UnauthorizedException('Compte désactivé');
+    }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) throw new UnauthorizedException('Email ou mot de passe incorrect');
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Email ou mot de passe incorrect');
+    }
 
-    // Génération du JWT (sans rôle)
-    const payload = { sub: user._id, email: user.email };
+    const roleName =
+      user.role && typeof user.role === 'object' && 'name' in user.role
+        ? String((user.role as { name: string }).name)
+        : '';
+
+    const payload = {
+      sub: user._id,
+      email: user.email,
+      role: roleName,
+    };
     const accessToken = this.jwtService.sign(payload);
 
-    return { accessToken };
+    return { accessToken, role: roleName };
   }
 
   // 🔹 Envoi email réinitialisation

@@ -26,11 +26,20 @@ import { CoordinatorModule } from './modules/coordinator/coordinator.module';
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        uri:
+      useFactory: (config: ConfigService) => {
+        const uri =
           config.get<string>('MONGODB_URI')?.trim() ||
-          'mongodb://127.0.0.1:27017/medifollow',
-      }),
+          'mongodb://127.0.0.1:27017/medifollow';
+        const dbName = config.get<string>('MONGODB_DB_NAME')?.trim();
+        return {
+          uri,
+          dbName: dbName || undefined,
+          serverSelectionTimeoutMS: 45_000,
+          retryWrites: true,
+          // Prefer IPv4; helps some networks where IPv6 SRV/DNS fails
+          family: 4,
+        };
+      },
       inject: [ConfigService],
     }),
 

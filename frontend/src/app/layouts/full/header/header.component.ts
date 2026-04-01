@@ -12,6 +12,8 @@ import { MaterialModule } from 'src/app/material.module';
 import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgScrollbarModule } from 'ngx-scrollbar';
+import { CoreService } from 'src/app/services/core.service';
+import { clearAuthLocalStorage } from 'src/app/core/app-storage';
 
 @Component({
   selector: 'app-header',
@@ -34,15 +36,15 @@ export class HeaderComponent implements OnInit {
   @Output() toggleMobileNav = new EventEmitter<void>();
 
   appName = 'MediFollow';
-  userRole = localStorage.getItem('user_role') || 'Admin';
 
   constructor(
     private router: Router,
     private translate: TranslateService,
+    readonly core: CoreService,
   ) {}
 
-  // ✅ CORRECT: ngOnInit bien défini
   ngOnInit(): void {
+    this.core.initUserRole();
     this.translate.onLangChange.subscribe(() => {
       // optionnel : refresh UI
     });
@@ -53,13 +55,9 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['/dashboard/profile']);
   }
 
-  // ✅ logout
   logout(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('app_language');
-    localStorage.removeItem('user_role');
-    localStorage.removeItem('high_contrast');
-
+    clearAuthLocalStorage();
+    this.core.clearRole();
     this.router.navigate(['/authentication/login']);
   }
 }
