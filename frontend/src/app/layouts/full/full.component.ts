@@ -18,10 +18,8 @@ import { AppNavItemComponent } from './sidebar/nav-item/nav-item.component';
 import { navItems } from './sidebar/sidebar-data';
 import { AppTopstripComponent } from './top-strip/topstrip.component';
 
-
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
-
 
 @Component({
   selector: 'app-full',
@@ -33,11 +31,11 @@ const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
     NgScrollbarModule,
     TablerIconsModule,
     HeaderComponent,
-    AppTopstripComponent
-],
+    AppTopstripComponent,
+  ],
   templateUrl: './full.component.html',
   styleUrls: [],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class FullComponent implements OnInit {
   navItems = navItems;
@@ -58,7 +56,6 @@ export class FullComponent implements OnInit {
     return this.isMobileScreen;
   }
 
-
   constructor(
     private settings: CoreService,
     private router: Router,
@@ -76,9 +73,6 @@ export class FullComponent implements OnInit {
         }
       });
 
-    // Initialize project theme with options
-
-
     // This is for scroll to top
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
@@ -87,7 +81,7 @@ export class FullComponent implements OnInit {
       });
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
   ngOnDestroy() {
     this.layoutChangesSubscription.unsubscribe();
@@ -110,7 +104,5 @@ export class FullComponent implements OnInit {
   onSidenavOpenedChange(isOpened: boolean) {
     this.isCollapsedWidthFixed = !this.isOver;
     this.options.sidenavOpened = isOpened;
-    //this.settings.setOptions(this.options);
   }
-
 }

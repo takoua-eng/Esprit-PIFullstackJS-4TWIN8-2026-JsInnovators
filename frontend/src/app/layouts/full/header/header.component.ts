@@ -31,10 +31,13 @@ export class HeaderComponent {
 
   appName = 'MediFollow';
 
-  constructor(private router: Router, private translate: TranslateService) {}
+  constructor(
+    private router: Router,
+    private translate: TranslateService,
+  ) {}
 
   goToProfile() {
-    this.router.navigate(['/dashboard/profile']);
+    this.router.navigate(['/admin/profile']);
   }
 
   logout() {

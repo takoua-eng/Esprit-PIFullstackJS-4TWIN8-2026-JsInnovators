@@ -1,0 +1,16 @@
+/* Styles copied from full layout */
+.mainWrapper {
+  height: 100vh;
+}
+
+.sidebarNav {
+  width: 280px;
+}
+
+.flex-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Add more from layouts/full scss */

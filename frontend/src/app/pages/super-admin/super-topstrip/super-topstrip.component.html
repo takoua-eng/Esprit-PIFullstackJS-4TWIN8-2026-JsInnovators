@@ -1,0 +1,43 @@
+<div
+  class="app-topstrip text-white p-y-16 p-x-24 w-100 d-flex align-items-center justify-content-between"
+  style="background-color: #468ecf"
+>
+  <!-- Left: logo only (sans texte 'MediFollow' ni 'Tableau de bord Admin') -->
+  <div class="d-flex align-items-center gap-16">
+    <img src="assets/images/medifollow-logo.png" alt="MediFollow" width="120" />
+  </div>
+
+  <!-- Right: language selector, contrast mode + environment hint -->
+  <div class="d-flex align-items-center gap-8">
+    <button
+      mat-stroked-button
+      [matMenuTriggerFor]="langMenu"
+      color="accent"
+      class="f-s-12"
+    >
+      {{ "LANGUAGE" | translate }}: {{ selectedLanguage | uppercase }}
+    </button>
+    <mat-menu #langMenu="matMenu">
+      <button
+        mat-menu-item
+        *ngFor="let lang of availableLanguages"
+        (click)="changeLanguage(lang.code)"
+      >
+        {{ lang.label }}
+      </button>
+    </mat-menu>
+
+    <button
+      mat-stroked-button
+      color="warn"
+      class="f-s-12"
+      (click)="toggleHighContrast()"
+    >
+      {{
+        highContrastEnabled
+          ? ("DISABLE_HIGH_CONTRAST" | translate)
+          : ("ENABLE_HIGH_CONTRAST" | translate)
+      }}
+    </button>
+  </div>
+</div>

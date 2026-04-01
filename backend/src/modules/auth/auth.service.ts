@@ -7,15 +7,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../users/user.schema';
+import { User } from '../users/users.schema';
 import { Role } from '../roles/role.schema';
 import { UsersService } from '../users/users.service';
 import { SignUpDto } from '../auth/dto/SignUp.dto';
 import { SignInDto } from '../auth/dto/SignIn.dto';
-import { CreateUserDto } from '../auth/dto/create-user.dto';
 import { randomBytes } from 'crypto';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
+import { CreatePatientDto } from '../users/dto/CreatePatientDto ';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +25,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   // 🔹 Mot de passe oublié
   async forgotPassword(email: string) {
@@ -63,28 +63,29 @@ export class AuthService {
 
   // 🔹 Sign Up
   async signUp(signUpDto: SignUpDto): Promise<User> {
-    return this.usersService.createUser(signUpDto as CreateUserDto);
+    return this.usersService.createPatient(signUpDto as CreatePatientDto);
   }
 
-  // 🔹 Sign In
-  // Sign In
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
     const { email, password } = signInDto;
-const user = await this.userModel
-  .findOne({ email })
-  .populate<{ role_id: Role }>('role_id') // ✅ correct
-  .exec();
+
+    const user = await this.userModel
+      .findOne({ email })
+      .populate('role') // ✅ صحيح
+      .exec();
+
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
       throw new UnauthorizedException('Invalid credentials');
 
-const payload = {
-  sub: user._id,
-  email: user.email,
-  role: (user.role_id as Role).name, // ✅ type-safe
-};
+    const payload = {
+      sub: user._id,
+      email: user.email,
+      role: (user.role as any).name,
+      permissions: (user.role as any).permissions,
+    };
 
     const accessToken = this.jwtService.sign(payload);
 

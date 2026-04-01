@@ -1,109 +1,186 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { User, UserDocument } from './user.schema';
-import { Role, RoleDocument } from '../roles/role.schema';
-import { CounterDocument } from './counter.schema';
-import { CreateUserDto } from '../auth/dto/create-user.dto';
-import { UpdateUserDto } from '../auth/dto/update-user.dto';
 
-const USER_ID_COUNTER = 'userId';
+import { User, UserDocument } from './users.schema';
+import { Role, RoleDocument } from '../roles/role.schema';
+
+import { CreatePatientDto } from './dto/CreatePatientDto ';
+import { CreateDoctorDto } from './dto/CreateDoctorDto ';
+import { CreateAdminDto } from './dto/CreateAdminDto ';
+import { CreateNurseDto } from './dto/CreateNurseDto ';
+import { CreateCoordinatorDto } from './dto/CreateCoordinatorDto ';
+import { CreateAuditorDto } from './dto/CreateAuditorDto ';
+import { Service } from '../service/services/service.schema';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
-    @InjectModel('Counter') private counterModel: Model<CounterDocument>,
-  ) { }
+    @InjectModel(Service.name) private serviceModel: Model<Service>,
+  ) {}
 
-  /** Get next sequential user ID (mediflow1, mediflow2, ...). Never reused after delete. */
-  private async getNextUserId(): Promise<string> {
-    const doc = await this.counterModel
-      .findOneAndUpdate(
-        { _id: USER_ID_COUNTER },
-        { $inc: { value: 1 } },
-        { new: true, upsert: true },
-      )
-      .exec();
-    return `mediflow${doc.value}`;
+  private async getRole(name: string) {
+    const role = await this.roleModel.findOne({ name });
+    if (!role) throw new NotFoundException(`Role ${name} not found`);
+    return role;
   }
 
-  // Création d'un utilisateur
-async createUser(createUserDto: CreateUserDto): Promise<UserDocument> {
-  const { role, password, ...rest } = createUserDto;
+  private async createUser(
+    dto: any,
+    roleName: string,
+    file?: Express.Multer.File,
+  ) {
+    const existingUser = await this.userModel.findOne({ email: dto.email });
+    if (existingUser) {
+      throw new BadRequestException('Email already exists');
+    }
 
-  // 🔍 chercher le rôle par NOM (role obligatoire)
-  const roleDoc = await this.roleModel.findOne({ name: role }).exec();
+    const role = await this.getRole(roleName);
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-  if (!roleDoc) {
-    throw new NotFoundException(`Role ${role} not found`);
+    return this.userModel.create({
+      ...dto,
+      password: hashedPassword,
+      role: role._id,
+      photo: file ? file.filename : null,
+    });
   }
 
-  // 🔐 hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const user = new this.userModel({
-    ...rest,
-    role: roleDoc._id, // ✅ stocker ObjectId
-    password: hashedPassword,
-  });
-
-  return user.save();
-}
-  // Récupérer tous les utilisateurs
-  async getAllUsers(): Promise<UserDocument[]> {
-    return this.userModel.find().populate('role').exec();
+  createPatient(dto: CreatePatientDto, file?: Express.Multer.File) {
+    return this.createUser(dto, 'patient', file);
   }
 
-  // Récupérer un utilisateur par userId (e.g. mediflow1) ou par ancien _id ObjectId
-  async getUser(id: string): Promise<UserDocument> {
-    let user = await this.userModel
-      .findOne({ userId: id })
-      .populate('role')
-      .exec();
-    if (!user && Types.ObjectId.isValid(id)) {
+  createDoctor(dto: CreateDoctorDto, file?: Express.Multer.File) {
+    return this.createUser(dto, 'doctor', file);
+  }
+
+  createNurse(dto: CreateNurseDto, file?: Express.Multer.File) {
+    return this.createUser(dto, 'nurse', file);
+  }
+
+  createCoordinator(dto: CreateCoordinatorDto, file?: Express.Multer.File) {
+    return this.createUser(dto, 'coordinator', file);
+  }
+
+  createAdmin(dto: CreateAdminDto, file?: Express.Multer.File) {
+    return this.createUser(dto, 'admin', file);
+  }
+
+  createAuditor(dto: CreateAuditorDto, file?: Express.Multer.File) {
+    return this.createUser(dto, 'auditor', file);
+  }
+
+  async getAllUsers() {
+    return this.userModel.find({ isArchived: { $ne: true } }).populate('role');
+  }
+
+  async getByRole(roleName: string) {
+    const role = await this.getRole(roleName);
+
+    return this.userModel
+      .find({ role: role._id, isArchived: { $ne: true } })
+      .populate('role');
+  }
+
+  async getUser(id: string) {
+    let user: UserDocument | null = null;
+
+    if (Types.ObjectId.isValid(id)) {
       user = await this.userModel
-        .findById(id)
+        .findOne({ _id: id, isArchived: { $ne: true } })
         .populate('role')
         .exec();
     }
-    if (!user) throw new NotFoundException(`User with id ${id} not found`);
+
+    if (!user) throw new NotFoundException('User not found');
+
     return user;
   }
 
-  // Modifier un utilisateur
-async updateUser(id: string, updateDto: any): Promise<UserDocument> {
-  const user = await this.userModel.findById(id).exec();
-  if (!user) throw new Error('User not found');
+  async updateUser(id: string, dto: any) {
+    const user = await this.userModel.findById(id);
+    if (!user) throw new NotFoundException('User not found');
 
-  Object.assign(user, updateDto);
-  await user.save();
-
-  return user; // ✅ Important
-}
-  // Supprimer un utilisateur (counter is not decremented; ID never reused)
-async deleteUser(id: string): Promise < void> {
-      let result = await this.userModel.findOneAndDelete({ _id: id }).exec();
-
-      if(!result && Types.ObjectId.isValid(id)) {
-      result = await this.userModel.findByIdAndDelete(id).exec();
-    }
-
-    if (!result) {
-      throw new Error('User not found');
-    }
+    Object.assign(user, dto);
+    return user.save();
   }
 
+  async deleteUser(id: string) {
+    const user = await this.userModel.findById(id);
+    if (!user) throw new NotFoundException('User not found');
 
-  async updateUserAvatar(id: string, file: Express.Multer.File): Promise<UserDocument> {
-  const user = await this.userModel.findById(id).exec();
-  if (!user) throw new Error('User not found');
+    user.isArchived = true;
+    return user.save();
+  }
 
-  user.photo = file.filename;
-  await user.save();
+  async restoreUser(id: string) {
+    const user = await this.userModel.findById(id);
+    if (!user) throw new NotFoundException('User not found');
 
-  return user;
-}
+    user.isArchived = false;
+    return user.save();
+  }
+
+  async updateUserAvatar(id: string, file: Express.Multer.File) {
+    const user = await this.userModel.findById(id);
+    if (!user) throw new NotFoundException('User not found');
+
+    user.photo = file ? file.filename : user.photo;
+    return user.save();
+  }
+
+  // ===== ROLE HELPERS =====
+  async getPatients() {
+    const role = await this.getRole('patient');
+    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
+  }
+
+  async getDoctors() {
+    const role = await this.getRole('doctor');
+    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
+  }
+
+  async getNurses() {
+    const role = await this.getRole('nurse');
+    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
+  }
+
+  async getCoordinators() {
+    const role = await this.getRole('coordinator');
+    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
+  }
+
+  async getAdmins() {
+    const role = await this.getRole('admin');
+    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
+  }
+
+  async getAuditors() {
+    const role = await this.getRole('auditor');
+    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
+  }
+
+  async activateUser(id: string) {
+    const user = await this.userModel.findById(id);
+
+    if (!user) throw new NotFoundException('User not found');
+
+    user.isActive = true;
+    return user.save();
+  }
+  async deactivateUser(id: string) {
+    const user = await this.userModel.findById(id);
+
+    if (!user) throw new NotFoundException('User not found');
+
+    user.isActive = false; // ✅ correct
+    return user.save();
+  }
 }

@@ -7,7 +7,7 @@ export const navItems: NavItem[] = [
   {
     displayName: 'DASHBOARD',
     iconName: 'gauge',
-    route: '/dashboard/admin',
+    route: '/admin',
     bgcolor: 'primary',
     chip: true,
     chipClass: 'bg-primary text-white',
@@ -16,42 +16,48 @@ export const navItems: NavItem[] = [
   {
     displayName: 'USERS',
     iconName: 'users',
-    route: '/dashboard/admin',
+    route: '/admin',
     bgcolor: 'secondary',
     children: [
       {
         displayName: 'PATIENTS',
         iconName: 'notes',
-        route: '/dashboard/admin/patients',
+        route: '/admin/patients',
         bgcolor: 'tranparent',
       },
       {
         displayName: 'PHYSICIANS',
         iconName: 'stethoscope',
-        route: '/dashboard/admin/physicians',
+        route: '/admin/medecins',
         bgcolor: 'tranparent',
       },
       {
         displayName: 'NURSES',
         iconName: 'nurse',
-        route: '/dashboard/admin/nurses',
+        route: '/admin/nurses',
         bgcolor: 'tranparent',
       },
       {
         displayName: 'COORDINATORS',
         iconName: 'users-group',
-        route: '/dashboard/admin/coordinators',
+        route: '/admin/coordinateurs',
         bgcolor: 'tranparent',
       },
       {
         displayName: 'AUDITORS',
         iconName: 'check',
-        route: '/dashboard/admin/auditors',
+        route: '/admin/auditors',
         bgcolor: 'tranparent',
       },
+      {
+        displayName: 'PROFILE',
+        iconName: 'user',
+        route: '/admin/profile',  // ✅ هذا هو الحل لخطأ 'dashboard/profile'
+      },
+
     ],
   },
- /* {
+  /* {
     displayName: 'Dashboard 1',
     iconName: 'layout-dashboard',
     route: 'https://spike-angular-pro-main.netlify.app/dashboards/dashboard1',
@@ -236,12 +242,12 @@ export const navItems: NavItem[] = [
       },
     ],
   },
-  
+
   {
     displayName: 'Blog',
     iconName: 'chart-donut-3',
     bgcolor: 'secondary',
-    
+
     route: 'apps/blog',
     children: [
       {
@@ -512,7 +518,7 @@ export const navItems: NavItem[] = [
     iconName: 'layout',
     route: 'widgets',
     bgcolor: 'success',
-    
+
     children: [
       {
         displayName: 'Cards',
@@ -568,7 +574,7 @@ export const navItems: NavItem[] = [
     displayName: 'Elements',
     iconName: 'apps',
     bgcolor: 'secondary',
-    
+
     route: 'forms/forms-elements',
     children: [
       {
@@ -678,7 +684,7 @@ export const navItems: NavItem[] = [
     chipClass: 'bg-light-primary text-primary',
     chipContent: 'PRO',
   },
-  
+
   {
     navCap: 'Tables',
   },
@@ -687,7 +693,7 @@ export const navItems: NavItem[] = [
     iconName: 'layout',
     route: 'tables',
     bgcolor: 'warning',
-    
+
     children: [
       {
         displayName: 'Basic Table',
@@ -945,7 +951,7 @@ export const navItems: NavItem[] = [
         bgcolor: 'tranparent',
         external: true,
         chip: true,
-        chipClass: 'bg-light-primary text-primary', 
+        chipClass: 'bg-light-primary text-primary',
         chipContent: 'PRO',
         route: 'https://spike-angular-pro-main.netlify.app/authentication/login',
       },
@@ -956,7 +962,7 @@ export const navItems: NavItem[] = [
     iconName: 'user-plus',
     bgcolor: 'warning',
     route: '/authentication/register',
-  /*  children: [
+    /*  children: [
       {
         displayName: 'Register',
         iconName: 'point',
@@ -979,9 +985,9 @@ export const navItems: NavItem[] = [
     displayName: 'Forgot Pwd',
     iconName: 'rotate',
     bgcolor: 'success',
-    
+
     route: '/authentication/forgot-password',
-   /* children: [
+    /* children: [
       {
         displayName: 'Side Forgot Pwd',
         iconName: 'point',
@@ -1004,11 +1010,11 @@ export const navItems: NavItem[] = [
       },
     ],*/
   },
- /* {
+  /* {
     displayName: 'Two Steps',
     iconName: 'zoom-code',
     bgcolor: 'error',
-    
+
     route: '/authentication',
     children: [
       {

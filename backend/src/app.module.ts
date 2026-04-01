@@ -10,10 +10,11 @@ import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { User, UserSchema } from './modules/users/user.schema';
+import { User, UserSchema } from './modules/users/users.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
 import { UploadModule } from './modules/upload/upload.module';
+import { ServicesModule } from './modules/service/services/services.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UploadModule } from './modules/upload/upload.module';
     RolesModule,
     AuthModule,
     UploadModule,
+    ServicesModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -1,0 +1,23 @@
+{
+  "DASHBOARD": "لوحة التحكم",
+  "USERS": "المستخدمين",
+  "PATIENTS": "المرضى",
+  "PHYSICIANS": "الأطباء",
+  "NURSES": "الممرضات",
+  "COORDINATORS": "المنسقين",
+  "AUDITORS": "المدققين",
+  "ADMIN": "مدير",
+  "SUPER_ADMIN": "سوبر أدمن",
+  "ADMIN_USERS": "مستخدمو الإدارة",
+  "LANGUAGE": "اللغة",
+  "ENABLE_HIGH_CONTRAST": "تباين عالي",
+  "DISABLE_HIGH_CONTRAST": "الوضع العادي",
+  "PROFILE": "الملف الشخصي",
+  "LOGOUT": "تسجيل الخروج",
+  "SUPER_ADMIN_MENU": "سوبر أدمن",
+  "MANAGE_USERS": "إدارة المستخدمين",
+  "ADMINS": "المدراء",
+  "MEDECINS": "الأطباء",
+  "REPORTS": "التقارير",
+  "SETTINGS": "الإعدادات"
+}

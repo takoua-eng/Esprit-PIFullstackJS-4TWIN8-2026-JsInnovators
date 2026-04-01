@@ -1,0 +1,36 @@
+<!-- src/app/pages/super-admin/full-super/full-super.component.html -->
+<app-super-topstrip></app-super-topstrip>
+<mat-sidenav-container
+  class="mainWrapper blue_theme light-theme"
+  autosize
+  autoFocus
+  dir="ltr"
+>
+  <mat-sidenav
+    #leftsidenav
+    [mode]="isOver ? 'over' : 'side'"
+    [opened]="!isOver"
+    (openedChange)="onSidenavOpenedChange($event)"
+    class="sidebarNav"
+  >
+    <div class="flex-layout">
+      <!-- ✅ استخدم app-super-sidebar بدلاً من app-sidebar -->
+      <app-super-sidebar
+        (toggleMobileNav)="sidenav.toggle()"
+        [showToggle]="isOver"
+      ></app-super-sidebar>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="contentWrapper" #content>
+    <main class="pageWrapper maxWidth">
+      <app-header
+        [showToggle]="!isOver"
+        (toggleMobileNav)="sidenav.toggle()"
+      ></app-header>
+      <div class="m-t-30">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
