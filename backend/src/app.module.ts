@@ -14,6 +14,12 @@ import { User, UserSchema } from './modules/users/user.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
 import { UploadModule } from './modules/upload/upload.module';
+import { VitalParametersModule } from './modules/vital-parameters/vital-parameters.module';
+import { SymptomsModule } from './modules/symptoms/symptoms.module';
+import { AutoAlertsModule } from './modules/auto-alerts/auto-alerts.module';
+import { QuestionnaireResponseModule } from './modules/questionnaire-responses/questionnaire-response.module';
+import { PatientNotesModule } from './modules/patient-notes/patient-notes.module';
+import { QuestionnaireTemplatesModule } from './modules/questionnaire-templates/questionnaire-templates.module';
 
 @Module({
   imports: [
@@ -34,6 +40,12 @@ import { UploadModule } from './modules/upload/upload.module';
     RolesModule,
     AuthModule,
     UploadModule,
+    VitalParametersModule,
+    SymptomsModule,
+    AutoAlertsModule,
+    QuestionnaireResponseModule,
+    PatientNotesModule,
+    QuestionnaireTemplatesModule,
   ],
 })
 export class AppModule implements NestModule {

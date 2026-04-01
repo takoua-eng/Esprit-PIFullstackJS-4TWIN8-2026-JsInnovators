@@ -1,0 +1,71 @@
+﻿<div class="profile-container">
+  <div class="page-header">
+    <h2>My Profile</h2>
+    <p class="subtitle">Your account information</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading profile...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!isLoading && !error && user" class="profile-content">
+    <!-- Avatar card -->
+    <mat-card class="avatar-card">
+      <mat-card-content>
+        <div class="avatar-circle">{{ getInitials() }}</div>
+        <h3>{{ user.firstName }} {{ user.lastName }}</h3>
+        <p class="role-badge">Patient</p>
+        <p class="email">{{ user.email }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Info card -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>Personal Information</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">First Name</span>
+            <span class="value">{{ user.firstName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Last Name</span>
+            <span class="value">{{ user.lastName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Email</span>
+            <span class="value">{{ user.email }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Phone</span>
+            <span class="value">{{ user.phone || 'Not provided' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Date of Birth</span>
+            <span class="value">{{ formatDate(user.dateOfBirth) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Gender</span>
+            <span class="value">{{ user.gender ? (user.gender | titlecase) : 'Not provided' }}</span>
+          </div>
+          <div class="info-item" *ngIf="user.medicalRecordNumber">
+            <span class="label">Medical Record #</span>
+            <span class="value">{{ user.medicalRecordNumber }}</span>
+          </div>
+          <div class="info-item" *ngIf="user.department">
+            <span class="label">Department</span>
+            <span class="value">{{ user.department }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

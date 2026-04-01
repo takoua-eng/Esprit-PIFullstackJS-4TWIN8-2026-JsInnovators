@@ -1,19 +1,17 @@
 <mat-toolbar class="topbar gap-10">
 
   <!-- Mobile Menu -->
-
   <button mat-icon-button (click)="toggleMobileNav.emit()" class="d-flex d-md-none justify-content-center">
     <i-tabler name="menu-2" class="icon-20 d-flex"></i-tabler>
   </button>
 
-  <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Notifications">
-    <i-tabler class="d-flex" name="bell" matBadge="1" matBadgeColor="primary"></i-tabler>
+  <!-- Alert Bell with live badge -->
+  <button mat-icon-button routerLink="/dashboard/patient/alerts" aria-label="Alerts">
+    <span class="bell-wrapper">
+      <i-tabler class="d-flex" name="bell"></i-tabler>
+      <span *ngIf="pendingAlertsCount > 0" class="alert-badge">{{ pendingAlertsCount }}</span>
+    </span>
   </button>
-  <mat-menu #menu="matMenu">
-    <button mat-menu-item>Item 1</button>
-    <button mat-menu-item>Item 2</button>
-  </mat-menu>
-
 
   <span class="flex-1-auto"></span>
 
@@ -24,17 +22,17 @@
 
   <mat-menu #profileMenu="matMenu" xPosition="before">
     <div class="px-4 py-2">
-      <div class="f-w-600">{{ 'APP_NAME' | translate }}</div>
-      <div class="text-muted f-s-12">{{ 'ADMIN' | translate }}</div>
+      <div class="f-w-600">MediFollow</div>
+      <div class="text-muted f-s-12">Patient Portal</div>
     </div>
     <mat-divider></mat-divider>
     <button mat-menu-item (click)="goToProfile()">
       <i-tabler name="user" class="icon-16"></i-tabler>
-      <span>{{ 'PROFILE' | translate }}</span>
+      <span>My Profile</span>
     </button>
     <button mat-menu-item (click)="logout()">
       <i-tabler name="logout" class="icon-16"></i-tabler>
-      <span>{{ 'LOGOUT' | translate }}</span>
+      <span>Logout</span>
     </button>
   </mat-menu>
 </mat-toolbar>

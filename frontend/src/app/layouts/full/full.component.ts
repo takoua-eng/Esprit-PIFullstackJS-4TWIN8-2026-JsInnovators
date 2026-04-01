@@ -16,6 +16,7 @@ import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { AppNavItemComponent } from './sidebar/nav-item/nav-item.component';
 import { navItems } from './sidebar/sidebar-data';
+import { adminNavItems, patientNavItems } from './sidebar/sidebar-data';
 import { AppTopstripComponent } from './top-strip/topstrip.component';
 
 
@@ -48,6 +49,15 @@ export class FullComponent implements OnInit {
   @ViewChild('content', { static: true }) content!: MatSidenavContent;
   //get options from service
   options = this.settings.getOptions();
+
+  ngOnInit(): void {
+    const userRole = localStorage.getItem('user_role');
+    if (userRole === 'Patient') {
+      this.navItems = patientNavItems;
+    } else {
+      this.navItems = adminNavItems;
+    }
+  }
   private layoutChangesSubscription = Subscription.EMPTY;
   private isMobileScreen = false;
   private isContentWidthFixed = true;
@@ -86,8 +96,6 @@ export class FullComponent implements OnInit {
         this.content.scrollTo({ top: 0 });
       });
   }
-
-  ngOnInit(): void { }
 
   ngOnDestroy() {
     this.layoutChangesSubscription.unsubscribe();

@@ -72,7 +72,7 @@ export class AuthService {
     const { email, password } = signInDto;
 const user = await this.userModel
   .findOne({ email })
-  .populate<{ role_id: Role }>('role_id') // ✅ correct
+  .populate<{ role: Role }>('role')
   .exec();
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
@@ -83,7 +83,7 @@ const user = await this.userModel
 const payload = {
   sub: user._id,
   email: user.email,
-  role: (user.role_id as Role).name, // ✅ type-safe
+  role: (user.role as unknown as Role)?.name ?? 'Patient',
 };
 
     const accessToken = this.jwtService.sign(payload);

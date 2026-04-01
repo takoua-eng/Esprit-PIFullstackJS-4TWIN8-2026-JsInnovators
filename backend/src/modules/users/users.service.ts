@@ -106,4 +106,13 @@ async deleteUser(id: string): Promise < void> {
 
   return user;
 }
+
+  async getUsersByRole(roleName: string): Promise<UserDocument[]> {
+    const roleDoc = await this.roleModel.findOne({ name: roleName }).exec();
+    if (!roleDoc) return [];
+    return this.userModel
+      .find({ role: roleDoc._id })
+      .select('firstName lastName email specialization department photo')
+      .exec();
+  }
 }

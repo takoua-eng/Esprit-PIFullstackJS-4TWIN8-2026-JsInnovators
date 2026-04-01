@@ -72,9 +72,13 @@
 
           </div>
 
-          <button mat-flat-button color="primary" class="login-btn" type="submit">
-            Sign In
+          <button mat-flat-button color="primary" class="login-btn" type="submit" [disabled]="isLoading">
+            {{ isLoading ? 'Connexion...' : 'Sign In' }}
           </button>
+
+          <div *ngIf="errorMessage" style="margin-top:10px; color:#c62828; font-size:0.88rem;">
+            {{ errorMessage }}
+          </div>
 
         </form>
 

@@ -12,6 +12,17 @@ import { CoordinateursComponent } from './admin/coordinateurs/coordinateurs';
 import { NursesComponent } from './admin/nurses/nurses';
 import { AuditorsComponent } from './admin/auditors/auditors';
 
+// Import des composants patient spécifiques
+import { DashboardComponent } from './patient/dashboard/dashboard.component';
+import { DossiersComponent } from './patient/dossiers/dossiers.component';
+import { ProfileComponent } from './patient/profile/profile.component';
+import { ParametersComponent } from './patient/parameters/parameters.component';
+import { SymptomsComponent } from './patient/symptoms/symptoms.component';
+import { QuestionnairesComponent } from './patient/questionnaires/questionnaires.component';
+import { HistoryComponent } from './patient/history/history.component';
+import { MessagesComponent } from './patient/messages/messages.component';
+import { AlertsComponent } from './patient/alerts/alerts.component';
+
 export const PagesRoutes: Routes = [
   {
     path: '',
@@ -79,4 +90,19 @@ export const PagesRoutes: Routes = [
       title: 'Profile',
     },
   },
+  {
+  path: 'patient',
+  children: [
+    { path: 'dashboard', component: DashboardComponent, data: { title: 'Dashboard' } },
+    { path: 'dossiers', component: DossiersComponent, data: { title: 'Dossiers' } },
+    { path: 'profile', component: ProfileComponent, data: { title: 'Profil' } },
+    { path: 'parameters', component: ParametersComponent, data: { title: 'Mes Paramètres' } },
+    { path: 'symptoms', component: SymptomsComponent, data: { title: 'Mes Symptômes' } },
+    { path: 'questionnaires', component: QuestionnairesComponent, data: { title: 'Questionnaires' } },
+    { path: 'history', component: HistoryComponent, data: { title: 'Historique' } },
+    { path: 'messages', component: MessagesComponent, data: { title: 'Messages' } },
+    { path: 'alerts', component: AlertsComponent, data: { title: 'Alerts' } },
+    { path: '', redirectTo: 'dashboard', pathMatch: 'full' }, // redirection si juste /patient
+  ],
+},
 ];

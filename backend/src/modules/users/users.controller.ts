@@ -45,6 +45,12 @@ export class UsersController {
     return this.usersService.getAllUsers();
   }
 
+  // 🔹 Get users by role name (must be before :id route)
+  @Get('by-role/:roleName')
+  findByRole(@Param('roleName') roleName: string): Promise<User[]> {
+    return this.usersService.getUsersByRole(roleName);
+  }
+
   // 🔹 Get one user by id
   @Get(':id')
   findOne(@Param('id') id: string): Promise<User> {

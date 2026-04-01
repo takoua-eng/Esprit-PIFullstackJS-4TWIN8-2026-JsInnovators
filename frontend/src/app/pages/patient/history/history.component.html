@@ -1,0 +1,140 @@
+﻿<div class="container">
+  <div class="page-header">
+    <h2>Medical History</h2>
+    <p class="subtitle">View your recorded vital parameters, symptoms, and questionnaire responses</p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading your history...</p>
+  </div>
+
+  <!-- ─── SECTION 1: Vital Parameters Charts ─── -->
+  <section *ngIf="!isLoading">
+    <div class="section-title">
+      <mat-icon>favorite</mat-icon>
+      <span>Vital Parameters</span>
+    </div>
+
+    <div *ngIf="!hasData" class="empty-state">
+      <mat-icon>query_stats</mat-icon>
+      <p>No vital parameters recorded yet.<br>Start by entering your measurements.</p>
+    </div>
+
+    <div *ngIf="hasData" class="charts-grid">
+      <mat-card>
+        <mat-card-content>
+          <apx-chart
+            [series]="temperatureChartOptions.series"
+            [chart]="temperatureChartOptions.chart"
+            [xaxis]="temperatureChartOptions.xaxis"
+            [yaxis]="temperatureChartOptions.yaxis"
+            [title]="temperatureChartOptions.title"
+            [colors]="temperatureChartOptions.colors"
+            [markers]="temperatureChartOptions.markers"
+            [annotations]="temperatureChartOptions.annotations">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-content>
+          <apx-chart
+            [series]="heartRateChartOptions.series"
+            [chart]="heartRateChartOptions.chart"
+            [xaxis]="heartRateChartOptions.xaxis"
+            [yaxis]="heartRateChartOptions.yaxis"
+            [title]="heartRateChartOptions.title"
+            [colors]="heartRateChartOptions.colors"
+            [markers]="heartRateChartOptions.markers"
+            [annotations]="heartRateChartOptions.annotations">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-content>
+          <apx-chart
+            [series]="weightChartOptions.series"
+            [chart]="weightChartOptions.chart"
+            [xaxis]="weightChartOptions.xaxis"
+            [yaxis]="weightChartOptions.yaxis"
+            [title]="weightChartOptions.title"
+            [colors]="weightChartOptions.colors"
+            [markers]="weightChartOptions.markers">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-content>
+          <apx-chart
+            [series]="bloodPressureChartOptions.series"
+            [chart]="bloodPressureChartOptions.chart"
+            [xaxis]="bloodPressureChartOptions.xaxis"
+            [yaxis]="bloodPressureChartOptions.yaxis"
+            [title]="bloodPressureChartOptions.title"
+            [colors]="bloodPressureChartOptions.colors"
+            [markers]="bloodPressureChartOptions.markers">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 2: Symptoms History ─── -->
+  <section *ngIf="!isLoading" class="mt-24">
+    <div class="section-title">
+      <mat-icon>sick</mat-icon>
+      <span>Symptom History</span>
+    </div>
+
+    <div *ngIf="symptoms.length === 0" class="empty-state">
+      <mat-icon>mood</mat-icon>
+      <p>No symptoms recorded yet.</p>
+    </div>
+
+    <mat-card *ngFor="let entry of symptoms" class="symptom-card">
+      <mat-card-content>
+        <div class="symptom-row">
+          <div class="symptom-main">
+            <span class="symptom-date">{{ entry.reportedAt | date:'MMM d, y, h:mm a' }}</span>
+            <span class="symptom-tags">
+              <mat-chip-set>
+                <mat-chip *ngFor="let s of entry.symptoms" color="warn">{{ s }}</mat-chip>
+              </mat-chip-set>
+            </span>
+          </div>
+          <button mat-stroked-button color="primary" (click)="toggleDetails(entry)">
+            <mat-icon>{{ expandedSymptom === entry ? 'expand_less' : 'expand_more' }}</mat-icon>
+            {{ expandedSymptom === entry ? 'Hide Details' : 'View Details' }}
+          </button>
+        </div>
+
+        <div *ngIf="expandedSymptom === entry" class="symptom-details">
+          <div class="detail-row">
+            <span>Pain Level</span>
+            <strong>{{ entry.painLevel }}/10</strong>
+          </div>
+          <div class="detail-row">
+            <span>Fatigue Level</span>
+            <strong>{{ entry.fatigueLevel }}/10</strong>
+          </div>
+          <div class="detail-row">
+            <span>Shortness of Breath</span>
+            <strong>{{ entry.shortnessOfBreath ? 'Yes' : 'No' }}</strong>
+          </div>
+          <div class="detail-row" *ngIf="entry.nausea !== undefined">
+            <span>Nausea</span>
+            <strong>{{ entry.nausea ? 'Yes' : 'No' }}</strong>
+          </div>
+          <div class="detail-row" *ngIf="entry.description">
+            <span>Notes</span>
+            <strong>{{ entry.description }}</strong>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </section>
+</div>

@@ -1,0 +1,78 @@
+﻿<div class="container">
+  <div class="page-header">
+    <h2>Vital Parameters</h2>
+    <p class="subtitle">Enter your daily vital measurements below</p>
+  </div>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>New Entry</mat-card-title>
+      <mat-card-subtitle>All fields are required</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="parametersForm" (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Temperature (&deg;C)</mat-label>
+            <input matInput type="number" formControlName="temperature" step="0.1" placeholder="36.5">
+            <mat-hint>Normal: 36.1 - 37.2</mat-hint>
+            <mat-error *ngIf="parametersForm.get('temperature')?.hasError('required')">Required field</mat-error>
+            <mat-error *ngIf="parametersForm.get('temperature')?.hasError('min') || parametersForm.get('temperature')?.hasError('max')">Value must be between 35 and 42</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Weight (kg)</mat-label>
+            <input matInput type="number" formControlName="weight" step="0.1" placeholder="70">
+            <mat-error *ngIf="parametersForm.get('weight')?.hasError('required')">Required field</mat-error>
+            <mat-error *ngIf="parametersForm.get('weight')?.hasError('min') || parametersForm.get('weight')?.hasError('max')">Value must be between 30 and 200</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Systolic Blood Pressure (mmHg)</mat-label>
+            <input matInput type="number" formControlName="bloodPressureSystolic" placeholder="120">
+            <mat-hint>Normal: 90 - 120</mat-hint>
+            <mat-error *ngIf="parametersForm.get('bloodPressureSystolic')?.hasError('required')">Required field</mat-error>
+            <mat-error *ngIf="parametersForm.get('bloodPressureSystolic')?.hasError('min') || parametersForm.get('bloodPressureSystolic')?.hasError('max')">Value must be between 80 and 200</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Diastolic Blood Pressure (mmHg)</mat-label>
+            <input matInput type="number" formControlName="bloodPressureDiastolic" placeholder="80">
+            <mat-hint>Normal: 60 - 80</mat-hint>
+            <mat-error *ngIf="parametersForm.get('bloodPressureDiastolic')?.hasError('required')">Required field</mat-error>
+            <mat-error *ngIf="parametersForm.get('bloodPressureDiastolic')?.hasError('min') || parametersForm.get('bloodPressureDiastolic')?.hasError('max')">Value must be between 50 and 120</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row single">
+          <mat-form-field appearance="outline">
+            <mat-label>Heart Rate (bpm)</mat-label>
+            <input matInput type="number" formControlName="heartRate" placeholder="72">
+            <mat-hint>Normal: 60 - 100</mat-hint>
+            <mat-error *ngIf="parametersForm.get('heartRate')?.hasError('required')">Required field</mat-error>
+            <mat-error *ngIf="parametersForm.get('heartRate')?.hasError('min') || parametersForm.get('heartRate')?.hasError('max')">Value must be between 40 and 200</mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Additional Notes (optional)</mat-label>
+          <textarea matInput formControlName="notes" rows="3" placeholder="Any symptoms or observations..."></textarea>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="!parametersForm.valid || isLoading">
+            <mat-icon>save</mat-icon>
+            <span *ngIf="!isLoading">Save Vital Parameters</span>
+            <span *ngIf="isLoading">Saving...</span>
+          </button>
+        </div>
+
+        <div *ngIf="successMessage" class="alert-success">{{ successMessage }}</div>
+        <div *ngIf="errorMessage" class="alert-error">{{ errorMessage }}</div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
