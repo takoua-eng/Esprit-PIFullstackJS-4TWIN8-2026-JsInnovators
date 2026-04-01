@@ -1,23 +1,30 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
-import { FormsModule } from '@angular/forms';
-import { ReactiveFormsModule } from '@angular/forms';
-
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { catchError } from 'rxjs';
+import { throwError } from 'rxjs';
+import * as SimpleWebAuthnBrowser from '@simplewebauthn/browser'; // ✅ importer ici
+ 
 @Component({
   selector: 'app-side-login',
-  imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule],
+  standalone: true,
+  imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule, HttpClientModule],
   templateUrl: './side-login.component.html',
 })
 export class AppSideLoginComponent {
-  constructor(private router: Router) {}
+
+
+  loading = false;
+  errorMessage = '';
+
+  constructor(private router: Router, private http: HttpClient) {}
 
   form = new FormGroup({
-    uname: new FormControl('', [Validators.required, Validators.minLength(3)]),
+    email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required]),
-    role: new FormControl('Admin', [Validators.required]),
   });
 
   get f() {
@@ -30,20 +37,58 @@ export class AppSideLoginComponent {
       return;
     }
 
-    const role = this.form.value.role as string;
-    localStorage.setItem('user_role', role);
-    localStorage.setItem('auth_token', 'mock_' + role + '_' + Date.now());
+    this.loading = true;
+    this.errorMessage = '';
 
-    if (role === 'SuperAdmin') {
-      this.router.navigate(['/dashboard/super-admin']);
-    } else if (role === 'Admin') {
-      this.router.navigate(['/dashboard/admin']);
-    } else {
-      this.router.navigate(['/dashboard']);
-    }
+    const { email, password } = this.form.value;
+
+    // 🔹 Appel HTTP POST /auth/login
+    this.http.post<{ accessToken: string }>('http://localhost:3000/auth/login', { email, password })
+      .pipe(
+        catchError(err => {
+          this.loading = false;
+          this.errorMessage = err.error?.message || 'Email ou mot de passe incorrect';
+          return throwError(() => err);
+        })
+      )
+      .subscribe(res => {
+        this.loading = false;
+
+        // 🔹 Stocker le token
+        localStorage.setItem('accessToken', res.accessToken);
+
+        // 🔹 Rediriger vers dashboard
+        this.router.navigate(['/admin']);
+      });
   }
 
-  loginWithFaceID() {
-    alert('Face ID authentication coming soon');
+ async loginWithFaceID() {
+    try {
+      this.loading = true;
+      this.errorMessage = '';
+
+      // 1️⃣ demander le challenge au backend
+      const options: any = await this.http
+        .get('http://localhost:3000/auth/webauthn/login-challenge?email=' + this.form.value.email)
+        .toPromise();
+
+      // 2️⃣ lancer la biométrie via le navigateur (Face ID / Touch ID)
+      const assertion = await SimpleWebAuthnBrowser.startAuthentication(options);
+
+      // 3️⃣ envoyer la réponse au backend pour validation
+      const res: any = await this.http
+        .post('http://localhost:3000/auth/webauthn/verify', assertion)
+        .toPromise();
+
+      // 4️⃣ stocker le token JWT et rediriger
+      localStorage.setItem('accessToken', res.accessToken);
+      this.router.navigate(['/admin']);
+      this.loading = false;
+
+    } catch (err: any) {
+      console.error(err);
+      this.loading = false;
+      this.errorMessage = err.error?.message || 'Face ID login failed';
+    }
   }
 }

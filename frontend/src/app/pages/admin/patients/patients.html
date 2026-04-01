@@ -2,71 +2,145 @@
   <div class="col-lg-12">
     <mat-card class="cardWithShadow m-b-24">
       <mat-card-content class="p-24">
-
-        <mat-card-title class="f-w-600 m-b-4">
-          {{ 'PATIENTS' | translate }}
-        </mat-card-title>
-
-        <mat-card-subtitle class="f-s-13 text-muted m-b-16">
-          {{ 'MANAGE_PATIENTS' | translate }} - MediFollow
-        </mat-card-subtitle>
-
-        <div class="d-flex justify-content-between align-items-center m-b-16 flex-wrap gap-2">
+        <!-- HEADER -->
+        <div
+          class="header d-flex justify-content-between align-items-center mb-4"
+        >
           <div>
-            <span class="f-s-14 text-muted">{{ 'TOTAL' | translate }} {{ 'PATIENTS' | translate }}</span>
-            <div class="f-w-600">{{ users.length }}</div>
+            <h2 class="title mb-1">Patients</h2>
+            <p class="subtitle text-muted">
+              Manage all patients in your system
+            </p>
           </div>
-
-          <button mat-flat-button color="primary" (click)="addUser()">
-            {{ 'ADD_PATIENT' | translate }}
+          <button mat-raised-button color="primary" (click)="addUser()">
+            <mat-icon>add</mat-icon>
+            Add Patient
           </button>
         </div>
 
-        <div class="table-responsive">
-          <table mat-table [dataSource]="users" class="w-100">
+        <!-- TOOLBAR -->
+        <div
+          class="toolbar d-flex justify-content-between align-items-center mb-3"
+        >
+          <div class="total">
+            Total: <strong>{{ dataSource.data.length }}</strong>
+          </div>
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-icon matPrefix>search</mat-icon>
+            <input
+              matInput
+              placeholder="Search patient..."
+              (keyup)="applyFilter($event)"
+            />
+          </mat-form-field>
+        </div>
 
+        <!-- LOADING -->
+        <div *ngIf="loading" class="loading text-center py-5">
+          <mat-progress-spinner
+            diameter="40"
+            mode="indeterminate"
+            color="primary"
+          ></mat-progress-spinner>
+          <p class="mt-3 text-muted">Loading patients...</p>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-container" *ngIf="!loading">
+          <table mat-table [dataSource]="dataSource" matSort>
+            <!-- PHOTO (CIRCLE) -->
+            <ng-container matColumnDef="photo">
+              <th mat-header-cell *matHeaderCellDef class="text-center">
+                Photo
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-center">
+                <div class="avatar-circle">
+                  <img
+                    *ngIf="row.photo"
+                    [src]="row.photo"
+                    [alt]="row.name"
+                    (error)="onImageError($event)"
+                  />
+                  <span *ngIf="!row.photo" class="avatar-initials">
+                    {{ getInitials(row.name) }}
+                  </span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- NAME -->
             <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef> {{ 'NAME' | translate }} </th>
-              <td mat-cell *matCellDef="let row"> {{ row.name }} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="email">
-              <th mat-header-cell *matHeaderCellDef> {{ 'EMAIL' | translate }} </th>
-              <td mat-cell *matCellDef="let row"> {{ row.email }} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="service">
-              <th mat-header-cell *matHeaderCellDef> {{ 'SERVICE_UNIT' | translate }} </th>
-              <td mat-cell *matCellDef="let row"> {{ row.service }} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef> {{ 'STATUS' | translate }} </th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
               <td mat-cell *matCellDef="let row">
-                <span class="badge"
-                      [ngClass]="row.status === 'Active' ? 'bg-light-success text-success' : 'bg-light-warning text-warning'">
-                  {{ row.status === 'Active' ? ('ACTIVE' | translate) : ('INACTIVE' | translate) }}
+                <div class="patient-name">{{ row.name }}</div>
+                <div class="patient-email">{{ row.email }}</div>
+              </td>
+            </ng-container>
+
+            <!-- PHONE -->
+            <ng-container matColumnDef="phone">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Phone</th>
+              <td mat-cell *matCellDef="let row">
+                <span class="phone-text">{{ row.phone }}</span>
+              </td>
+            </ng-container>
+
+            <!-- GENDER -->
+            <ng-container matColumnDef="gender">
+              <th mat-header-cell *matHeaderCellDef>Gender</th>
+              <td mat-cell *matCellDef="let row">
+                <span class="gender-badge" [ngClass]="row.gender.toLowerCase()">
+                  {{ row.gender }}
                 </span>
               </td>
             </ng-container>
 
+            <!-- STATUS -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let row">
+                <span
+                  class="status-badge"
+                  [ngClass]="row.isActive ? 'active' : 'inactive'"
+                >
+                  {{ row.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- ACTIONS -->
             <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef class="text-end"> {{ 'ACTIONS' | translate }} </th>
-              <td mat-cell *matCellDef="let row" class="text-end">
-                <button mat-icon-button color="primary" [matTooltip]="'EDIT' | translate">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button color="warn" [matTooltip]="'DEACTIVATE' | translate">
-                  <mat-icon>person_off</mat-icon>
-                </button>
+              <th mat-header-cell *matHeaderCellDef class="text-center">
+                Actions
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-center">
+                <div class="actions">
+                  <mat-slide-toggle
+                    [checked]="row.isActive"
+                    (click)="$event.preventDefault(); toggleStatus(row)"
+                    color="primary"
+                  >
+                  </mat-slide-toggle>
+                  <button
+                    mat-icon-button
+                    color="warn"
+                    (click)="deletePatient(row)"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
               </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
-        </div>
 
+          <mat-paginator
+            [pageSizeOptions]="[5, 10, 25]"
+            showFirstLastButtons
+          ></mat-paginator>
+        </div>
       </mat-card-content>
     </mat-card>
   </div>

@@ -957,30 +957,7 @@ export const navItems: NavItem[] = [
       },
     ],*/
   },
-  {
-    displayName: 'Register',
-    iconName: 'user-plus',
-    bgcolor: 'warning',
-    route: '/authentication/register',
-    /*  children: [
-      {
-        displayName: 'Register',
-        iconName: 'point',
-        bgcolor: 'tranparent',
-        route: '/authentication/register',
-      },
-      {
-        displayName: 'Side Register',
-        iconName: 'point',
-        bgcolor: 'tranparent',
-        external: true,
-        chip: true,
-        chipClass: 'bg-light-primary text-primary',
-        chipContent: 'PRO',
-        route: 'https://spike-angular-pro-main.netlify.app/authentication/side-register',
-      },
-    ],*/
-  },
+  
   {
     displayName: 'Forgot Pwd',
     iconName: 'rotate',

@@ -1,60 +1,75 @@
 <div class="login-wrapper">
+
   <mat-card class="login-card">
+
     <div class="login-grid">
-      <!-- LEFT SIDE (illustration) -->
+
+      <!-- LEFT SIDE -->
       <div class="login-image">
         <img src="assets/images/login.png" alt="login-image" />
       </div>
 
-      <!-- RIGHT SIDE (form) -->
+      <!-- RIGHT SIDE -->
       <div class="login-form">
+
         <h2 class="title">Welcome to MediFollow</h2>
         <p class="subtitle">Your health monitoring dashboard</p>
 
         <!-- SOCIAL LOGIN -->
         <div class="social-login">
+
           <button mat-stroked-button class="social-btn">
             <mat-icon>login</mat-icon>
             Google
           </button>
 
-          <button
-            mat-stroked-button
-            class="social-btn"
-            (click)="loginWithFaceID()"
-          >
+          <button mat-stroked-button class="social-btn" (click)="loginWithFaceID()">
             <mat-icon>face</mat-icon>
             Face ID
           </button>
+
         </div>
 
         <div class="divider">or sign in with</div>
 
         <!-- FORM -->
         <form [formGroup]="form" (ngSubmit)="submit()">
+
+          <!-- EMAIL -->
           <mat-form-field appearance="outline" class="full">
             <mat-label>Email</mat-label>
-            <input matInput formControlName="uname" placeholder="Email" />
+            <input 
+              matInput 
+              type="email"
+              formControlName="email" 
+              placeholder="Enter your email">
+
+            <mat-error *ngIf="form.get('email')?.hasError('required')">
+              Email is required
+            </mat-error>
+
+            <mat-error *ngIf="form.get('email')?.hasError('email')">
+              Invalid email format
+            </mat-error>
           </mat-form-field>
 
+          <!-- PASSWORD -->
           <mat-form-field appearance="outline" class="full">
             <mat-label>Password</mat-label>
-            <input matInput type="password" formControlName="password" />
+            <input 
+              matInput 
+              type="password" 
+              formControlName="password"
+              placeholder="Enter your password">
+
+            <mat-error *ngIf="form.get('password')?.hasError('required')">
+              Password is required
+            </mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full">
-            <mat-label>Role</mat-label>
-            <mat-select formControlName="role">
-              <mat-option value="SuperAdmin">Super Admin</mat-option>
-              <mat-option value="Admin">Admin</mat-option>
-              <mat-option value="Physician">Physician</mat-option>
-              <mat-option value="Nurse">Nurse</mat-option>
-              <mat-option value="Coordinator">Coordinator</mat-option>
-              <mat-option value="Patient">Patient</mat-option>
-            </mat-select>
-          </mat-form-field>
-
+          <!-- REMEMBER + FORGOT -->
           <div class="remember-row">
+
             <mat-checkbox formControlName="remember">
               Keep me logged in
             </mat-checkbox>
@@ -62,18 +77,26 @@
             <a routerLink="/authentication/forgot-password">
               Forgot password?
             </a>
+
           </div>
 
-          <button
-            mat-flat-button
-            color="primary"
-            class="login-btn"
+          <!-- SUBMIT -->
+          <button 
+            mat-flat-button 
+            color="primary" 
+            class="login-btn" 
             type="submit"
-          >
+            [disabled]="form.invalid">
+
             Sign In
           </button>
+
         </form>
+
       </div>
+
     </div>
+
   </mat-card>
+
 </div>

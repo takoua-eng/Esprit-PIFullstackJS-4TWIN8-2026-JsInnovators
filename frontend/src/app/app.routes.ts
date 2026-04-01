@@ -9,41 +9,58 @@ export const routes: Routes = [
   {
     path: '',
     children: [
-      { path: '', redirectTo: '/landing', pathMatch: 'full' },
-      { path: 'landing', component: LandingComponent },
+      {
+        path: '',
+        redirectTo: '/landing',
+        pathMatch: 'full',
+      },
 
-      // ✅ ADMIN - مسار منفصل
+      // Landing page
+      {
+        path: 'landing',
+        component: LandingComponent,
+      },
+
+      // ADMIN
       {
         path: 'admin',
         component: FullComponent,
         loadChildren: () =>
-          import('./pages/pages.routes').then((m) => m.AdminRoutes), // ✅ عدّل هذا
+          import('./pages/pages.routes').then((m) => m.AdminRoutes),
       },
 
-      // ✅ UI Components
+      // SUPER ADMIN
+      {
+        path: 'super-admin',
+        component: FullSuperComponent,
+        loadChildren: () =>
+          import('./pages/pages.routes').then((m) => m.SuperAdminRoutes),
+      },
+
+      // Dashboard (ancienne config)
+      {
+        path: 'dashboard',
+        component: FullComponent,
+        loadChildren: () =>
+          import('./pages/pages.routes').then((m) => m.PagesRoutes),
+      },
+
+      // UI Components
       {
         path: 'ui-components',
         component: FullComponent,
         loadChildren: () =>
           import('./pages/ui-components/ui-components.routes').then(
-            (m) => m.UiComponentsRoutes,
+            (m) => m.UiComponentsRoutes
           ),
       },
 
-      // ✅ Extra
+      // Extra pages
       {
         path: 'extra',
         component: FullComponent,
         loadChildren: () =>
           import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
-      },
-
-      // ✅ SUPER ADMIN - مسار منفصل
-      {
-        path: 'super-admin',
-        component: FullSuperComponent,
-        loadChildren: () =>
-          import('./pages/pages.routes').then((m) => m.SuperAdminRoutes), // ✅ عدّل هذا
       },
     ],
   },
@@ -57,10 +74,15 @@ export const routes: Routes = [
         path: 'authentication',
         loadChildren: () =>
           import('./pages/authentication/authentication.routes').then(
-            (m) => m.AuthenticationRoutes,
+            (m) => m.AuthenticationRoutes
           ),
       },
     ],
   },
-  { path: '**', redirectTo: 'authentication/error' },
+
+  // Error fallback
+  {
+    path: '**',
+    redirectTo: 'authentication/error',
+  },
 ];
