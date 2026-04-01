@@ -1,0 +1,47 @@
+.container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.symptoms-list {
+  margin-bottom: 20px;
+}
+
+.symptom-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.scale-field {
+  width: 150px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.form-actions {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.alert-success {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 6px;
+  border-left: 4px solid #43a047;
+}
+
+.alert-error {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 6px;
+  border-left: 4px solid #ef5350;
+}

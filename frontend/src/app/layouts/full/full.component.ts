@@ -13,10 +13,15 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { AppNavItemComponent } from './sidebar/nav-item/nav-item.component';
+import { navItems } from './sidebar/sidebar-data';
+import { patientNavItems } from './sidebar/sidebar-data';
 import { AppTopstripComponent } from './top-strip/topstrip.component';
 
 import { adminNavItems, coordinatorNavItems } from './sidebar/sidebar-data';
 import { NavItem } from './sidebar/nav-item/nav-item';
+
+
+
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -41,10 +46,15 @@ const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
 export class FullComponent implements OnInit {
   navItems: NavItem[] = [];
 
-  @ViewChild('leftsidenav') sidenav!: MatSidenav;
+  @ViewChild('leftsidenav')
+  public sidenav: MatSidenav;
+
+  resView = false;
+
   @ViewChild('content', { static: true }) content!: MatSidenavContent;
 
   options = this.settings.getOptions();
+
   private layoutChangesSubscription = Subscription.EMPTY;
   private isMobileScreen = false;
   private isContentWidthFixed = true;
@@ -59,14 +69,13 @@ export class FullComponent implements OnInit {
     private router: Router,
     private breakpointObserver: BreakpointObserver
   ) {
-    // Responsive
     this.layoutChangesSubscription = this.breakpointObserver
       .observe([MOBILE_VIEW, TABLET_VIEW])
       .subscribe((state) => {
         this.options.sidenavOpened = true;
         this.isMobileScreen = state.breakpoints[MOBILE_VIEW];
 
-        if (!this.options.sidenavCollapsed) {
+        if (this.options.sidenavCollapsed == false) {
           this.options.sidenavCollapsed = state.breakpoints[TABLET_VIEW];
         }
       });

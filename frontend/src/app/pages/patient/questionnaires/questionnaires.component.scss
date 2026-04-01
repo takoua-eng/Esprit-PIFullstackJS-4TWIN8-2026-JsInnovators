@@ -1,0 +1,103 @@
+.container {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  h2 { font-size: 1.6rem; font-weight: 600; margin: 0 0 6px; }
+  .subtitle { color: #6c757d; margin: 0; font-size: 0.95rem; }
+}
+
+.loading-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px;
+  color: #888;
+  text-align: center;
+  mat-icon { font-size: 48px; width: 48px; height: 48px; }
+  p { line-height: 1.6; }
+}
+
+.template-card {
+  margin-bottom: 16px;
+
+  .template-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &.avatar-done { background: #e8f5e9; mat-icon { color: #43a047; } }
+    &.avatar-todo { background: #e3f2fd; mat-icon { color: #1976d2; } }
+  }
+}
+
+.template-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  &.badge-done { background: #e8f5e9; color: #2e7d32; }
+  &.badge-todo { background: #fff3e0; color: #e65100; }
+}
+
+.q-count { font-size: 0.82rem; color: #888; }
+
+.question {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.q-text { margin: 0 0 12px; font-size: 0.95rem; font-weight: 500; color: #333; }
+
+.scale-field, .text-field { width: 100%; }
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  mat-radio-button { font-size: 0.9rem; }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.alert-success {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 6px;
+  border-left: 4px solid #43a047;
+}
+
+.alert-error {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 6px;
+  border-left: 4px solid #ef5350;
+}

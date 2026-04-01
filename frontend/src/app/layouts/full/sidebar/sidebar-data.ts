@@ -59,3 +59,61 @@ export const coordinatorNavItems: NavItem[] = [
 
 
 
+
+
+export const patientNavItems: NavItem[] = [
+  {
+    navCap: 'PATIENT',
+  },
+  {
+    displayName: 'Dashboard',
+    iconName: 'gauge',
+    route: '/dashboard/patient/dashboard',
+    bgcolor: 'primary',
+  },
+  {
+    displayName: 'Vital Parameters',
+    iconName: 'heartbeat',
+    route: '/dashboard/patient/parameters',
+    bgcolor: 'success',
+  },
+  {
+    displayName: 'Symptoms',
+    iconName: 'activity',
+    route: '/dashboard/patient/symptoms',
+    bgcolor: 'error',
+  },
+  {
+    displayName: 'Questionnaires',
+    iconName: 'clipboard-list',
+    route: '/dashboard/patient/questionnaires',
+    bgcolor: 'primary',
+  },
+  {
+    displayName: 'History',
+    iconName: 'history',
+    route: '/dashboard/patient/history',
+    bgcolor: 'secondary',
+  },
+  {
+    displayName: 'Messages',
+    iconName: 'message',
+    route: '/dashboard/patient/messages',
+    bgcolor: 'warning',
+  },
+  {
+    displayName: 'Alerts',
+    iconName: 'bell',
+    route: '/dashboard/patient/alerts',
+    bgcolor: 'error',
+  },
+  {
+    displayName: 'Profile',
+    iconName: 'user',
+    route: '/dashboard/patient/profile',
+    bgcolor: 'accent',
+  },
+];
+
+// For backward compatibility, keep navItems as adminNavItems
+export const navItems = adminNavItems;

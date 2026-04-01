@@ -1,0 +1,69 @@
+﻿<div class="container">
+  <div class="page-header">
+    <h2>Questionnaires</h2>
+    <p class="subtitle">Questionnaires assigned to you by your care team</p>
+  </div>
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading your questionnaires...</p>
+  </div>
+  <div *ngIf="!isLoading && noTemplatesYet" class="empty-state">
+    <mat-icon>assignment_late</mat-icon>
+    <p>No questionnaires assigned yet.<br>Your doctor or nurse will assign questionnaires when needed.</p>
+  </div>
+  <ng-container *ngIf="!isLoading && !noTemplatesYet">
+    <mat-card *ngFor="let t of templates" class="template-card">
+      <mat-card-header>
+        <div mat-card-avatar class="template-avatar" [class.avatar-done]="t.completedToday" [class.avatar-todo]="!t.completedToday">
+          <mat-icon>{{ t.completedToday ? 'check_circle' : 'assignment' }}</mat-icon>
+        </div>
+        <mat-card-title>{{ t.title }}</mat-card-title>
+        <mat-card-subtitle *ngIf="t.description">{{ t.description }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content *ngIf="!t.isOpen">
+        <div class="template-status">
+          <span class="badge" [class.badge-done]="t.completedToday" [class.badge-todo]="!t.completedToday">
+            <mat-icon>{{ t.completedToday ? 'check' : 'schedule' }}</mat-icon>
+            {{ t.completedToday ? 'Completed today' : 'Pending' }}
+          </span>
+          <span class="q-count">{{ t.questions.length }} question(s)</span>
+        </div>
+        <div *ngIf="t.successMessage" class="alert-success">{{ t.successMessage }}</div>
+      </mat-card-content>
+      <mat-card-actions *ngIf="!t.completedToday && !t.isOpen">
+        <button mat-raised-button color="primary" (click)="openTemplate(t)">
+          <mat-icon>edit</mat-icon> Fill Questionnaire
+        </button>
+      </mat-card-actions>
+      <mat-card-content *ngIf="t.isOpen && t.form">
+        <form [formGroup]="t.form" (ngSubmit)="submit(t)">
+          <div *ngFor="let q of t.questions" class="question">
+            <h4 class="q-text">{{ q.text }}</h4>
+            <mat-form-field *ngIf="q.type === 'scale'" appearance="outline" class="scale-field">
+              <mat-label>Score ({{ q.min ?? 1 }} -- {{ q.max ?? 10 }})</mat-label>
+              <input matInput type="number" [formControl]="getControl(t, q.key)" [min]="q.min ?? 1" [max]="q.max ?? 10">
+              <mat-error *ngIf="t.form.get(q.key)?.hasError('required')">Required</mat-error>
+              <mat-error *ngIf="t.form.get(q.key)?.hasError('min') || t.form.get(q.key)?.hasError('max')">Between {{ q.min ?? 1 }} and {{ q.max ?? 10 }}</mat-error>
+            </mat-form-field>
+            <mat-radio-group *ngIf="q.type === 'radio'" [formControl]="getControl(t, q.key)" class="radio-group">
+              <mat-radio-button *ngFor="let opt of q.options" [value]="opt">{{ opt }}</mat-radio-button>
+            </mat-radio-group>
+            <mat-form-field *ngIf="q.type === 'text'" appearance="outline" class="text-field">
+              <mat-label>Your answer</mat-label>
+              <textarea matInput [formControl]="getControl(t, q.key)" rows="3"></textarea>
+            </mat-form-field>
+          </div>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="!t.form!.valid || t.isSubmitting!">
+              <mat-icon>send</mat-icon>
+              <span *ngIf="!t.isSubmitting">Submit</span>
+              <span *ngIf="t.isSubmitting">Submitting...</span>
+            </button>
+            <button mat-stroked-button type="button" (click)="t.isOpen = false">Cancel</button>
+          </div>
+          <div *ngIf="t.errorMessage" class="alert-error">{{ t.errorMessage }}</div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>

@@ -12,6 +12,7 @@ import { MaterialModule } from 'src/app/material.module';
 import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgScrollbarModule } from 'ngx-scrollbar';
+import { PatientService } from 'src/app/services/patient.service';
 
 @Component({
   selector: 'app-header',
@@ -34,32 +35,38 @@ export class HeaderComponent implements OnInit {
   @Output() toggleMobileNav = new EventEmitter<void>();
 
   appName = 'MediFollow';
-  userRole = localStorage.getItem('user_role') || 'Admin';
+  userRole: string | null = null;
+  pendingAlertsCount = 0;
 
   constructor(
     private router: Router,
     private translate: TranslateService,
+    private patientService: PatientService
   ) {}
 
-  // ✅ CORRECT: ngOnInit bien défini
   ngOnInit(): void {
+    // Language change subscription
     this.translate.onLangChange.subscribe(() => {
-      // optionnel : refresh UI
+      // Refresh UI on language change
     });
+
+    // Get user role and pending alerts
+    this.userRole = localStorage.getItem('user_role');
+    const patientId = this.patientService.getCurrentPatientId();
+    if (patientId) {
+      this.patientService.getPendingAlertsCount().subscribe({
+        next: (count) => (this.pendingAlertsCount = count),
+        error: () => {},
+      });
+    }
   }
 
-  // ✅ navigation profile
   goToProfile(): void {
-    this.router.navigate(['/dashboard/profile']);
+    this.router.navigate(['/dashboard/patient/profile']);
   }
 
-  // ✅ logout
   logout(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('app_language');
-    localStorage.removeItem('user_role');
-    localStorage.removeItem('high_contrast');
-
+    localStorage.clear();
     this.router.navigate(['/authentication/login']);
   }
 }
