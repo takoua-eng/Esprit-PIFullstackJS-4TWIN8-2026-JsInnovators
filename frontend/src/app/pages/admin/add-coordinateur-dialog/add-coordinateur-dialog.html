@@ -22,113 +22,97 @@
       <input type="file" #fileInput hidden (change)="onFileSelected($event)">
     </div>
 
-    <!-- PERSONAL INFORMATION -->
-    <div class="form-section">
-      <h3 class="section-title">
-        <mat-icon>person</mat-icon>
-        Personal Information
-      </h3>
+    <!-- ROW 1 : First Name + Last Name -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>First Name</mat-label>
+        <input matInput formControlName="firstName">
+        <mat-error *ngIf="coordinatorForm.get('firstName')?.invalid">
+          {{ getErrorMessage('firstName') }}
+        </mat-error>
+      </mat-form-field>
 
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>First Name</mat-label>
-          <input matInput formControlName="firstName">
-          <mat-error *ngIf="coordinatorForm.get('firstName')?.invalid">
-            {{ getErrorMessage('firstName') }}
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Last Name</mat-label>
-          <input matInput formControlName="lastName">
-          <mat-error *ngIf="coordinatorForm.get('lastName')?.invalid">
-            {{ getErrorMessage('lastName') }}
-          </mat-error>
-        </mat-form-field>
-      </div>
-
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" formControlName="email">
-          <mat-error *ngIf="coordinatorForm.get('email')?.invalid">
-            {{ getErrorMessage('email') }}
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Phone</mat-label>
-          <input matInput formControlName="phone">
-          <mat-error *ngIf="coordinatorForm.get('phone')?.invalid">
-            {{ getErrorMessage('phone') }}
-          </mat-error>
-        </mat-form-field>
-      </div>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Last Name</mat-label>
+        <input matInput formControlName="lastName">
+        <mat-error *ngIf="coordinatorForm.get('lastName')?.invalid">
+          {{ getErrorMessage('lastName') }}
+        </mat-error>
+      </mat-form-field>
     </div>
 
-    <!-- WORK INFORMATION -->
-    <div class="form-section">
-      <h3 class="section-title">
-        <mat-icon>business</mat-icon>
-        Work Information
-      </h3>
+    <!-- ROW 2 : Email + Password + Phone -->
+    <div class="form-row three-cols">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email">
+        <mat-error *ngIf="coordinatorForm.get('email')?.invalid">
+          {{ getErrorMessage('email') }}
+        </mat-error>
+      </mat-form-field>
 
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Department</mat-label>
-          <mat-select formControlName="department">
-            <mat-option *ngFor="let dept of departmentOptions" [value]="dept">
-              {{ dept }}
-            </mat-option>
-          </mat-select>
-          <mat-error *ngIf="coordinatorForm.get('department')?.invalid">
-            {{ getErrorMessage('department') }}
-          </mat-error>
-        </mat-form-field>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password">
+        <mat-icon matSuffix>lock</mat-icon>
+        <mat-error *ngIf="coordinatorForm.get('password')?.invalid">
+          {{ getErrorMessage('password') }}
+        </mat-error>
+      </mat-form-field>
 
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Role</mat-label>
-          <mat-select formControlName="role">
-            <mat-option *ngFor="let role of roleOptions" [value]="role">
-              {{ role }}
-            </mat-option>
-          </mat-select>
-          <mat-error *ngIf="coordinatorForm.get('role')?.invalid">
-            {{ getErrorMessage('role') }}
-          </mat-error>
-        </mat-form-field>
-      </div>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Phone</mat-label>
+        <input matInput formControlName="phone">
+        <mat-error *ngIf="coordinatorForm.get('phone')?.invalid">
+          {{ getErrorMessage('phone') }}
+        </mat-error>
+      </mat-form-field>
+    </div>
 
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Specialization</mat-label>
-          <input matInput formControlName="specialization">
-          <mat-error *ngIf="coordinatorForm.get('specialization')?.invalid">
-            {{ getErrorMessage('specialization') }}
-          </mat-error>
-        </mat-form-field>
+    <!-- ROW 3 : Department + Role -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Department</mat-label>
+        <mat-select formControlName="department">
+          <mat-option *ngFor="let dept of departmentOptions" [value]="dept">
+            {{ dept }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="coordinatorForm.get('department')?.invalid">
+          {{ getErrorMessage('department') }}
+        </mat-error>
+      </mat-form-field>
 
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Years of Experience</mat-label>
-          <input matInput type="number" formControlName="yearsExperience">
-          <mat-error *ngIf="coordinatorForm.get('yearsExperience')?.invalid">
-            {{ getErrorMessage('yearsExperience') }}
-          </mat-error>
-        </mat-form-field>
-      </div>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="role">
+          <mat-option *ngFor="let role of roleOptions" [value]="role">
+            {{ role }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="coordinatorForm.get('role')?.invalid">
+          {{ getErrorMessage('role') }}
+        </mat-error>
+      </mat-form-field>
+    </div>
 
-      <!-- PASSWORD -->
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Password</mat-label>
-          <input matInput type="password" formControlName="password">
-          <mat-icon matSuffix>lock</mat-icon>
-          <mat-error *ngIf="coordinatorForm.get('password')?.invalid">
-            {{ getErrorMessage('password') }}
-          </mat-error>
-        </mat-form-field>
-      </div>
+    <!-- ROW 4 : Specialization + Years of Experience -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Specialization</mat-label>
+        <input matInput formControlName="specialization">
+        <mat-error *ngIf="coordinatorForm.get('specialization')?.invalid">
+          {{ getErrorMessage('specialization') }}
+        </mat-error>
+      </mat-form-field>
 
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Years of Experience</mat-label>
+        <input matInput type="number" formControlName="yearsExperience">
+        <mat-error *ngIf="coordinatorForm.get('yearsExperience')?.invalid">
+          {{ getErrorMessage('yearsExperience') }}
+        </mat-error>
+      </mat-form-field>
     </div>
 
     <!-- ACTIONS -->
@@ -136,7 +120,6 @@
       <button mat-button type="button" class="cancel-button" (click)="onCancel()">
         Cancel
       </button>
-
       <button mat-raised-button class="submit-button" type="submit">
         <mat-icon>save</mat-icon>
         Save Coordinator
