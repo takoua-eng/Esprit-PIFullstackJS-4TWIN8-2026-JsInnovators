@@ -1,32 +1,39 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import {
   CoordinatorService,
   CoordinatorPatientRow,
+  ComplianceRow,
   ReminderRow,
+  buildReminderMessages,
 } from 'src/app/services/coordinator.service';
 
 @Component({
   selector: 'app-reminders',
   standalone: true,
-  imports: [CommonModule, MaterialModule, TablerIconsModule, ReactiveFormsModule],
+  imports: [CommonModule, MaterialModule, TablerIconsModule, ReactiveFormsModule, FormsModule],
   templateUrl: './reminders.html',
-styleUrls: ['./reminders.scss'],
+  styleUrls: ['./reminders.scss'],
 })
 export class RemindersComponent implements OnInit {
   private coordinatorService = inject(CoordinatorService);
   private fb = inject(FormBuilder);
 
-  // ⚠️ Remplace par le vrai _id coordinator
   coordinatorId = '69c32545a5201407afd209cf';
 
   reminders: ReminderRow[] = [];
   patients: CoordinatorPatientRow[] = [];
+  complianceData: ComplianceRow[] = [];
 
   showForm = false;
+
+  // Message sélectionné dans la liste déroulante
+  selectedMessage = '';
+  messageOptions: { value: string; label: string }[] = [];
 
   reminderForm: FormGroup = this.fb.group({
     patientId: ['', Validators.required],
@@ -46,6 +53,7 @@ export class RemindersComponent implements OnInit {
   ngOnInit(): void {
     this.loadReminders();
     this.loadPatients();
+    this.loadCompliance();
   }
 
   loadReminders(): void {
@@ -62,9 +70,38 @@ export class RemindersComponent implements OnInit {
     });
   }
 
+  loadCompliance(): void {
+    this.coordinatorService.getComplianceToday(this.coordinatorId).subscribe({
+      next: (data) => (this.complianceData = data),
+      error: () => {},
+    });
+  }
+
+  // Quand on change de patient dans le formulaire
+  onPatientChange(patientId: string): void {
+    const compliance = this.complianceData.find((c) => c._id === patientId);
+
+    this.messageOptions = buildReminderMessages(
+      compliance?.missingVitalFields ?? [],
+      compliance?.missingSymptomFields ?? [],
+    );
+
+    this.selectedMessage = this.messageOptions[0]?.value || '';
+    this.reminderForm.get('message')?.setValue(this.selectedMessage);
+  }
+
+  onMessageSelect(value: string): void {
+    this.selectedMessage = value;
+    this.reminderForm.get('message')?.setValue(value);
+  }
+
   toggleForm(): void {
     this.showForm = !this.showForm;
-    if (!this.showForm) this.reminderForm.reset({ type: 'follow_up' });
+    if (!this.showForm) {
+      this.reminderForm.reset({ type: 'follow_up' });
+      this.messageOptions = [];
+      this.selectedMessage = '';
+    }
   }
 
   submitReminder(): void {
@@ -90,7 +127,6 @@ export class RemindersComponent implements OnInit {
     if (!reminder._id) return;
     this.coordinatorService.sendReminder(reminder._id).subscribe({
       next: () => this.loadReminders(),
-      error: (err) => console.error('Send reminder error', err),
     });
   }
 
@@ -98,16 +134,13 @@ export class RemindersComponent implements OnInit {
     if (!reminder._id) return;
     this.coordinatorService.cancelReminder(reminder._id).subscribe({
       next: () => this.loadReminders(),
-      error: (err) => console.error('Cancel reminder error', err),
     });
   }
 
   deleteReminder(reminder: ReminderRow): void {
-    if (!reminder._id) return;
-    if (!window.confirm('Delete this reminder?')) return;
+    if (!reminder._id || !window.confirm('Delete this reminder?')) return;
     this.coordinatorService.deleteReminder(reminder._id).subscribe({
       next: () => this.loadReminders(),
-      error: (err) => console.error('Delete reminder error', err),
     });
   }
 

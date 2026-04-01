@@ -8,13 +8,16 @@ import {
   CoordinatorPatientRow,
   ComplianceRow,
   CoordinatorService,
+  buildReminderMessages,
 } from 'src/app/services/coordinator.service';
 import { NgApexchartsModule } from 'ng-apexcharts';
+
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-coordinator-dashboard',
   standalone: true,
-  imports: [CommonModule, MaterialModule, TablerIconsModule, NgApexchartsModule],
+  imports: [CommonModule, MaterialModule, TablerIconsModule, NgApexchartsModule, FormsModule],
   templateUrl: './coordinator-dashboard.component.html',
   styleUrls: ['./coordinator-dashboard.component.scss'],
 })
@@ -37,19 +40,21 @@ export class CoordinatorDashboardComponent implements OnInit {
       missingSymptomsToday: 0,
     },
     departmentDistribution: [],
-    completenessDistribution: [],
     recentPatients: [],
   };
 
   complianceData: ComplianceRow[] = [];
-  displayedColumns: string[] = ['name', 'email', 'department', 'status'];
-  complianceColumns: string[] = ['name', 'department', 'vitals', 'symptoms', 'compliant'];
 
   departmentChart: any = null;
-  completenessChart: any = null;
+  submissionOverviewChart: any = null;
   complianceChart: any = null;
+  missingFieldsChart: any = null;
 
-  // Couleurs par département
+  // Pour le reminder inline dans la card
+  selectedReminderId: string | null = null;
+  selectedReminderMessage: string = '';
+  reminderMessageOptions: { value: string; label: string }[] = [];
+
   private deptColors: Record<string, string> = {
     Cardio: '#2563eb',
     Neurology: '#7c3aed',
@@ -63,7 +68,7 @@ export class CoordinatorDashboardComponent implements OnInit {
     this.coordinatorService.getDashboard(this.coordinatorId).subscribe({
       next: (data) => {
         this.dashboardData = data;
-        this.buildCharts();
+        this.buildDepartmentChart();
       },
       error: (err) => console.error('Dashboard error', err),
     });
@@ -72,6 +77,8 @@ export class CoordinatorDashboardComponent implements OnInit {
       next: (data) => {
         this.complianceData = data;
         this.buildComplianceChart(data);
+        this.buildSubmissionOverviewChart(data);
+        this.buildMissingFieldsChart(data);
       },
       error: (err) => console.error('Compliance error', err),
     });
@@ -81,107 +88,69 @@ export class CoordinatorDashboardComponent implements OnInit {
     return this.deptColors[label] || '#2563eb';
   }
 
-  private buildCharts(): void {
+  private buildDepartmentChart(): void {
     const deptLabels = this.dashboardData.departmentDistribution.map((i) => i.label);
     const deptValues = this.dashboardData.departmentDistribution.map((i) => i.value);
     const deptColors = deptLabels.map((l) => this.getDeptColor(l));
 
-    // Bar chart — une couleur par barre
     this.departmentChart = {
       series: [{ name: 'Patients', data: deptValues }],
-      chart: {
-        type: 'bar',
-        height: 300,
-        toolbar: { show: false },
-        fontFamily: 'inherit',
-        foreColor: '#6b7280',
-      },
+      chart: { type: 'bar', height: 300, toolbar: { show: false }, fontFamily: 'inherit', foreColor: '#6b7280' },
       colors: deptColors,
-      dataLabels: {
-        enabled: true,
-        style: { fontSize: '13px', fontWeight: 700, colors: ['#fff'] },
-      },
-      plotOptions: {
-        bar: {
-          borderRadius: 8,
-          columnWidth: '50%',
-          distributed: true, // une couleur par barre
-          dataLabels: { position: 'top' },
-        },
-      },
-      xaxis: {
-        categories: deptLabels,
-        axisBorder: { show: false },
-        axisTicks: { show: false },
-        labels: { style: { fontSize: '13px', fontWeight: 600 } },
-      },
-      yaxis: {
-        min: 0,
-        tickAmount: 4,
-        labels: { formatter: (val: number) => Math.floor(val).toString() },
-      },
+      dataLabels: { enabled: true, style: { fontSize: '13px', fontWeight: 700, colors: ['#fff'] } },
+      plotOptions: { bar: { borderRadius: 8, columnWidth: '50%', distributed: true } },
+      xaxis: { categories: deptLabels, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '13px', fontWeight: 600 } } },
+      yaxis: { min: 0, tickAmount: 4, labels: { formatter: (val: number) => Math.floor(val).toString() } },
       legend: { show: false },
       stroke: { show: false },
-      tooltip: {
-        theme: 'light',
-        y: { formatter: (val: number) => `${val} patient${val > 1 ? 's' : ''}` },
-      },
+      tooltip: { theme: 'light', y: { formatter: (val: number) => `${val} patient${val > 1 ? 's' : ''}` } },
       grid: { borderColor: 'rgba(0,0,0,0.06)', strokeDashArray: 4 },
     };
+  }
 
-    // Donut chart completeness — même style visuel que le bar
-    const total = this.dashboardData.summary.totalAssignedPatients;
-    const complete = this.dashboardData.summary.completeProfiles;
-    const incomplete = total - complete;
-    const completePct = total > 0 ? Math.round((complete / total) * 100) : 0;
+  private buildSubmissionOverviewChart(data: ComplianceRow[]): void {
+    const fullyCompliant = data.filter((p) => p.isFullyCompliant).length;
+    const partial = data.filter(
+      (p) => !p.isFullyCompliant && (p.vitalsSubmitted || p.symptomsSubmitted)
+    ).length;
+    const noSubmission = data.filter(
+      (p) => !p.vitalsSubmitted && !p.symptomsSubmitted
+    ).length;
+    const total = data.length;
+    const rate = total > 0 ? Math.round((fullyCompliant / total) * 100) : 0;
 
-    this.completenessChart = {
-      series: [complete, incomplete],
-      chart: {
-        type: 'donut',
-        height: 300,
-        fontFamily: 'inherit',
-        toolbar: { show: false },
-      },
-      colors: ['#10b981', '#ef7d57'],
-      labels: ['Complete', 'Incomplete'],
+    this.submissionOverviewChart = {
+      series: [fullyCompliant, partial, noSubmission],
+      chart: { type: 'donut', height: 280, fontFamily: 'inherit', toolbar: { show: false } },
+      colors: ['#10b981', '#f59e0b', '#ef4444'],
+      labels: ['Fully Compliant', 'Partial', 'No Submission'],
       dataLabels: {
         enabled: true,
         formatter: (val: number) => `${Math.round(val)}%`,
         style: { fontSize: '13px', fontWeight: 700 },
         dropShadow: { enabled: false },
       },
-      legend: {
-        show: true,
-        position: 'bottom',
-        fontSize: '13px',
-        fontWeight: 600,
-        markers: { width: 12, height: 12, radius: 6 },
-      },
+      legend: { show: true, position: 'bottom', fontSize: '13px', fontWeight: 600 },
       plotOptions: {
         pie: {
           donut: {
             size: '68%',
             labels: {
               show: true,
-              name: { show: true, fontSize: '14px', fontWeight: 600, color: '#374151' },
-              value: { show: true, fontSize: '26px', fontWeight: 700, color: '#111827' },
               total: {
                 show: true,
                 label: 'Compliance',
                 fontSize: '13px',
                 fontWeight: 600,
                 color: '#6b7280',
-                formatter: () => `${completePct}%`,
+                formatter: () => `${rate}%`,
               },
             },
           },
         },
       },
       stroke: { show: false },
-      tooltip: {
-        y: { formatter: (val: number) => `${val} patient${val > 1 ? 's' : ''}` },
-      },
+      tooltip: { y: { formatter: (val: number) => `${val} patient${val > 1 ? 's' : ''}` } },
     };
   }
 
@@ -189,38 +158,36 @@ export class CoordinatorDashboardComponent implements OnInit {
     if (data.length === 0) return;
 
     const names = data.map((p) => p.name.split(' ')[0]);
-    const vitals = data.map((p) => (p.vitalsSubmitted ? 1 : 0));
-    const symptoms = data.map((p) => (p.symptomsSubmitted ? 1 : 0));
+
+    // 0 = missing, 1 = submitted but incomplete, 2 = fully complete
+    const vitals = data.map((p) => {
+      if (!p.vitalsSubmitted) return 0;
+      if (!p.vitalsFullyComplete) return 1;
+      return 2;
+    });
+
+    const symptoms = data.map((p) => {
+      if (!p.symptomsSubmitted) return 0;
+      if (!p.symptomsFullyComplete) return 1;
+      return 2;
+    });
 
     this.complianceChart = {
       series: [
-        { name: 'Vitals Submitted', data: vitals },
-        { name: 'Symptoms Submitted', data: symptoms },
+        { name: 'Vitals', data: vitals },
+        { name: 'Symptoms', data: symptoms },
       ],
-      chart: {
-        type: 'bar',
-        height: 270,
-        toolbar: { show: false },
-        fontFamily: 'inherit',
-        foreColor: '#6b7280',
-        stacked: false,
-      },
+      chart: { type: 'bar', height: 270, toolbar: { show: false }, fontFamily: 'inherit', foreColor: '#6b7280' },
       colors: ['#2563eb', '#10b981'],
-      plotOptions: {
-        bar: {
-          borderRadius: 6,
-          columnWidth: '35%',
-          grouped: true,
-        },
-      },
+      plotOptions: { bar: { borderRadius: 6, columnWidth: '35%', grouped: true } },
       dataLabels: {
         enabled: true,
-        formatter: (val: number) => (val === 1 ? '✓' : '✗'),
-        style: {
-          fontSize: '14px',
-          fontWeight: 700,
-          colors: ['#fff'],
+        formatter: (val: number) => {
+          if (val === 0) return '✗';
+          if (val === 1) return '~';
+          return '✓';
         },
+        style: { fontSize: '14px', fontWeight: 700, colors: ['#fff'] },
       },
       xaxis: {
         categories: names,
@@ -230,37 +197,114 @@ export class CoordinatorDashboardComponent implements OnInit {
       },
       yaxis: {
         min: 0,
-        max: 1,
-        tickAmount: 1,
+        max: 2,
+        tickAmount: 2,
         labels: {
-          formatter: (val: number) => (val === 1 ? 'Yes' : 'No'),
+          formatter: (val: number) => {
+            if (val === 0) return 'Missing';
+            if (val === 1) return 'Partial';
+            return 'Complete';
+          },
         },
       },
       tooltip: {
         theme: 'light',
         y: {
-          formatter: (val: number) => (val === 1 ? '✓ Submitted' : '✗ Missing'),
+          formatter: (val: number) => {
+            if (val === 0) return '✗ Not submitted';
+            if (val === 1) return '~ Submitted but incomplete';
+            return '✓ Fully complete';
+          },
         },
       },
-      legend: {
-        show: true,
-        position: 'top',
-        fontSize: '13px',
-        fontWeight: 600,
-        markers: { width: 12, height: 12, radius: 6 },
-      },
+      legend: { show: true, position: 'top', fontSize: '13px', fontWeight: 600 },
       grid: { borderColor: 'rgba(0,0,0,0.06)', strokeDashArray: 4 },
     };
   }
 
-  get recentPatients(): CoordinatorPatientRow[] {
-    return this.dashboardData.recentPatients;
+  private buildMissingFieldsChart(data: ComplianceRow[]): void {
+    // Compte combien de fois chaque champ est manquant
+    const fieldCount: Record<string, number> = {};
+
+    for (const p of data) {
+      for (const f of p.missingVitalFields) {
+        fieldCount[f] = (fieldCount[f] || 0) + 1;
+      }
+      for (const f of p.missingSymptomFields) {
+        fieldCount[f] = (fieldCount[f] || 0) + 1;
+      }
+    }
+
+    const labels = Object.keys(fieldCount);
+    const values = Object.values(fieldCount);
+
+    if (labels.length === 0) {
+      this.missingFieldsChart = null;
+      return;
+    }
+
+    this.missingFieldsChart = {
+      series: [{ name: 'Patients with missing field', data: values }],
+      chart: { type: 'bar', height: 240, toolbar: { show: false }, fontFamily: 'inherit', foreColor: '#6b7280' },
+      colors: ['#ef4444'],
+      dataLabels: { enabled: true, style: { fontSize: '12px', fontWeight: 700, colors: ['#fff'] } },
+      plotOptions: { bar: { borderRadius: 6, columnWidth: '45%', horizontal: false } },
+      xaxis: {
+        categories: labels,
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        labels: { style: { fontSize: '12px' } },
+      },
+      yaxis: {
+        min: 0,
+        tickAmount: 3,
+        labels: { formatter: (val: number) => Math.floor(val).toString() },
+      },
+      tooltip: { theme: 'light', y: { formatter: (val: number) => `${val} patient${val > 1 ? 's' : ''}` } },
+      grid: { borderColor: 'rgba(0,0,0,0.06)', strokeDashArray: 4 },
+    };
+  }
+
+  get patientsNeedingAction(): ComplianceRow[] {
+    return this.complianceData.filter((p) => !p.isFullyCompliant);
   }
 
   get complianceRate(): number {
     if (this.complianceData.length === 0) return 0;
     const compliant = this.complianceData.filter((p) => p.isFullyCompliant).length;
     return Math.round((compliant / this.complianceData.length) * 100);
+  }
+
+  openReminderFor(patient: ComplianceRow): void {
+    this.selectedReminderId = patient._id;
+    this.reminderMessageOptions = buildReminderMessages(
+      patient.missingVitalFields,
+      patient.missingSymptomFields,
+    );
+    this.selectedReminderMessage = this.reminderMessageOptions[0]?.value || '';
+  }
+
+  closeReminder(): void {
+    this.selectedReminderId = null;
+    this.selectedReminderMessage = '';
+    this.reminderMessageOptions = [];
+  }
+
+  confirmReminder(patient: ComplianceRow): void {
+    if (!this.selectedReminderMessage.trim()) return;
+
+    this.coordinatorService
+      .createReminder(this.coordinatorId, {
+        patientId: patient._id,
+        type: 'follow_up',
+        message: this.selectedReminderMessage,
+      })
+      .subscribe({
+        next: () => {
+          this.closeReminder();
+        },
+        error: (err) => console.error('Reminder error', err),
+      });
   }
 
   navigateTo(path: string): void {

@@ -1,4 +1,5 @@
 <div class="patients-container">
+
   <mat-card class="welcome-card">
     <mat-card-header>
       <mat-card-title class="page-title">
@@ -7,25 +8,63 @@
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <p class="subtitle">All patients currently assigned to this coordinator.</p>
+      <p class="subtitle">
+        Patient compliance is based on today's vital signs and symptoms submissions.
+      </p>
     </mat-card-content>
   </mat-card>
+
+  <!-- Legend -->
+  <div class="legend-bar">
+    <div class="legend-item">
+      <span class="legend-dot green"></span>
+      <span><strong>Up to date</strong> — vitals & symptoms submitted today</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot orange"></span>
+      <span><strong>Incomplete today</strong> — one or both missing</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot grey"></span>
+      <span><strong>No data today</strong> — nothing submitted yet</span>
+    </div>
+  </div>
 
   <mat-card class="cardWithShadow table-card">
     <mat-card-content>
 
-      <div *ngIf="patients.length === 0" class="empty-state">
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-state">
+        <p>Loading patients...</p>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!loading && patients.length === 0" class="empty-state">
         <i-tabler name="users-off" class="empty-icon"></i-tabler>
         <h4>No assigned patients</h4>
         <p>Ask the admin to assign patients to this coordinator.</p>
       </div>
 
-      <div class="table-responsive" *ngIf="patients.length > 0">
+      <!-- Table -->
+      <div class="table-responsive" *ngIf="!loading && patients.length > 0">
         <table mat-table [dataSource]="patients" class="w-100">
 
           <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+            <th mat-header-cell *matHeaderCellDef>Patient</th>
+            <td mat-cell *matCellDef="let row">
+              <div class="patient-cell">
+                <div class="patient-avatar"
+                  [class.avatar-good]="row.isFullyCompliant"
+                  [class.avatar-warn]="!row.isFullyCompliant && row.status !== 'No data today'"
+                  [class.avatar-neutral]="row.status === 'No data today'">
+                  {{ row.name.charAt(0) }}
+                </div>
+                <div>
+                  <div class="patient-name">{{ row.name }}</div>
+                  <div class="patient-email">{{ row.email }}</div>
+                </div>
+              </div>
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="email">
@@ -35,25 +74,74 @@
 
           <ng-container matColumnDef="department">
             <th mat-header-cell *matHeaderCellDef>Department</th>
-            <td mat-cell *matCellDef="let row">{{ row.department }}</td>
+            <td mat-cell *matCellDef="let row">
+              <span class="dept-badge">{{ row.department }}</span>
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="medicalRecordNumber">
             <th mat-header-cell *matHeaderCellDef>Medical Record</th>
-            <td mat-cell *matCellDef="let row">{{ row.medicalRecordNumber || '—' }}</td>
+            <td mat-cell *matCellDef="let row">
+              <span class="record-number">{{ row.medicalRecordNumber || '—' }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="vitals">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="col-header">
+                <i-tabler name="heart-rate-monitor" class="col-icon"></i-tabler>
+                Vitals
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let row">
+              <div class="submission-indicator"
+                [class.submitted]="row.vitalsSubmitted"
+                [class.missing]="!row.vitalsSubmitted"
+                [matTooltip]="row.vitalsSubmitted ? 'Vitals submitted today' : 'No vitals today'">
+                <i-tabler
+                  [name]="row.vitalsSubmitted ? 'circle-check-filled' : 'circle-x'"
+                  class="ind-icon">
+                </i-tabler>
+                <span>{{ row.vitalsSubmitted ? 'Done' : 'Missing' }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="symptoms">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="col-header">
+                <i-tabler name="mood-sick" class="col-icon"></i-tabler>
+                Symptoms
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let row">
+              <div class="submission-indicator"
+                [class.submitted]="row.symptomsSubmitted"
+                [class.missing]="!row.symptomsSubmitted"
+                [matTooltip]="row.symptomsSubmitted ? 'Symptoms submitted today' : 'No symptoms today'">
+                <i-tabler
+                  [name]="row.symptomsSubmitted ? 'circle-check-filled' : 'circle-x'"
+                  class="ind-icon">
+                </i-tabler>
+                <span>{{ row.symptomsSubmitted ? 'Done' : 'Missing' }}</span>
+              </div>
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <th mat-header-cell *matHeaderCellDef>Today's Status</th>
             <td mat-cell *matCellDef="let row">
-              <span class="status-badge" [ngClass]="row.status === 'Complete' ? 'good' : 'warn'">
+              <span class="status-badge" [ngClass]="getStatusClass(row.status)">
                 {{ row.status }}
               </span>
             </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"
+            [class.row-compliant]="row.isFullyCompliant"
+            [class.row-incomplete]="!row.isFullyCompliant && row.status !== 'No data today'">
+          </tr>
         </table>
       </div>
 

@@ -1,4 +1,6 @@
 <div class="reminders-container">
+
+  <!-- WELCOME CARD -->
   <mat-card class="welcome-card">
     <mat-card-header>
       <mat-card-title class="page-title">
@@ -26,9 +28,11 @@
 
       <form [formGroup]="reminderForm" (ngSubmit)="submitReminder()">
         <div class="form-row">
+
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Patient</mat-label>
-            <mat-select formControlName="patientId">
+            <mat-select formControlName="patientId"
+              (selectionChange)="onPatientChange($event.value)">
               <mat-option *ngFor="let p of patients" [value]="p._id">
                 {{ p.name }} — {{ p.department }}
               </mat-option>
@@ -48,14 +52,31 @@
           </mat-form-field>
         </div>
 
+        <mat-form-field appearance="outline" class="form-field full-width"
+          *ngIf="messageOptions.length > 0">
+          <mat-label>Suggested message based on missing data</mat-label>
+          <mat-select [(ngModel)]="selectedMessage" [ngModelOptions]="{standalone: true}"
+            (selectionChange)="onMessageSelect($event.value)">
+            <mat-option *ngFor="let opt of messageOptions" [value]="opt.value">
+              {{ opt.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
         <mat-form-field appearance="outline" class="form-field full-width">
           <mat-label>Message</mat-label>
           <textarea matInput formControlName="message" rows="3"
-            placeholder="Please complete your daily follow-up..."></textarea>
+            placeholder="Select a patient above to get suggested messages...">
+          </textarea>
           <mat-error *ngIf="reminderForm.get('message')?.hasError('required')">
             Message is required
           </mat-error>
         </mat-form-field>
+
+        <div class="message-preview" *ngIf="reminderForm.get('message')?.value">
+          <span class="preview-label">Preview:</span>
+          {{ reminderForm.get('message')?.value }}
+        </div>
 
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Scheduled At (optional)</mat-label>
@@ -147,4 +168,5 @@
       </div>
     </mat-card-content>
   </mat-card>
+
 </div>

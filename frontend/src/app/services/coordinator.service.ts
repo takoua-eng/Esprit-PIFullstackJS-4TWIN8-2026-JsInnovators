@@ -27,12 +27,18 @@ export interface CoordinatorPatientRow {
   department: string;
   medicalRecordNumber?: string;
   status: string;
+  vitalsSubmitted?: boolean;
+  vitalsFullyComplete?: boolean;
+  missingVitalFields?: string[];
+  symptomsSubmitted?: boolean;
+  symptomsFullyComplete?: boolean;
+  missingSymptomFields?: string[];
+  isFullyCompliant?: boolean;
 }
 
 export interface CoordinatorDashboardResponse {
   summary: CoordinatorSummary;
   departmentDistribution: ChartItem[];
-  completenessDistribution: ChartItem[];
   recentPatients: CoordinatorPatientRow[];
 }
 
@@ -42,7 +48,11 @@ export interface ComplianceRow {
   email: string;
   department: string;
   vitalsSubmitted: boolean;
+  vitalsFullyComplete: boolean;
+  missingVitalFields: string[];
   symptomsSubmitted: boolean;
+  symptomsFullyComplete: boolean;
+  missingSymptomFields: string[];
   isFullyCompliant: boolean;
 }
 
@@ -56,6 +66,49 @@ export interface ReminderRow {
   scheduledAt?: string;
   sentAt?: string;
   createdAt?: string;
+}
+
+// Messages prédéfinis selon les champs manquants
+export function buildReminderMessages(
+  missingVitalFields: string[],
+  missingSymptomFields: string[],
+): { value: string; label: string }[] {
+  const messages: { value: string; label: string }[] = [];
+
+  if (missingVitalFields.length > 0 && missingSymptomFields.length > 0) {
+    messages.push({
+      value: `Please complete your daily follow-up. Missing: ${[...missingVitalFields, ...missingSymptomFields].join(', ')}.`,
+      label: 'Complete follow-up (vitals + symptoms)',
+    });
+  }
+
+  if (missingVitalFields.length > 0) {
+    messages.push({
+      value: `Please complete your vital signs entry. Missing fields: ${missingVitalFields.join(', ')}.`,
+      label: `Missing vitals: ${missingVitalFields.join(', ')}`,
+    });
+  }
+
+  if (missingSymptomFields.length > 0) {
+    messages.push({
+      value: `Please complete your symptoms report. Missing fields: ${missingSymptomFields.join(', ')}.`,
+      label: `Missing symptoms: ${missingSymptomFields.join(', ')}`,
+    });
+  }
+
+  if (!missingVitalFields.includes('Temperature') && missingVitalFields.length === 0) {
+    messages.push({
+      value: 'Reminder: Please submit your daily vital signs today.',
+      label: 'General vitals reminder',
+    });
+  }
+
+  messages.push({
+    value: 'Reminder: Please complete your daily health follow-up as soon as possible.',
+    label: 'General follow-up reminder',
+  });
+
+  return messages;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -102,5 +155,48 @@ export class CoordinatorService {
 
   deleteReminder(reminderId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/reminders/${reminderId}`);
+  }
+
+  getPatientsWithCompliance(coordinatorId: string): Observable<CoordinatorPatientRow[]> {
+    return new Observable((observer) => {
+      let patients: CoordinatorPatientRow[] = [];
+      let compliance: ComplianceRow[] = [];
+      let done = 0;
+
+      const merge = () => {
+        const result = patients.map((p) => {
+          const c = compliance.find((c) => c._id === p._id);
+          return {
+            ...p,
+            vitalsSubmitted: c?.vitalsSubmitted ?? false,
+            vitalsFullyComplete: c?.vitalsFullyComplete ?? false,
+            missingVitalFields: c?.missingVitalFields ?? [],
+            symptomsSubmitted: c?.symptomsSubmitted ?? false,
+            symptomsFullyComplete: c?.symptomsFullyComplete ?? false,
+            missingSymptomFields: c?.missingSymptomFields ?? [],
+            isFullyCompliant: c?.isFullyCompliant ?? false,
+            status: c
+              ? c.isFullyCompliant
+                ? 'Up to date'
+                : c.vitalsSubmitted || c.symptomsSubmitted
+                ? 'Incomplete today'
+                : 'No data today'
+              : 'No data today',
+          };
+        });
+        observer.next(result);
+        observer.complete();
+      };
+
+      this.getAssignedPatients(coordinatorId).subscribe({
+        next: (data) => { patients = data; done++; if (done === 2) merge(); },
+        error: (err) => observer.error(err),
+      });
+
+      this.getComplianceToday(coordinatorId).subscribe({
+        next: (data) => { compliance = data; done++; if (done === 2) merge(); },
+        error: () => { done++; if (done === 2) merge(); },
+      });
+    });
   }
 }

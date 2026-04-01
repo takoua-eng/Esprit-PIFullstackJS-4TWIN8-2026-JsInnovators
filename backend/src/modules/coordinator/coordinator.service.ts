@@ -5,6 +5,22 @@ import { Model, Types } from 'mongoose';
 import { User, UserDocument } from '../users/user.schema';
 import { Reminder, ReminderDocument } from './reminder.schema';
 
+// Champs requis pour un vital complet
+const REQUIRED_VITAL_FIELDS = [
+  'temperature',
+  'heartRate',
+  'bloodPressureSystolic',
+  'bloodPressureDiastolic',
+  'weight',
+];
+
+// Champs requis pour symptoms complet
+const REQUIRED_SYMPTOM_FIELDS = [
+  'painLevel',
+  'fatigueLevel',
+  'symptoms',
+];
+
 @Injectable()
 export class CoordinatorService {
   constructor(
@@ -24,24 +40,25 @@ export class CoordinatorService {
     return { start, end };
   }
 
-  // Cherche dans la collection avec patientId en String OU en ObjectId
-  private async getPatientIdsWithEntryToday(
-  model: Model<any>,
-  dateField: string,
-  patientIds: Types.ObjectId[],
-): Promise<string[]> {
-  const { start, end } = this.getTodayRange();
-
-  const results = await model
-    .find({
-      patientId: { $in: patientIds },
-      [dateField]: { $gte: start, $lte: end },
-    })
-    .select('patientId')
-    .lean();
-
-  return results.map((r: any) => r.patientId?.toString());
+  private checkVitalFields(doc: any): string[] {
+  const missing: string[] = [];
+  if (doc.temperature == null) missing.push('Temperature');
+  if (doc.heartRate == null) missing.push('Heart Rate');
+  // Regrouper systolic et diastolic en un seul champ
+  if (doc.bloodPressureSystolic == null || doc.bloodPressureDiastolic == null)
+    missing.push('Blood Pressure');
+  if (doc.weight == null) missing.push('Weight');
+  return missing;
 }
+
+  private checkSymptomFields(doc: any): string[] {
+    const missing: string[] = [];
+    if (doc.painLevel == null) missing.push('Pain Level');
+    if (doc.fatigueLevel == null) missing.push('Fatigue Level');
+    if (!doc.symptoms || (Array.isArray(doc.symptoms) && doc.symptoms.length === 0))
+      missing.push('Symptoms List');
+    return missing;
+  }
 
   // ─── DASHBOARD ───────────────────────────────────────────────
 
@@ -56,7 +73,6 @@ export class CoordinatorService {
     const patients = (coordinator.assignedPatients || []) as unknown as UserDocument[];
     const patientIds = patients.map((p) => p._id as Types.ObjectId);
 
-    // Stats profil
     const departmentMap: Record<string, number> = {};
     let completeProfiles = 0;
     let missingEmergencyContact = 0;
@@ -65,19 +81,13 @@ export class CoordinatorService {
     for (const patient of patients) {
       const dept = patient.department || 'Unknown';
       departmentMap[dept] = (departmentMap[dept] || 0) + 1;
-
-      const isComplete =
-        !!patient.phone &&
-        !!patient.address &&
-        !!patient.emergencyContact &&
-        !!patient.email;
-
+      const isComplete = !!patient.phone && !!patient.address &&
+        !!patient.emergencyContact && !!patient.email;
       if (isComplete) completeProfiles++;
       if (!patient.emergencyContact) missingEmergencyContact++;
       if (patient.medicalRecordNumber) patientsWithMedicalRecord++;
     }
 
-    // Stats reminders
     const { start: todayStart, end: todayEnd } = this.getTodayRange();
 
     const remindersSentToday = await this.reminderModel.countDocuments({
@@ -91,33 +101,16 @@ export class CoordinatorService {
       status: 'scheduled',
     });
 
-    // Stats compliance du jour
-    const [vitalsSubmittedIds, symptomsSubmittedIds] = await Promise.all([
-      this.getPatientIdsWithEntryToday(this.vitalModel, 'recordedAt', patientIds),
-      this.getPatientIdsWithEntryToday(this.symptomModel, 'reportedAt', patientIds),
-    ]);
+    // Compliance précise
+    const complianceResults = await this._computeComplianceForPatients(patients, patientIds);
 
-    const patientIdStrings = patientIds.map((id) => id.toString());
-    const missingVitalsToday = patientIdStrings.filter(
-      (id) => !vitalsSubmittedIds.includes(id)
-    ).length;
-    const missingSymptomsToday = patientIdStrings.filter(
-      (id) => !symptomsSubmittedIds.includes(id)
+    const missingVitalsToday = complianceResults.filter(
+      (r) => !r.vitalsFullyComplete
     ).length;
 
-    // Patients récents
-    const recentPatients = [...patients]
-      .sort((a: any, b: any) =>
-        new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
-      )
-      .slice(0, 5)
-      .map((p) => ({
-        _id: p._id,
-        name: `${p.firstName} ${p.lastName}`,
-        email: p.email,
-        department: p.department || 'Unknown',
-        status: p.emergencyContact ? 'Complete' : 'Needs attention',
-      }));
+    const missingSymptomsToday = complianceResults.filter(
+      (r) => !r.symptomsFullyComplete
+    ).length;
 
     return {
       summary: {
@@ -135,12 +128,89 @@ export class CoordinatorService {
         label,
         value,
       })),
-      completenessDistribution: [
-        { label: 'Complete Profiles', value: completeProfiles },
-        { label: 'Incomplete Profiles', value: patients.length - completeProfiles },
-      ],
-      recentPatients,
+      recentPatients: [...patients]
+        .sort((a: any, b: any) =>
+          new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+        )
+        .slice(0, 5)
+        .map((p) => ({
+          _id: p._id,
+          name: `${p.firstName} ${p.lastName}`,
+          email: p.email,
+          department: p.department || 'Unknown',
+          status: p.emergencyContact ? 'Complete' : 'Needs attention',
+        })),
     };
+  }
+
+  // ─── Calcul compliance précis ─────────────────────────────────
+
+  private async _computeComplianceForPatients(
+    patients: UserDocument[],
+    patientIds: Types.ObjectId[],
+  ) {
+    const { start, end } = this.getTodayRange();
+
+    const [vitalDocs, symptomDocs] = await Promise.all([
+      this.vitalModel
+        .find({ patientId: { $in: patientIds }, recordedAt: { $gte: start, $lte: end } })
+        .lean(),
+      this.symptomModel
+        .find({ patientId: { $in: patientIds }, reportedAt: { $gte: start, $lte: end } })
+        .lean(),
+    ]);
+
+    return patients.map((p) => {
+      const pid = p._id.toString();
+
+      const vitalDoc = vitalDocs.find(
+        (v: any) => v.patientId?.toString() === pid
+      );
+      const symptomDoc = symptomDocs.find(
+        (s: any) => s.patientId?.toString() === pid
+      );
+
+      const missingVitalFields = vitalDoc
+  ? this.checkVitalFields(vitalDoc)
+  : ['Temperature', 'Heart Rate', 'Blood Pressure', 'Weight'];
+
+const missingSymptomFields = symptomDoc
+  ? this.checkSymptomFields(symptomDoc)
+  : ['Pain Level', 'Fatigue Level', 'Symptoms List'];
+
+      const vitalsSubmitted = !!vitalDoc;
+      const vitalsFullyComplete = vitalsSubmitted && missingVitalFields.length === 0;
+      const symptomsSubmitted = !!symptomDoc;
+      const symptomsFullyComplete = symptomsSubmitted && missingSymptomFields.length === 0;
+
+      return {
+        _id: p._id,
+        name: `${p.firstName} ${p.lastName}`,
+        email: p.email,
+        department: p.department || 'Unknown',
+        vitalsSubmitted,
+        vitalsFullyComplete,
+        missingVitalFields,
+        symptomsSubmitted,
+        symptomsFullyComplete,
+        missingSymptomFields,
+        isFullyCompliant: vitalsFullyComplete && symptomsFullyComplete,
+      };
+    });
+  }
+
+  private formatFieldName(field: string): string {
+    const map: Record<string, string> = {
+      temperature: 'Temperature',
+      heartRate: 'Heart Rate',
+      bloodPressureSystolic: 'Blood Pressure',
+      bloodPressureDiastolic: 'Blood Pressure',
+      weight: 'Weight',
+      painLevel: 'Pain Level',
+      fatigueLevel: 'Fatigue Level',
+      symptoms: 'Symptoms List',
+    };
+    return map[field] || field;
   }
 
   // ─── PATIENTS ────────────────────────────────────────────────
@@ -166,7 +236,7 @@ export class CoordinatorService {
     }));
   }
 
-  // ─── COMPLIANCE TODAY ────────────────────────────────────────
+  // ─── COMPLIANCE TODAY (précis) ────────────────────────────────
 
   async getComplianceToday(coordinatorId: string) {
     const coordinator = await this.userModel
@@ -179,26 +249,7 @@ export class CoordinatorService {
     const patients = (coordinator.assignedPatients || []) as unknown as UserDocument[];
     const patientIds = patients.map((p) => p._id as Types.ObjectId);
 
-    const [vitalsIds, symptomsIds] = await Promise.all([
-      this.getPatientIdsWithEntryToday(this.vitalModel, 'recordedAt', patientIds),
-      this.getPatientIdsWithEntryToday(this.symptomModel, 'reportedAt', patientIds),
-    ]);
-
-    return patients.map((p) => {
-      const pid = p._id.toString();
-      const vitalsSubmitted = vitalsIds.includes(pid);
-      const symptomsSubmitted = symptomsIds.includes(pid);
-
-      return {
-        _id: p._id,
-        name: `${p.firstName} ${p.lastName}`,
-        email: p.email,
-        department: p.department || 'Unknown',
-        vitalsSubmitted,
-        symptomsSubmitted,
-        isFullyCompliant: vitalsSubmitted && symptomsSubmitted,
-      };
-    });
+    return this._computeComplianceForPatients(patients, patientIds);
   }
 
   // ─── REMINDERS ───────────────────────────────────────────────

@@ -12,7 +12,7 @@
         </mat-card-header>
         <mat-card-content class="welcome-content">
           <p class="welcome-text">Welcome to the MediFollow coordinator space</p>
-          <p class="subtitle">Track patients, verify data completeness and manage reminders.</p>
+          <p class="subtitle">Track patients, verify daily submissions and manage reminders.</p>
         </mat-card-content>
       </mat-card>
     </div>
@@ -35,13 +35,13 @@
 
     <div class="col-md-3 m-b-16">
       <mat-card class="stats-card red-card clickable"
-        (click)="navigateTo('/dashboard/coordinator/compliance')"
-        matTooltip="Patients missing vitals today">
+        (click)="navigateTo('/dashboard/coordinator/patients')"
+        matTooltip="Patients with incomplete vitals today">
         <mat-card-content class="p-16">
-          <i-tabler name="activity-heartbeat" class="kpi-icon d-block m-b-8"></i-tabler>
+          <i-tabler name="heart-broken" class="kpi-icon d-block m-b-8"></i-tabler>
           <div class="f-w-700 f-s-28 m-b-4">{{ dashboardData.summary.missingVitalsToday }}</div>
-          <div class="f-s-14 f-w-600 m-b-2">Missing Vitals Today</div>
-          <div class="f-s-12 stat-subtitle">Patients without vital entry</div>
+          <div class="f-s-14 f-w-600 m-b-2">Incomplete Vitals</div>
+          <div class="f-s-12 stat-subtitle">Missing or partial vital entries</div>
         </mat-card-content>
       </mat-card>
     </div>
@@ -76,7 +76,7 @@
   <!-- CHARTS ROW 1 -->
   <div class="row m-b-24">
     <div class="col-lg-7">
-      <mat-card class="cardWithShadow chart-card h-100">
+      <mat-card class="cardWithShadow chart-card">
         <mat-card-content>
           <div class="chart-header">
             <div>
@@ -94,9 +94,8 @@
             [plotOptions]="departmentChart.plotOptions"
             [xaxis]="departmentChart.xaxis"
             [yaxis]="departmentChart.yaxis"
-            [stroke]="departmentChart.stroke"
-            [tooltip]="departmentChart.tooltip"
             [legend]="departmentChart.legend"
+            [tooltip]="departmentChart.tooltip"
             [grid]="departmentChart.grid">
           </apx-chart>
         </mat-card-content>
@@ -104,62 +103,73 @@
     </div>
 
     <div class="col-lg-5">
-      <mat-card class="cardWithShadow chart-card h-100">
+      <mat-card class="cardWithShadow chart-card">
         <mat-card-content>
           <div class="chart-header">
             <div>
-              <mat-card-title>Profile Completeness</mat-card-title>
-              <mat-card-subtitle>Patient data quality overview</mat-card-subtitle>
+              <mat-card-title>Today's Submission Overview</mat-card-title>
+              <mat-card-subtitle>Vitals & symptoms compliance status</mat-card-subtitle>
             </div>
-            <div class="chart-badge green">{{ dashboardData.summary.completeProfiles }}/{{ dashboardData.summary.totalAssignedPatients }}</div>
-          </div>
-
-          <div class="completeness-legend">
-            <div class="legend-item">
-              <span class="legend-dot green"></span>
-              <span>Phone, address, emergency contact & email filled</span>
+            <div class="chart-badge"
+              [class.green]="complianceRate >= 80"
+              [class.orange]="complianceRate < 80">
+              {{ complianceRate }}%
             </div>
           </div>
-
-          <div *ngIf="!completenessChart" class="chart-loading">Loading chart...</div>
-          <apx-chart *ngIf="completenessChart"
-            [series]="completenessChart.series"
-            [chart]="completenessChart.chart"
-            [colors]="completenessChart.colors"
-            [labels]="completenessChart.labels"
-            [dataLabels]="completenessChart.dataLabels"
-            [legend]="completenessChart.legend"
-            [plotOptions]="completenessChart.plotOptions"
-            [stroke]="completenessChart.stroke"
-            [tooltip]="completenessChart.tooltip">
+          <div class="submission-legend">
+            <div class="sub-legend-item">
+              <span class="sub-dot green"></span>
+              <span>Fully compliant — all fields submitted</span>
+            </div>
+            <div class="sub-legend-item">
+              <span class="sub-dot orange"></span>
+              <span>Partial — submitted but missing some fields</span>
+            </div>
+            <div class="sub-legend-item">
+              <span class="sub-dot red"></span>
+              <span>No submission — nothing entered today</span>
+            </div>
+          </div>
+          <div *ngIf="!submissionOverviewChart" class="chart-loading">Loading chart...</div>
+          <apx-chart *ngIf="submissionOverviewChart"
+            [series]="submissionOverviewChart.series"
+            [chart]="submissionOverviewChart.chart"
+            [colors]="submissionOverviewChart.colors"
+            [labels]="submissionOverviewChart.labels"
+            [dataLabels]="submissionOverviewChart.dataLabels"
+            [legend]="submissionOverviewChart.legend"
+            [plotOptions]="submissionOverviewChart.plotOptions"
+            [stroke]="submissionOverviewChart.stroke"
+            [tooltip]="submissionOverviewChart.tooltip">
           </apx-chart>
         </mat-card-content>
       </mat-card>
     </div>
   </div>
 
-  <!-- COMPLIANCE SECTION -->
+  <!-- CHARTS ROW 2 -->
   <div class="row m-b-24">
-    <div class="col-lg-7">
+    <div class="col-lg-6">
       <mat-card class="cardWithShadow chart-card">
         <mat-card-content>
           <div class="chart-header">
             <div>
-              <mat-card-title>Today's Compliance</mat-card-title>
-              <mat-card-subtitle>Vitals & symptoms submission status per patient</mat-card-subtitle>
+              <mat-card-title>Submission Status per Patient</mat-card-title>
+              <mat-card-subtitle>✓ Complete &nbsp; ~ Partial &nbsp; ✗ Missing</mat-card-subtitle>
             </div>
-            <button mat-flat-button color="primary" class="details-btn"
-              (click)="navigateTo('/dashboard/coordinator/compliance')">
-              <i-tabler name="arrow-right" class="icon-16"></i-tabler>
-              Full details
+            <button mat-stroked-button color="primary" class="details-btn"
+              (click)="navigateTo('/dashboard/coordinator/patients')">
+              View all
             </button>
           </div>
-
           <div class="compliance-rate-bar">
             <div class="rate-label">
-              <span>Overall compliance rate</span>
-              <span class="rate-value" [class.rate-good]="complianceRate >= 80"
-                [class.rate-warn]="complianceRate < 80">{{ complianceRate }}%</span>
+              <span>Fully compliant today</span>
+              <span class="rate-value"
+                [class.rate-good]="complianceRate >= 80"
+                [class.rate-warn]="complianceRate < 80">
+                {{ complianceRate }}%
+              </span>
             </div>
             <div class="rate-track">
               <div class="rate-fill"
@@ -169,7 +179,6 @@
               </div>
             </div>
           </div>
-
           <div *ngIf="!complianceChart" class="chart-loading">Loading chart...</div>
           <apx-chart *ngIf="complianceChart"
             [series]="complianceChart.series"
@@ -187,113 +196,138 @@
       </mat-card>
     </div>
 
-    <div class="col-lg-5">
-      <mat-card class="cardWithShadow compliance-table-card">
+    <div class="col-lg-6">
+      <mat-card class="cardWithShadow chart-card">
         <mat-card-content>
-          <div class="chart-header m-b-16">
+          <div class="chart-header">
             <div>
-              <mat-card-title>Compliance Status</mat-card-title>
-              <mat-card-subtitle>Today's submission overview</mat-card-subtitle>
-            </div>
-            <span class="compliance-count">
-              {{ complianceData.length }} patients
-            </span>
-          </div>
-
-          <div *ngIf="complianceData.length === 0" class="empty-state-sm">
-            <i-tabler name="clipboard-off" class="empty-sm-icon"></i-tabler>
-            <p>No compliance data yet</p>
-          </div>
-
-          <div class="compliance-list" *ngIf="complianceData.length > 0">
-            <div class="compliance-row" *ngFor="let row of complianceData"
-              [class.row-compliant]="row.isFullyCompliant"
-              [class.row-incomplete]="!row.isFullyCompliant">
-
-              <div class="patient-info">
-                <div class="patient-avatar" [class.avatar-good]="row.isFullyCompliant"
-                  [class.avatar-warn]="!row.isFullyCompliant">
-                  {{ row.name.charAt(0) }}
-                </div>
-                <div>
-                  <div class="patient-name">{{ row.name }}</div>
-                  <div class="patient-dept">{{ row.department }}</div>
-                </div>
-              </div>
-
-              <div class="compliance-indicators">
-                <div class="indicator" [class.submitted]="row.vitalsSubmitted"
-                  [class.missing]="!row.vitalsSubmitted"
-                  matTooltip="{{ row.vitalsSubmitted ? 'Vitals submitted' : 'Vitals missing' }}">
-                  <i-tabler name="heart-rate-monitor" class="ind-icon"></i-tabler>
-                  <span class="ind-label">Vitals</span>
-                </div>
-                <div class="indicator" [class.submitted]="row.symptomsSubmitted"
-                  [class.missing]="!row.symptomsSubmitted"
-                  matTooltip="{{ row.symptomsSubmitted ? 'Symptoms submitted' : 'Symptoms missing' }}">
-                  <i-tabler name="mood-sick" class="ind-icon"></i-tabler>
-                  <span class="ind-label">Symptoms</span>
-                </div>
-              </div>
-
-              <span class="status-badge" [ngClass]="row.isFullyCompliant ? 'good' : 'warn'">
-                {{ row.isFullyCompliant ? '✓ OK' : '⚠ Incomplete' }}
-              </span>
+              <mat-card-title>Missing Fields Today</mat-card-title>
+              <mat-card-subtitle>Which fields patients forgot to fill</mat-card-subtitle>
             </div>
           </div>
+
+          <div *ngIf="missingFieldsChart === null && complianceData.length > 0"
+            class="all-good-state">
+            <i-tabler name="circle-check" class="all-good-icon"></i-tabler>
+            <h4>No missing fields!</h4>
+            <p>All patients have filled in every required field today.</p>
+          </div>
+
+          <div *ngIf="!missingFieldsChart && complianceData.length === 0"
+            class="chart-loading">Loading...</div>
+
+          <apx-chart *ngIf="missingFieldsChart"
+            [series]="missingFieldsChart.series"
+            [chart]="missingFieldsChart.chart"
+            [colors]="missingFieldsChart.colors"
+            [dataLabels]="missingFieldsChart.dataLabels"
+            [plotOptions]="missingFieldsChart.plotOptions"
+            [xaxis]="missingFieldsChart.xaxis"
+            [yaxis]="missingFieldsChart.yaxis"
+            [tooltip]="missingFieldsChart.tooltip"
+            [grid]="missingFieldsChart.grid">
+          </apx-chart>
         </mat-card-content>
       </mat-card>
     </div>
   </div>
 
-  <!-- RECENT PATIENTS -->
+  <!-- PATIENTS NEEDING ACTION -->
   <div class="row">
     <div class="col-lg-12">
-      <mat-card class="cardWithShadow table-card">
+      <mat-card class="cardWithShadow action-card">
         <mat-card-content>
-          <div class="table-header d-flex align-items-center justify-content-between">
+          <div class="chart-header m-b-16">
             <div>
-              <mat-card-title>Recently Updated Patients</mat-card-title>
-              <mat-card-subtitle>Latest patients linked to this coordinator</mat-card-subtitle>
+              <mat-card-title>Patients Needing Action</mat-card-title>
+              <mat-card-subtitle>Missing or incomplete submissions — click Remind to send a targeted message</mat-card-subtitle>
             </div>
-            <button mat-stroked-button color="primary"
-              (click)="navigateTo('/dashboard/coordinator/patients')">
-              View all
-            </button>
+            <span class="action-count"
+              [class.count-warn]="patientsNeedingAction.length > 0"
+              [class.count-good]="patientsNeedingAction.length === 0">
+              {{ patientsNeedingAction.length }}
+            </span>
           </div>
 
-          <div *ngIf="recentPatients.length === 0" class="empty-state">
-            <i-tabler name="users-off" class="empty-icon"></i-tabler>
-            <h4>No assigned patients yet</h4>
-            <p>Ask the admin to assign patients to this coordinator.</p>
+          <div *ngIf="patientsNeedingAction.length === 0" class="all-good-state">
+            <i-tabler name="circle-check" class="all-good-icon"></i-tabler>
+            <h4>All patients up to date!</h4>
+            <p>Everyone has submitted all required fields today.</p>
           </div>
 
-          <div class="table-responsive" *ngIf="recentPatients.length > 0">
-            <table mat-table [dataSource]="recentPatients" class="w-100">
-              <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef>Name</th>
-                <td mat-cell *matCellDef="let row">{{ row.name }}</td>
-              </ng-container>
-              <ng-container matColumnDef="email">
-                <th mat-header-cell *matHeaderCellDef>Email</th>
-                <td mat-cell *matCellDef="let row">{{ row.email }}</td>
-              </ng-container>
-              <ng-container matColumnDef="department">
-                <th mat-header-cell *matHeaderCellDef>Department</th>
-                <td mat-cell *matCellDef="let row">{{ row.department }}</td>
-              </ng-container>
-              <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef>Status</th>
-                <td mat-cell *matCellDef="let row">
-                  <span class="status-badge"
-                    [ngClass]="row.status === 'Complete' ? 'good' : 'warn'">
-                    {{ row.status }}
-                  </span>
-                </td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-            </table>
+          <div class="action-list" *ngIf="patientsNeedingAction.length > 0">
+            <div *ngFor="let patient of patientsNeedingAction">
+
+              <!-- Row principal -->
+              <div class="action-row"
+                [class.row-partial]="patient.vitalsSubmitted || patient.symptomsSubmitted"
+                [class.row-none]="!patient.vitalsSubmitted && !patient.symptomsSubmitted">
+
+                <div class="action-patient-info">
+                  <div class="action-avatar">{{ patient.name.charAt(0) }}</div>
+                  <div>
+                    <div class="action-name">{{ patient.name }}</div>
+                    <div class="action-dept">{{ patient.department }}</div>
+                  </div>
+                </div>
+
+                <div class="missing-detail-tags">
+                  <ng-container *ngIf="patient.missingVitalFields.length > 0">
+                    <span class="field-group-label">Vitals:</span>
+                    <span class="missing-field-tag" *ngFor="let f of patient.missingVitalFields">
+                      {{ f }}
+                    </span>
+                  </ng-container>
+                  <ng-container *ngIf="patient.missingSymptomFields.length > 0">
+                    <span class="field-group-label symptoms-label">Symptoms:</span>
+                    <span class="missing-field-tag symptom-tag"
+                      *ngFor="let f of patient.missingSymptomFields">
+                      {{ f }}
+                    </span>
+                  </ng-container>
+                </div>
+
+                <button mat-flat-button class="reminder-btn"
+                  (click)="openReminderFor(patient)"
+                  [class.active]="selectedReminderId === patient._id">
+                  <i-tabler name="send" class="icon-14"></i-tabler>
+                  Remind
+                </button>
+              </div>
+
+              <!-- Inline reminder panel -->
+              <div class="reminder-panel" *ngIf="selectedReminderId === patient._id">
+                <div class="reminder-panel-title">
+                  <i-tabler name="message" class="icon-16"></i-tabler>
+                  Choose a message for {{ patient.name }}
+                </div>
+
+                <mat-form-field appearance="outline" class="reminder-message-select">
+                  <mat-label>Reminder message</mat-label>
+                  <mat-select [(ngModel)]="selectedReminderMessage">
+                    <mat-option
+                      *ngFor="let opt of reminderMessageOptions"
+                      [value]="opt.value">
+                      {{ opt.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <div class="reminder-preview" *ngIf="selectedReminderMessage">
+                  {{ selectedReminderMessage }}
+                </div>
+
+                <div class="reminder-panel-actions">
+                  <button mat-flat-button color="primary"
+                    (click)="confirmReminder(patient)">
+                    <i-tabler name="send" class="icon-14"></i-tabler>
+                    Send
+                  </button>
+                  <button mat-stroked-button (click)="closeReminder()">Cancel</button>
+                </div>
+              </div>
+
+            </div>
           </div>
         </mat-card-content>
       </mat-card>
