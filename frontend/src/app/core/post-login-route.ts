@@ -13,7 +13,7 @@ export function getPostLoginPath(roleFromApi: string | null | undefined): string
     superadmin: '/super-admin/dashboard',
     coordinator: '/admin/coordinator',
     admin: '/dashboard/admin',
-    patient: '/dashboard/profile',
+    patient: '/dashboard/patient',
     nurse: '/dashboard/admin/nurses',
     doctor: '/dashboard/admin/physicians',
     physician: '/dashboard/admin/physicians',

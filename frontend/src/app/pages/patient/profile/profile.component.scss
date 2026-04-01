@@ -1,0 +1,100 @@
+﻿.profile-container {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  h2 { font-size: 1.6rem; font-weight: 600; margin: 0 0 6px; }
+  .subtitle { color: #6c757d; margin: 0; font-size: 0.95rem; }
+}
+
+.loading-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px;
+  color: #888;
+  mat-icon { font-size: 48px; width: 48px; height: 48px; }
+}
+
+.error-state { color: #c62828; mat-icon { color: #ef5350; } }
+
+.profile-content {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  align-items: start;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.avatar-card {
+  text-align: center;
+
+  .avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #1976d2;
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 16px auto 12px;
+  }
+
+  h3 { margin: 0 0 4px; font-size: 1.1rem; }
+
+  .role-badge {
+    display: inline-block;
+    background: #e3f2fd;
+    color: #1565c0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin: 4px 0 8px;
+  }
+
+  .email { font-size: 0.85rem; color: #888; margin: 0; }
+}
+
+.info-card {
+  mat-card-header { padding-bottom: 8px; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+
+    .label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .value {
+      font-size: 0.95rem;
+      color: #333;
+      font-weight: 500;
+    }
+  }
+}
