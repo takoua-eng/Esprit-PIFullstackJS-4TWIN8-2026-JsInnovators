@@ -7,11 +7,12 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { catchError } from 'rxjs';
 import { throwError } from 'rxjs';
 import * as SimpleWebAuthnBrowser from '@simplewebauthn/browser'; // ✅ importer ici
- 
+import { CommonModule } from '@angular/common';
+
 @Component({
   selector: 'app-side-login',
   standalone: true,
-  imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule, HttpClientModule],
+  imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule, HttpClientModule,CommonModule],
   templateUrl: './side-login.component.html',
 })
 export class AppSideLoginComponent {
@@ -29,6 +30,16 @@ export class AppSideLoginComponent {
 
   get f() {
     return this.form.controls;
+  }
+
+  /** Décode le payload d'un JWT sans bibliothèque externe */
+  private decodeJwt(token: string): any {
+    try {
+      const payload = token.split('.')[1];
+      return JSON.parse(atob(payload));
+    } catch {
+      return null;
+    }
   }
 
   submit() {

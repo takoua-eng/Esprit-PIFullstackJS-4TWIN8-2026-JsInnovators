@@ -1,0 +1,42 @@
+<div class="container">
+  <h2>Mes Symptômes</h2>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Signaler mes symptômes</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="symptomsForm" (ngSubmit)="onSubmit()">
+        <div class="symptoms-list">
+          <div *ngFor="let symptom of availableSymptoms" class="symptom-item">
+            <mat-checkbox [formControl]="getFormControl(symptom.name)">
+              {{ symptom.label }}
+            </mat-checkbox>
+
+            <mat-form-field *ngIf="symptom.scale && symptomsForm.get(symptom.name)?.value" appearance="outline" class="scale-field">
+              <mat-label>Échelle (0-10)</mat-label>
+              <input matInput type="number" [formControl]="getFormControl(symptom.name + 'Scale')" min="0" max="10">
+              <mat-error *ngIf="symptomsForm.get(symptom.name + 'Scale')?.hasError('min') || symptomsForm.get(symptom.name + 'Scale')?.hasError('max')">Entre 0 et 10</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Notes supplémentaires</mat-label>
+          <textarea matInput formControlName="notes" rows="3"></textarea>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Enregistrer</span>
+            <span *ngIf="isLoading">Enregistrement...</span>
+          </button>
+        </div>
+
+        <div *ngIf="successMessage" class="alert-success">{{ successMessage }}</div>
+        <div *ngIf="errorMessage" class="alert-error">{{ errorMessage }}</div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
