@@ -1,0 +1,49 @@
+.doctor-kpi {
+  border-radius: 18px;
+  color: #fff;
+
+  &--patients {
+    background: linear-gradient(135deg, #2d98da 0%, #3867d6 100%);
+  }
+
+  &--alerts {
+    background: linear-gradient(135deg, #fa8231 0%, #eb3b5a 100%);
+  }
+
+  &--followups {
+    background: linear-gradient(135deg, #20bf6b 0%, #0fb9b1 100%);
+  }
+}
+
+.doctor-kpi--clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+  }
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+
+  &--stable {
+    background: rgba(46, 213, 115, 0.2);
+    color: #2d3436;
+  }
+
+  &--watch {
+    background: rgba(253, 203, 110, 0.35);
+    color: #2d3436;
+  }
+}

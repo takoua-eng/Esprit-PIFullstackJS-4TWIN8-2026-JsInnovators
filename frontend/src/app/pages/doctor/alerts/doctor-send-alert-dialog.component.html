@@ -1,0 +1,19 @@
+<h2 mat-dialog-title>{{ 'DOCTOR_ALERT_SEND_TITLE' | translate }}</h2>
+<mat-dialog-content>
+  <p class="f-s-14 text-muted m-b-8">{{ data.patientName }}</p>
+  <p class="f-s-13 m-b-12">{{ data.sourceLabel }}</p>
+  <p class="f-s-12 text-muted m-b-12">
+    {{ 'DOCTOR_ALERT_SEVERITY_PRESET' | translate }}:
+    <strong>{{ data.defaultSeverityLabel }}</strong>
+  </p>
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>{{ 'DOCTOR_ALERT_MESSAGE_LABEL' | translate }}</mat-label>
+    <textarea matInput rows="5" [(ngModel)]="message" name="alertMsg"></textarea>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">{{ 'DOCTOR_ALERT_DIALOG_CANCEL' | translate }}</button>
+  <button mat-flat-button color="primary" type="button" (click)="send()" [disabled]="!message.trim()">
+    {{ 'DOCTOR_ALERT_SEND' | translate }}
+  </button>
+</mat-dialog-actions>

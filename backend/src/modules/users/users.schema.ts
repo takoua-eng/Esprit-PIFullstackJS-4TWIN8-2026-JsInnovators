@@ -129,6 +129,10 @@ export class User {
   isActive: boolean;
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] })
   assignedPatients: mongoose.Types.ObjectId[];
+
+  /** Nurse medical dossier (globals); per-visit diagnoses live in `patientdiagnoses`. */
+  @Prop({ type: mongoose.Schema.Types.Mixed })
+  nurseDossier?: Record<string, unknown>;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

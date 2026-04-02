@@ -31,7 +31,7 @@ interface PatientRow {
 }
 
 @Component({
-  selector: 'app-patients',
+  selector: 'app-super-patients',
   standalone: true,
   imports: [
     CommonModule,

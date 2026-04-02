@@ -35,7 +35,7 @@ interface AuditorRow {
 }
 
 @Component({
-  selector: 'app-auditors',
+  selector: 'app-super-auditors',
   standalone: true,
   imports: [
     CommonModule,

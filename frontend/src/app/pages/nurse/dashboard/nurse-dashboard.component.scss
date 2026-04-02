@@ -1,0 +1,111 @@
+.nurse-kpi {
+  border-radius: 18px;
+  color: #fff;
+
+  &--patients {
+    background: linear-gradient(135deg, #6c5ce7 0%, #5b4fcf 100%);
+  }
+
+  &--alerts {
+    background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+  }
+
+  &--followups {
+    background: linear-gradient(135deg, #0984e3 0%, #0652dd 100%);
+  }
+}
+
+.nurse-kpi--clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+  }
+}
+
+.nurse-kpi-hint {
+  opacity: 0.9;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+
+  &--stable {
+    background: rgba(46, 213, 115, 0.2);
+    color: #2d3436;
+  }
+
+  &--watch {
+    background: rgba(253, 203, 110, 0.35);
+    color: #2d3436;
+  }
+}
+
+.nurse-dashboard-actions a.mat-mdc-button-base {
+  white-space: nowrap;
+}
+
+.nurse-patient-table {
+  .mat-mdc-header-cell {
+    font-weight: 600;
+  }
+}
+
+.nurse-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.nurse-recent-item {
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.nurse-severity-pill {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+
+  &.sev-high {
+    background: rgba(214, 48, 49, 0.15);
+    color: #c0392b;
+  }
+
+  &.sev-medium {
+    background: rgba(230, 126, 34, 0.18);
+    color: #d35400;
+  }
+
+  &.sev-low {
+    background: rgba(39, 174, 96, 0.15);
+    color: #1e8449;
+  }
+}

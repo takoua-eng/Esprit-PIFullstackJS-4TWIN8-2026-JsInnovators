@@ -23,9 +23,9 @@ export class AdminProfileComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    const role = localStorage.getItem('user_role') || 'Admin';
+    const role = (localStorage.getItem('user_role') || '').toLowerCase();
 
-    if (role === 'Coordinator') {
+    if (role === 'coordinator') {
       this.profile = {
         name: 'Takoua Outay',
         email: 'outaytakwa@gmail.com',

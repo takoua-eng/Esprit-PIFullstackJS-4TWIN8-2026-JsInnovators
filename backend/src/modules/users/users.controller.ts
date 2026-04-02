@@ -21,6 +21,7 @@ import { CreateAdminDto } from './dto/CreateAdminDto ';
 import { CreateNurseDto } from './dto/CreateNurseDto ';
 import { CreateCoordinatorDto } from './dto/CreateCoordinatorDto ';
 import { CreateAuditorDto } from './dto/CreateAuditorDto ';
+import { NurseDossierDto } from './dto/nurse-dossier.dto';
 
 // Multer Storage Configuration
 const multerConfig = {
@@ -154,6 +155,24 @@ export class UsersController {
   @Get()
   findAll() {
     return this.usersService.getAllUsers();
+  }
+
+  @Get('physicians')
+  findPhysicians() {
+    return this.usersService.findByRoleName('Physician');
+  }
+
+  @Get(':patientId/nurse-dossier')
+  getNurseDossier(@Param('patientId') patientId: string) {
+    return this.usersService.getNurseDossier(patientId);
+  }
+
+  @Put(':patientId/nurse-dossier')
+  updateNurseDossier(
+    @Param('patientId') patientId: string,
+    @Body() dto: NurseDossierDto,
+  ) {
+    return this.usersService.updateNurseDossier(patientId, dto);
   }
 
   @Get(':id')

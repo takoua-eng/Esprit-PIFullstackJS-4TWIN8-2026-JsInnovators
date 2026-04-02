@@ -7,7 +7,7 @@
 
   
   <!-- Alert Bell with live badge, patient only -->
-  <button *ngIf="userRole === 'Patient'" mat-icon-button routerLink="/dashboard/patient/alerts" aria-label="Alerts">
+  <button *ngIf="core.userRole() === 'Patient'" mat-icon-button routerLink="/dashboard/patient/alerts" aria-label="Alerts">
     <span class="bell-wrapper">
       <i-tabler class="d-flex" name="bell"></i-tabler>
       <span *ngIf="pendingAlertsCount > 0" class="alert-badge">{{ pendingAlertsCount }}</span>
@@ -30,7 +30,7 @@
   <mat-menu #profileMenu="matMenu" xPosition="before">
     <div class="px-4 py-2">
       <div class="f-w-600">{{ "APP_NAME" | translate }}</div>
-      <div class="text-muted f-s-12">{{ userRole }}</div>
+      <div class="text-muted f-s-12">{{ core.userRole() }}</div>
     </div>
     <mat-divider></mat-divider>
     <button mat-menu-item (click)="goToProfile()">

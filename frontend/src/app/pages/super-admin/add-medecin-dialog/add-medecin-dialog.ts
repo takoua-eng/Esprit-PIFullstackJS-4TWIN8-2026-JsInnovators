@@ -22,7 +22,7 @@ export interface DoctorData {
 }
 
 @Component({
-  selector: 'app-add-medecin-dialog',
+  selector: 'app-super-add-medecin-dialog',
   standalone: true,
   imports: [
     CommonModule,

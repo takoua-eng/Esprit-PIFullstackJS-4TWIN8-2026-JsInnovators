@@ -1,0 +1,99 @@
+.cardWithShadow {
+  border-radius: 14px;
+}
+
+.trend-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.trend-up {
+  color: #2ecc71;
+  background: rgba(46, 204, 113, 0.14);
+}
+
+.trend-down {
+  color: #e67e22;
+  background: rgba(230, 126, 34, 0.14);
+}
+
+.trend-flat {
+  color: #636e72;
+  background: rgba(99, 110, 114, 0.14);
+}
+
+.trend-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(60px, 1fr));
+  gap: 12px;
+}
+
+.trend-day {
+  text-align: center;
+}
+
+.trend-bar-wrap {
+  height: 8px;
+  border-radius: 999px;
+  background: #edf2f7;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.trend-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4f46e5 0%, #06b6d4 100%);
+  border-radius: 999px;
+}
+
+.trend-day-label {
+  font-size: 12px;
+  color: #636e72;
+}
+
+.trend-day-value {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.validation-row {
+  border: 1px solid #edf2f7;
+  border-radius: 10px;
+  padding: 10px 12px;
+
+  &.urgent-open {
+    border-color: rgba(214, 48, 49, 0.35);
+    background: rgba(214, 48, 49, 0.04);
+  }
+}
+
+.urgent-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(214, 48, 49, 0.15);
+  color: #c0392b;
+}
+
+.ack-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(99, 110, 114, 0.12);
+  color: #636e72;
+}

@@ -32,7 +32,7 @@ interface NurseRow {
 }
 
 @Component({
-  selector: 'app-nurses',
+  selector: 'app-super-nurses',
   standalone: true,
   imports: [
     CommonModule,

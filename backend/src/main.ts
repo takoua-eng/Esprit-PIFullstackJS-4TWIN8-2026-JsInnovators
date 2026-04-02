@@ -1,8 +1,12 @@
+import { config as loadEnv } from 'dotenv';
+import { join } from 'path';
+
+loadEnv({ path: join(process.cwd(), '.env') });
+import './dns-preflight';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -27,6 +31,10 @@ async function bootstrap() {
     .addTag('users', 'User CRUD and avatar')
     .addTag('roles', 'Role CRUD')
     .addTag('upload', 'File upload')
+    .addTag('alerts', 'Clinical alerts (list, acknowledge)')
+    .addTag('reminders', 'Patient reminders (list, complete)')
+    .addTag('vitals', 'Vital signs (nurse-assisted entry, verify)')
+    .addTag('symptoms', 'Symptom reports (nurse-assisted entry, verify)')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

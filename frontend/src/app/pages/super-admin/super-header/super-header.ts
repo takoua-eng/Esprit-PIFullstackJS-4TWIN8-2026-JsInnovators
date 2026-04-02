@@ -12,6 +12,8 @@ import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { CommonModule } from '@angular/common';
+import { CoreService } from 'src/app/services/core.service';
+import { clearAuthLocalStorage } from 'src/app/core/app-storage';
 
 @Component({
   selector: 'app-super-header',
@@ -37,6 +39,7 @@ export class SuperHeaderComponent {
   constructor(
     private router: Router,
     private translate: TranslateService,
+    private core: CoreService,
   ) {}
 
   goToProfile() {
@@ -44,9 +47,8 @@ export class SuperHeaderComponent {
   }
 
   logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('app_language');
-    localStorage.removeItem('user_role');
+    clearAuthLocalStorage();
+    this.core.clearRole();
     this.router.navigate(['/authentication/login']);
   }
 }

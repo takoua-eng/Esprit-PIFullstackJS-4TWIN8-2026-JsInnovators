@@ -1,0 +1,86 @@
+.sev-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.sev-high {
+  background: rgba(214, 48, 49, 0.15);
+  color: #c0392b;
+}
+
+.sev-medium {
+  background: rgba(253, 203, 110, 0.4);
+  color: #6c5ce7;
+}
+
+.sev-low {
+  background: rgba(46, 213, 115, 0.2);
+  color: #27ae60;
+}
+
+.status-open {
+  font-weight: 600;
+  color: #d63031;
+}
+
+.status-done {
+  color: #636e72;
+}
+
+.doctor-alerts-table {
+  min-width: 720px;
+}
+
+.doctor-review-table {
+  min-width: 960px;
+}
+
+.cell-summary {
+  max-width: 280px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.m-l-4 {
+  margin-left: 4px;
+}
+
+.ai-badge {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(116, 185, 255, 0.25);
+  color: #0984e3;
+}
+
+.action-btns .btn-sev-high {
+  background: #c0392b !important;
+  color: #fff !important;
+}
+
+.action-btns .btn-sev-medium {
+  background: #f39c12 !important;
+  color: #1e1e1e !important;
+}
+
+.action-btns .btn-sev-low {
+  border-color: #b2bec3 !important;
+  color: #636e72 !important;
+}
+
+.icon-18 {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.m-r-8 {
+  margin-right: 8px;
+}

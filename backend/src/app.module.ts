@@ -4,20 +4,23 @@ import {
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
 import { User, UserSchema } from './modules/users/users.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
 import { UploadModule } from './modules/upload/upload.module';
+import { AlertsModule } from './modules/alerts/alerts.module';
+import { RemindersModule } from './modules/reminders/reminders.module';
+import { VitalsModule } from './modules/vitals/vitals.module';
+import { SymptomsModule } from './modules/symptoms/symptoms.module';
 import { ServicesModule } from './modules/service/services/services.module';
 import { CoordinatorModule } from './modules/coordinator/coordinator.module';
 import { VitalParametersModule } from './modules/vital-parameters/vital-parameters.module';
-import { SymptomsModule } from './modules/symptoms/symptoms.module';
 import { AutoAlertsModule } from './modules/auto-alerts/auto-alerts.module';
 import { QuestionnaireResponseModule } from './modules/questionnaire-responses/questionnaire-response.module';
 import { PatientNotesModule } from './modules/patient-notes/patient-notes.module';
@@ -26,26 +29,41 @@ import { QuestionnaireTemplatesModule } from './modules/questionnaire-templates/
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    // Connexion à MongoDB
-    MongooseModule.forRoot(
-      'mongodb+srv://Medifollow:Medifollow2025@cluster0.15l0i6q.mongodb.net/?retryWrites=true&w=majority',
-    ),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => {
+        const uri =
+          config.get<string>('MONGODB_URI')?.trim() ||
+          'mongodb://127.0.0.1:27017/medifollow';
+        const dbName = config.get<string>('MONGODB_DB_NAME')?.trim();
+        return {
+          uri,
+          dbName: dbName || undefined,
+          serverSelectionTimeoutMS: 45_000,
+          retryWrites: true,
+          // Prefer IPv4; helps some networks where IPv6 SRV/DNS fails
+          family: 4,
+        };
+      },
+      inject: [ConfigService],
+    }),
 
-    // Déclaration des modèles pour Mongoose
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Role.name, schema: RoleSchema },
     ]),
 
-    // Modules applicatifs
     UsersModule,
     RolesModule,
     AuthModule,
     UploadModule,
+    AlertsModule,
+    RemindersModule,
+    VitalsModule,
+    SymptomsModule,
     ServicesModule,
     CoordinatorModule,
     VitalParametersModule,
-    SymptomsModule,
     AutoAlertsModule,
     QuestionnaireResponseModule,
     PatientNotesModule,
