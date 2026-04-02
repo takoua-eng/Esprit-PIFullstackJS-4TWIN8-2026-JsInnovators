@@ -10,7 +10,7 @@ export function getPostLoginPath(roleFromApi: string | null | undefined): string
   const r = normalizeRoleKey(roleFromApi);
 
   const map: Record<string, string> = {
-    superadmin: '/super-admin/dashboard',
+    superadmin: '/super-admin',
     coordinator: '/admin/coordinator',
     admin: '/dashboard/admin',
     patient: '/dashboard/patient',

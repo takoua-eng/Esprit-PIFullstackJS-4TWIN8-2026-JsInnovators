@@ -187,7 +187,7 @@ ngOnInit() {
 
   // 🟢 MODE ADD
   else {
-    this.http.post('http://localhost:3000/users/patient', formData)
+    this.http.post('http://localhost:3000/users/patients', formData)
       .subscribe({
         next: () => {
           this.dialogRef.close(true);
