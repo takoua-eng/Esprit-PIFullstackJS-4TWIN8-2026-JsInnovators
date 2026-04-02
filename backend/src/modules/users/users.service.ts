@@ -323,7 +323,10 @@ export class UsersService {
       throw new NotFoundException(`User ${patientId} not found`);
     }
     const pid = doc._id as Types.ObjectId;
-    const embedded = (doc.nurseDossier ?? null) as Record<string, unknown> | null;
+    const embedded = (doc.nurseDossier ?? null) as Record<
+      string,
+      unknown
+    > | null;
 
     let rows = await this.patientDiagnosisModel
       .find({ patientId: pid })
@@ -353,7 +356,9 @@ export class UsersService {
     );
 
     const base =
-      embedded && typeof embedded === 'object' && Object.keys(embedded).length > 0
+      embedded &&
+      typeof embedded === 'object' &&
+      Object.keys(embedded).length > 0
         ? { ...embedded }
         : {};
     delete base['diagnosisEntries'];
@@ -422,7 +427,9 @@ export class UsersService {
     };
   }
 
-  private async resolvePatientObjectId(patientId: string): Promise<Types.ObjectId> {
+  private async resolvePatientObjectId(
+    patientId: string,
+  ): Promise<Types.ObjectId> {
     const u = await this.userModel
       .findOne(this.patientQuery(patientId))
       .select('_id')
@@ -452,10 +459,12 @@ export class UsersService {
         dischargeDate: (e['dischargeDate'] as string) || undefined,
         dischargeUnit: (e['dischargeUnit'] as string) || undefined,
         primaryDiagnosis: (e['primaryDiagnosis'] as string) || undefined,
-        hospitalizationReason: (e['hospitalizationReason'] as string) || undefined,
+        hospitalizationReason:
+          (e['hospitalizationReason'] as string) || undefined,
         secondaryDiagnoses: (e['secondaryDiagnoses'] as string) || undefined,
         proceduresPerformed: (e['proceduresPerformed'] as string) || undefined,
-        dischargeSummaryNotes: (e['dischargeSummaryNotes'] as string) || undefined,
+        dischargeSummaryNotes:
+          (e['dischargeSummaryNotes'] as string) || undefined,
       })),
     );
   }
