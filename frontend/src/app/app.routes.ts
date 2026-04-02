@@ -4,6 +4,8 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { FullSuperComponent } from './pages/super-admin/full-super/full-super';
 import { LandingComponent } from './pages/landing/landing.component';
+import { authGuard } from './core/auth.guard';
+import { roleGuard } from './core/role.guard';
 
 export const routes: Routes = [
   {

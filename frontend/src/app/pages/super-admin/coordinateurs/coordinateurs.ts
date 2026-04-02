@@ -35,7 +35,7 @@ interface CoordinatorRow {
 }
 
 @Component({
-  selector: 'app-coordinateurs',
+  selector: 'app-super-coordinateurs',
   standalone: true,
   imports: [
     CommonModule,

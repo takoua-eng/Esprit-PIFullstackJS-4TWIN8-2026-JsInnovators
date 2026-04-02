@@ -22,7 +22,7 @@ export interface CoordinatorData {
 }
 
 @Component({
-  selector: 'app-add-coordinateur-dialog',
+  selector: 'app-super-add-coordinateur-dialog',
   standalone: true,
   imports: [
     CommonModule,

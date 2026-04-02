@@ -16,7 +16,10 @@ import { AppNavItemComponent } from './sidebar/nav-item/nav-item.component';
 import { AppTopstripComponent } from './top-strip/topstrip.component';
 
 import { adminNavItems, coordinatorNavItems } from './sidebar/sidebar-data';
+import { nurseNavItems } from './sidebar/nurse-sidebar-data';
+import { doctorNavItems } from './sidebar/doctor-sidebar-data';
 import { NavItem } from './sidebar/nav-item/nav-item';
+import { normalizeRoleKey } from 'src/app/core/post-login-route';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -91,12 +94,27 @@ export class FullComponent implements OnInit {
 
   // ✅ LOGIQUE FIX
   private updateSidebar(url: string) {
+    const role = normalizeRoleKey(
+      typeof localStorage !== 'undefined'
+        ? localStorage.getItem('user_role')
+        : null,
+    );
+
     if (url.startsWith('/dashboard/admin')) {
       this.navItems = adminNavItems;
-
+    } else if (url.startsWith('/dashboard/nurse')) {
+      this.navItems = nurseNavItems;
+    } else if (url.startsWith('/dashboard/doctor')) {
+      this.navItems = doctorNavItems;
+    } else if (url.startsWith('/dashboard/profile') && role === 'nurse') {
+      this.navItems = nurseNavItems;
+    } else if (
+      url.startsWith('/dashboard/profile') &&
+      (role === 'doctor' || role === 'physician')
+    ) {
+      this.navItems = doctorNavItems;
     } else if (url.startsWith('/admin/coordinator')) {
       this.navItems = coordinatorNavItems;
-
     } else {
       this.navItems = adminNavItems;
     }

@@ -39,7 +39,7 @@ interface DoctorRow {
 }
 
 @Component({
-  selector: 'app-medecins',
+  selector: 'app-super-medecins',
   standalone: true,
   imports: [
     CommonModule,

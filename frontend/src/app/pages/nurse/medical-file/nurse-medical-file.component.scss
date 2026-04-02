@@ -1,0 +1,62 @@
+.nurse-medical-file-table {
+  min-width: 920px;
+}
+
+.patient-info-box {
+  border: 1px solid #edf2f7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-height: 100px;
+}
+
+.section-box {
+  border: 1px solid #edf2f7;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.section-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.diagnosis-visit-card {
+  border: 1px solid #edf2f7;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.diagnosis-visit-card--editing {
+  border-color: #b8d4f0;
+  background: #f8fbff;
+}
+
+.attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #edf2f7;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.icon-18 {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.m-r-8 {
+  margin-right: 8px;
+}
+
+.m-t-16 {
+  margin-top: 16px;
+}

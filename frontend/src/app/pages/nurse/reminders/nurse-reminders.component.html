@@ -1,0 +1,76 @@
+<div class="row m-b-24">
+  <div class="col-12 d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+      <h1 class="f-w-600 m-b-4">{{ 'NURSE_RDV_TITLE' | translate }}</h1>
+      <p class="f-s-14 text-muted m-b-0">{{ 'NURSE_RDV_CONSULT_ONLY' | translate }}</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <button mat-icon-button type="button" (click)="load()" [disabled]="loading" [attr.aria-label]="'NURSE_ALERTS_REFRESH' | translate">
+        <i-tabler name="refresh"></i-tabler>
+      </button>
+      <a mat-stroked-button color="primary" routerLink="/dashboard/nurse">
+        <i-tabler name="arrow-left" class="icon-18 m-r-8"></i-tabler>
+        {{ 'NURSE_BACK_DASHBOARD' | translate }}
+      </a>
+    </div>
+  </div>
+</div>
+
+@if (loading) {
+  <div class="p-24 text-center">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+} @else if (error) {
+  <mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+      <p class="text-error m-b-16">{{ error }}</p>
+      <button mat-flat-button color="primary" (click)="load()">{{ 'RETRY' | translate }}</button>
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <div class="row">
+    <div class="col-12">
+      <h2 class="f-w-600 f-s-18 m-b-8">{{ 'NURSE_RDV_LIST_TITLE' | translate }}</h2>
+
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-0">
+          <div class="table-responsive">
+            <table mat-table [dataSource]="reminders" class="w-100 nurse-reminders-table">
+              <ng-container matColumnDef="patientName">
+                <th mat-header-cell *matHeaderCellDef>{{ 'NAME' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.patientName }}</td>
+              </ng-container>
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_RDV_COL_TYPE' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.type }}</td>
+              </ng-container>
+              <ng-container matColumnDef="message">
+                <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_RDV_COL_MESSAGE' | translate }}</th>
+                <td mat-cell *matCellDef="let row" class="reminder-message-cell">{{ row.message }}</td>
+              </ng-container>
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>{{ 'STATUS' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.status }}</td>
+              </ng-container>
+              <ng-container matColumnDef="sentAt">
+                <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_RDV_COL_SENT_AT' | translate }}</th>
+                <td mat-cell *matCellDef="let row">
+                  @if (row.sentAt) {
+                    {{ row.sentAt | date: 'short' }}
+                  } @else {
+                    —
+                  }
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            </table>
+            @if (reminders.length === 0) {
+              <div class="p-24 text-center text-muted">{{ 'NURSE_RDV_LIST_EMPTY' | translate }}</div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+}

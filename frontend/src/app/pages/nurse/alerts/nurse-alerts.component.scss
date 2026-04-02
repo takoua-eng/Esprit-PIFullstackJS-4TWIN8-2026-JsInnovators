@@ -1,0 +1,46 @@
+.sev-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.sev-high {
+  background: rgba(214, 48, 49, 0.15);
+  color: #c0392b;
+}
+
+.sev-medium {
+  background: rgba(253, 203, 110, 0.4);
+  color: #6c5ce7;
+}
+
+.sev-low {
+  background: rgba(46, 213, 115, 0.2);
+  color: #27ae60;
+}
+
+.status-open {
+  font-weight: 600;
+  color: #d63031;
+}
+
+.status-done {
+  color: #636e72;
+}
+
+.nurse-alerts-table {
+  min-width: 720px;
+}
+
+.icon-18 {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.m-r-8 {
+  margin-right: 8px;
+}
