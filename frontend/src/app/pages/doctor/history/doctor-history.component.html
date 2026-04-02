@@ -1,0 +1,203 @@
+<div class="row m-b-24">
+  <div class="col-12 d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+      <h1 class="f-w-600 m-b-4">{{ 'DOCTOR_HISTORY_TITLE' | translate }}</h1>
+      <p class="f-s-14 text-muted m-b-0">{{ 'DOCTOR_HISTORY_SUBTITLE' | translate }}</p>
+    </div>
+    <a mat-stroked-button color="primary" routerLink="/dashboard/doctor">
+      {{ 'NURSE_BACK_DASHBOARD' | translate }}
+    </a>
+  </div>
+</div>
+
+<div class="row m-b-16">
+  <div class="col-12 col-md-6">
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>{{ 'NURSE_RECORDS_FILTER_PATIENT' | translate }}</mat-label>
+      <mat-select [(ngModel)]="selectedPatientId" (ngModelChange)="loadHistory()">
+        @for (p of patients; track p._id) {
+          <mat-option [value]="p._id">{{ p.firstName }} {{ p.lastName }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>
+
+<div class="row m-b-24">
+  <div class="col-md-4 m-b-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-20">
+        <div class="f-s-13 text-muted">{{ 'DOCTOR_ANALYSIS_AVG_TEMP' | translate }}</div>
+        <div class="d-flex align-items-center gap-8">
+          <div class="f-w-700 f-s-26">{{ avgTemperature }}</div>
+          <span class="trend-chip" [ngClass]="trendClass(temperatureTrend)">
+            <mat-icon>{{ trendIcon(temperatureTrend) }}</mat-icon>
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="col-md-4 m-b-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-20">
+        <div class="f-s-13 text-muted">{{ 'DOCTOR_ANALYSIS_AVG_HR' | translate }}</div>
+        <div class="d-flex align-items-center gap-8">
+          <div class="f-w-700 f-s-26">{{ avgHeartRate }}</div>
+          <span class="trend-chip" [ngClass]="trendClass(heartRateTrend)">
+            <mat-icon>{{ trendIcon(heartRateTrend) }}</mat-icon>
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="col-md-4 m-b-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-20">
+        <div class="f-s-13 text-muted">{{ 'DOCTOR_ANALYSIS_LAST_PAIN' | translate }}</div>
+        <div class="d-flex align-items-center gap-8">
+          <div class="f-w-700 f-s-26">{{ latestPain }}</div>
+          <span class="trend-chip" [ngClass]="trendClass(painTrend)">
+            <mat-icon>{{ trendIcon(painTrend) }}</mat-icon>
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="col-md-4 m-b-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-20">
+        <div class="f-s-13 text-muted">{{ 'DOCTOR_ANALYSIS_BP_FLAGS' | translate }}</div>
+        <div class="f-w-700 f-s-26">{{ bpOutOfRangeCount }}</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<mat-card class="cardWithShadow m-b-24">
+  <mat-card-content class="p-20">
+    <div class="f-w-600 m-b-12">{{ 'DOCTOR_ANALYSIS_LAST7_TITLE' | translate }}</div>
+    <div class="trend-grid">
+      @for (d of trendsLast7Days; track d.label) {
+        <div class="trend-day">
+          <div class="trend-bar-wrap">
+            <div class="trend-bar" [style.width]="barWidth(d)"></div>
+          </div>
+          <div class="trend-day-label">{{ d.label }}</div>
+          <div class="trend-day-value">{{ d.value }}</div>
+        </div>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<div class="row m-b-24">
+  <div class="col-md-6 m-b-12">
+    <mat-card class="cardWithShadow h-100">
+      <mat-card-content class="p-20">
+        <div class="f-w-600 m-b-12">{{ 'DOCTOR_VALIDATION_TITLE' | translate }}</div>
+        @if (pendingValidationVitals.length === 0 && pendingValidationSymptoms.length === 0) {
+          <p class="text-muted m-b-0">{{ 'DOCTOR_VALIDATION_EMPTY' | translate }}</p>
+        } @else {
+          <div class="d-flex flex-column gap-8">
+            @for (v of pendingValidationVitals; track v._id) {
+              <div class="validation-row">
+                <div class="text-muted f-s-12">{{ v.recordedAt | date: 'short' }} · {{ 'NURSE_RECORDS_TAB_VITALS' | translate }}</div>
+                <div class="f-s-13 m-b-6">{{ v.patientName }} — {{ v.temperature ?? '—' }}°C / {{ v.heartRate ?? '—' }} bpm</div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button mat-stroked-button color="primary" type="button" (click)="validateVital(v)">{{ 'DOCTOR_VALIDATE_ACTION' | translate }}</button>
+                  <button mat-flat-button color="warn" type="button" (click)="openUrgentClinicFromVital(v)">
+                    {{ 'DOCTOR_URGENT_CLINIC_CTA' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+            @for (s of pendingValidationSymptoms; track s._id) {
+              <div class="validation-row">
+                <div class="text-muted f-s-12">{{ s.reportedAt | date: 'short' }} · {{ 'NURSE_RECORDS_TAB_SYMPTOMS' | translate }}</div>
+                <div class="f-s-13 m-b-6">{{ s.patientName }} — {{ s.symptoms.length ? s.symptoms.join(', ') : (s.description || '—') }}</div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button mat-stroked-button color="primary" type="button" (click)="validateSymptom(s)">{{ 'DOCTOR_VALIDATE_ACTION' | translate }}</button>
+                  <button mat-flat-button color="warn" type="button" (click)="openUrgentClinicFromSymptom(s)">
+                    {{ 'DOCTOR_URGENT_CLINIC_CTA' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="col-md-6 m-b-12">
+    <mat-card class="cardWithShadow h-100">
+      <mat-card-content class="p-20">
+        <div class="f-w-600 m-b-12">{{ 'DOCTOR_URGENT_SENT_TITLE' | translate }}</div>
+        <p class="f-s-13 text-muted m-b-12">{{ 'DOCTOR_URGENT_SENT_HINT' | translate }}</p>
+        @if (alertLoading) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        } @else if (alertsForSelectedPatient.length === 0) {
+          <p class="text-muted m-b-0">{{ 'DOCTOR_URGENT_SENT_EMPTY' | translate }}</p>
+        } @else {
+          <div class="d-flex flex-column gap-8">
+            @for (a of alertsForSelectedPatient; track a._id) {
+              <div class="validation-row" [class.urgent-open]="a.status === 'open'">
+                <div class="text-muted f-s-12">
+                  {{ a.createdAt | date: 'short' }} · {{ a.severity }}
+                  @if (a.status === 'open') {
+                    <span class="urgent-badge">{{ 'NURSE_ALERT_STATUS_OPEN' | translate }}</span>
+                  } @else {
+                    <span class="ack-badge">{{ 'NURSE_ALERT_STATUS_ACK' | translate }}</span>
+                  }
+                </div>
+                <div class="f-s-13 m-b-0">{{ a.message }}</div>
+              </div>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<mat-card class="cardWithShadow">
+  <mat-card-content class="p-0">
+    @if (loading) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    } @else {
+      <div class="table-responsive">
+        <table mat-table [dataSource]="historyRows" class="w-100">
+          <ng-container matColumnDef="when">
+            <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_ALERTS_COL_TIME' | translate }}</th>
+            <td mat-cell *matCellDef="let row">{{ row.when | date: 'short' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="patient">
+            <th mat-header-cell *matHeaderCellDef>{{ 'NAME' | translate }}</th>
+            <td mat-cell *matCellDef="let row">{{ row.patientName }}</td>
+          </ng-container>
+          <ng-container matColumnDef="source">
+            <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_RECORDS_COL_SOURCE' | translate }}</th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.source === 'vital') {
+                {{ 'NURSE_RECORDS_TAB_VITALS' | translate }}
+              } @else {
+                {{ 'NURSE_RECORDS_TAB_SYMPTOMS' | translate }}
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="summary">
+            <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_RECORDS_COL_SUMMARY' | translate }}</th>
+            <td mat-cell *matCellDef="let row">{{ row.summary }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+
+        @if (historyRows.length === 0) {
+          <div class="p-24 text-center text-muted">{{ 'DOCTOR_HISTORY_EMPTY' | translate }}</div>
+        }
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,101 @@
+<div class="row m-b-24">
+  <div class="col-12 d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+      <h1 class="f-w-600 m-b-4">{{ 'DOCTOR_PRESCRIPTIONS_TITLE' | translate }}</h1>
+      <p class="f-s-14 text-muted m-b-0">{{ 'DOCTOR_PRESCRIPTIONS_SUBTITLE' | translate }}</p>
+    </div>
+    <a mat-stroked-button color="primary" routerLink="/dashboard/doctor">
+      <i-tabler name="arrow-left" class="icon-18 m-r-8"></i-tabler>
+      {{ 'DOCTOR_BACK_DASHBOARD' | translate }}
+    </a>
+  </div>
+</div>
+
+<mat-card class="cardWithShadow m-b-24">
+  <mat-card-content class="p-24">
+    <div class="row">
+      <div class="col-12 col-md-6 m-b-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>{{ 'NURSE_RECORDS_FIELD_PATIENT' | translate }}</mat-label>
+          <mat-select [(ngModel)]="selectedPatientId" name="prescPatient">
+            @for (p of patients; track p._id) {
+              <mat-option [value]="p._id">{{ p.firstName }} {{ p.lastName }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-md-6 m-b-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>{{ 'NURSE_PRESCRIPTIONS_MEDICATION' | translate }}</mat-label>
+          <input matInput [(ngModel)]="medication" name="medication" />
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-md-4 m-b-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>{{ 'NURSE_PRESCRIPTIONS_DOSAGE' | translate }}</mat-label>
+          <input matInput [(ngModel)]="dosage" name="dosage" placeholder="500 mg" />
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-md-4 m-b-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>{{ 'NURSE_PRESCRIPTIONS_FREQUENCY' | translate }}</mat-label>
+          <input matInput [(ngModel)]="frequency" name="frequency" placeholder="2 times/day" />
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-md-4 m-b-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>{{ 'NURSE_PRESCRIPTIONS_DURATION' | translate }}</mat-label>
+          <input matInput [(ngModel)]="duration" name="duration" placeholder="7 days" />
+        </mat-form-field>
+      </div>
+      <div class="col-12 m-b-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>{{ 'NURSE_PRESCRIPTIONS_INSTRUCTIONS' | translate }}</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="instructions" name="instructions"></textarea>
+        </mat-form-field>
+      </div>
+    </div>
+    <button mat-flat-button color="primary" type="button" (click)="save()" [disabled]="!selectedPatientId || !medication.trim()">
+      {{ 'NURSE_PRESCRIPTIONS_SAVE' | translate }}
+    </button>
+  </mat-card-content>
+</mat-card>
+
+<mat-card class="cardWithShadow">
+  <mat-card-content class="p-0">
+    <div class="table-responsive">
+      <table mat-table [dataSource]="rows" class="w-100 doctor-prescriptions-table">
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_ALERTS_COL_TIME' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'short' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="patientName">
+          <th mat-header-cell *matHeaderCellDef>{{ 'NAME' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.patientName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="medication">
+          <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_PRESCRIPTIONS_MEDICATION' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.medication }}</td>
+        </ng-container>
+        <ng-container matColumnDef="dosage">
+          <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_PRESCRIPTIONS_DOSAGE' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.dosage || '-' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="frequency">
+          <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_PRESCRIPTIONS_FREQUENCY' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.frequency || '-' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="duration">
+          <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_PRESCRIPTIONS_DURATION' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.duration || '-' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+      @if (rows.length === 0) {
+        <div class="p-24 text-center text-muted">{{ 'NURSE_PRESCRIPTIONS_EMPTY' | translate }}</div>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>

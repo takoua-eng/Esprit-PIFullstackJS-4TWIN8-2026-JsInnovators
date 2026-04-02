@@ -1,0 +1,194 @@
+<div class="row m-b-24">
+  <div class="col-12 d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+      <h1 class="f-w-600 m-b-4">{{ 'DOCTOR_ALERTS_TITLE' | translate }}</h1>
+      <p class="f-s-14 text-muted m-b-0">{{ 'DOCTOR_ALERTS_SUBTITLE' | translate }}</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <button
+        mat-icon-button
+        type="button"
+        (click)="load()"
+        [disabled]="loading || queueLoading || noPhysicianAccount"
+        [attr.aria-label]="'NURSE_ALERTS_REFRESH' | translate"
+      >
+        <i-tabler name="refresh"></i-tabler>
+      </button>
+      <a mat-stroked-button color="primary" routerLink="/dashboard/doctor">
+        <i-tabler name="arrow-left" class="icon-18 m-r-8"></i-tabler>
+        {{ 'DOCTOR_BACK_DASHBOARD' | translate }}
+      </a>
+    </div>
+  </div>
+</div>
+
+@if (noPhysicianAccount && !loading) {
+  <mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+      <p class="text-muted m-b-0">{{ 'DOCTOR_ALERTS_NO_PHYSICIAN' | translate }}</p>
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <mat-card class="cardWithShadow m-b-24">
+    <mat-card-content class="p-24">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 m-b-12">
+        <div class="f-w-600">{{ 'DOCTOR_ALERT_REVIEW_QUEUE_TITLE' | translate }}</div>
+        @if (queueSortedBy === 'ai') {
+          <span class="ai-badge">{{ 'DOCTOR_ALERT_SORTED_BY_AI' | translate }}</span>
+        } @else if (queueSortedBy === 'heuristic' && reviewQueue.length > 0) {
+          <span class="f-s-12 text-muted">{{ 'DOCTOR_ALERT_SORTED_HEURISTIC' | translate }}</span>
+        }
+      </div>
+      <p class="f-s-13 text-muted m-b-16 m-t-0">{{ 'DOCTOR_ALERT_REVIEW_QUEUE_HINT' | translate }}</p>
+
+      @if (queueLoading) {
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      } @else if (queueError) {
+        <p class="text-error m-b-0">{{ queueError }}</p>
+      } @else {
+        <div class="table-responsive">
+          <table mat-table [dataSource]="reviewQueue" class="w-100 doctor-review-table">
+            <ng-container matColumnDef="recordedAt">
+              <th mat-header-cell *matHeaderCellDef>{{ 'DOCTOR_ALERT_COL_TIME' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.recordedAt | date: 'short' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="patientName">
+              <th mat-header-cell *matHeaderCellDef>{{ 'NAME' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.patientName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="sourceType">
+              <th mat-header-cell *matHeaderCellDef>{{ 'DOCTOR_ALERT_COL_TYPE' | translate }}</th>
+              <td mat-cell *matCellDef="let row">
+                @if (row.sourceType === 'vital') {
+                  {{ 'DOCTOR_ALERT_TYPE_VITAL' | translate }}
+                } @else {
+                  {{ 'DOCTOR_ALERT_TYPE_SYMPTOM' | translate }}
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="summary">
+              <th mat-header-cell *matHeaderCellDef>{{ 'DOCTOR_ALERT_COL_SUMMARY' | translate }}</th>
+              <td mat-cell *matCellDef="let row" class="cell-summary">{{ row.summary }}</td>
+            </ng-container>
+            <ng-container matColumnDef="urgency">
+              <th mat-header-cell *matHeaderCellDef>{{ 'DOCTOR_ALERT_COL_URGENCY' | translate }}</th>
+              <td mat-cell *matCellDef="let row">
+                <span class="sev-pill" [ngClass]="queueSeverityClass(row)">{{ row.heuristicSeverity }}</span>
+                <span class="f-s-11 text-muted m-l-4">({{ row.sortScore }})</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>{{ 'ACTIONS' | translate }}</th>
+              <td mat-cell *matCellDef="let row">
+                <div class="d-flex flex-wrap gap-1 align-items-center action-btns">
+                  <button
+                    mat-flat-button
+                    type="button"
+                    class="btn-sev-high"
+                    [disabled]="sending"
+                    (click)="openSendAlert(row, 'high')"
+                  >
+                    {{ 'DOCTOR_ALERT_BTN_HIGH' | translate }}
+                  </button>
+                  <button
+                    mat-flat-button
+                    type="button"
+                    class="btn-sev-medium"
+                    [disabled]="sending"
+                    (click)="openSendAlert(row, 'medium')"
+                  >
+                    {{ 'DOCTOR_ALERT_BTN_MEDIUM' | translate }}
+                  </button>
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="btn-sev-low"
+                    [disabled]="sending"
+                    (click)="openSendAlert(row, 'low')"
+                  >
+                    {{ 'DOCTOR_ALERT_BTN_LOW' | translate }}
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="queueColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: queueColumns"></tr>
+          </table>
+          @if (reviewQueue.length === 0) {
+            <div class="p-16 text-center text-muted">{{ 'DOCTOR_ALERT_REVIEW_EMPTY' | translate }}</div>
+          }
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <div class="row m-b-16">
+    <div class="col-12 d-flex flex-wrap align-items-center gap-2">
+      <span class="f-w-600 m-r-8">{{ 'DOCTOR_ALERT_ISSUED_SECTION' | translate }}</span>
+      <span class="f-s-14 text-muted m-r-8">{{ 'NURSE_ALERTS_FILTER' | translate }}</span>
+      <mat-button-toggle-group [(ngModel)]="filter" name="doctorAlertFilter">
+        <mat-button-toggle value="open">{{ 'NURSE_ALERTS_FILTER_OPEN' | translate }}</mat-button-toggle>
+        <mat-button-toggle value="all">{{ 'NURSE_ALERTS_FILTER_ALL' | translate }}</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="p-24 text-center">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+  } @else if (error) {
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-24">
+        <p class="text-error m-b-16">{{ error }}</p>
+        <button mat-flat-button color="primary" (click)="load()">{{ 'RETRY' | translate }}</button>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-0">
+        <div class="table-responsive">
+          <table mat-table [dataSource]="filteredAlerts" class="w-100 doctor-alerts-table">
+            <ng-container matColumnDef="createdAt">
+              <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_ALERTS_COL_TIME' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'short' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="patientName">
+              <th mat-header-cell *matHeaderCellDef>{{ 'NAME' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.patientName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="severity">
+              <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_ALERTS_COL_SEVERITY' | translate }}</th>
+              <td mat-cell *matCellDef="let row">
+                <span class="sev-pill" [ngClass]="severityClass(row.severity)">{{ row.severity }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="parameter">
+              <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_ALERTS_COL_PARAMETER' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.parameter || '—' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="message">
+              <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_ALERTS_COL_MESSAGE' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.message }}</td>
+            </ng-container>
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>{{ 'DOCTOR_ALERT_COL_STATUS' | translate }}</th>
+              <td mat-cell *matCellDef="let row">
+                @if (row.status === 'open') {
+                  <span class="status-open">{{ 'DOCTOR_ALERT_STATUS_AWAITING_PATIENT' | translate }}</span>
+                } @else {
+                  <span class="status-done">{{ 'DOCTOR_ALERT_STATUS_PATIENT_CONFIRMED' | translate }}</span>
+                }
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          </table>
+          @if (filteredAlerts.length === 0) {
+            <div class="p-24 text-center text-muted">{{ 'DOCTOR_ALERTS_EMPTY' | translate }}</div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+}

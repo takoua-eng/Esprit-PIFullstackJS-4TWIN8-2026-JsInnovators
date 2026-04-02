@@ -1,5 +1,7 @@
 // src/app/pages/pages.routes.ts
 import { Routes } from '@angular/router';
+import { authGuard } from '../core/auth.guard';
+import { roleGuard } from '../core/role.guard';
 
 // Admin Components
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
@@ -23,7 +25,7 @@ import { NursesComponent as SuperNurses } from './super-admin/nurses/nurses';
 import { CoordinateursComponent as SuperCoordinateurs } from './super-admin/coordinateurs/coordinateurs';
 import { AuditorsComponent as SuperAuditors } from './super-admin/auditors/auditors';
 
-// Patient Components
+// Patient Components (from main)
 import { DashboardComponent } from './patient/dashboard/dashboard.component';
 import { DossiersComponent } from './patient/dossiers/dossiers.component';
 import { ProfileComponent } from './patient/profile/profile.component';
@@ -34,69 +36,188 @@ import { HistoryComponent } from './patient/history/history.component';
 import { MessagesComponent } from './patient/messages/messages.component';
 import { AlertsComponent } from './patient/alerts/alerts.component';
 
+// Nurse & doctor workspaces
+import { NurseDashboardComponent } from './nurse/dashboard/nurse-dashboard.component';
+import { NurseAlertsComponent } from './nurse/alerts/nurse-alerts.component';
+import { NurseRemindersComponent } from './nurse/reminders/nurse-reminders.component';
+import { NurseMedicalFileComponent } from './nurse/medical-file/nurse-medical-file.component';
+import { DoctorDashboardComponent } from './doctor/dashboard/doctor-dashboard.component';
+import { DoctorAlertsComponent } from './doctor/alerts/doctor-alerts.component';
+import { DoctorHistoryComponent } from './doctor/history/doctor-history.component';
+import { DoctorPrescriptionsComponent } from './doctor/prescriptions/doctor-prescriptions.component';
+
+/** Roles allowed to use the sub-admin `/dashboard/admin/...` area (not patients, not coordinators). */
+const staffAdminGuard = [
+  authGuard,
+  roleGuard(['admin', 'superadmin', 'nurse', 'doctor', 'physician', 'auditor']),
+];
+
 // ✅ ADMIN ROUTES
 export const AdminRoutes: Routes = [
   {
     path: 'admin',
     component: AdminDashboardComponent,
     data: { title: 'Admin Dashboard' },
+    canActivate: staffAdminGuard,
   },
   {
     path: 'admin/patients',
     component: Patients,
     data: { title: 'Patients', role: 'Patient' },
+    canActivate: staffAdminGuard,
   },
   {
     path: 'admin/physicians',
     component: MedecinsComponent,
     data: { title: 'Physicians', role: 'Physician' },
+    canActivate: staffAdminGuard,
   },
   {
     path: 'admin/nurses',
     component: NursesComponent,
     data: { title: 'Nurses', role: 'Nurse' },
+    canActivate: staffAdminGuard,
   },
   {
     path: 'admin/coordinators',
     component: CoordinateursComponent,
     data: { title: 'Coordinators', role: 'Coordinator' },
+    canActivate: staffAdminGuard,
   },
   {
     path: 'admin/auditors',
     component: AuditorsComponent,
     data: { title: 'Auditors', role: 'Auditor' },
+    canActivate: staffAdminGuard,
   },
   {
     path: 'profile',
     component: AdminProfileComponent,
     data: { title: 'Profile' },
+    canActivate: staffAdminGuard,
   },
 ];
 
-// ✅ COORDINATOR ROUTES
+// ✅ COORDINATOR ROUTES — loaded only from `/admin/coordinator` (see `app.routes.ts`)
 export const CoordinatorRoutes: Routes = [
-  { path: '', component: CoordinatorDashboardComponent, data: { title: 'Coordinator Dashboard' } },
-  { path: 'patients', component: CoordinatorPatientsComponent, data: { title: 'My Patients' } },
-  { path: 'reminders', component: RemindersComponent, data: { title: 'Reminders' } },
+  {
+    path: '',
+    component: CoordinatorDashboardComponent,
+    data: { title: 'Coordinator Dashboard' },
+  },
+  {
+    path: 'patients',
+    component: CoordinatorPatientsComponent,
+    data: { title: 'My Patients' },
+  },
+  {
+    path: 'reminders',
+    component: RemindersComponent,
+    data: { title: 'Reminders' },
+  },
 ];
+
+const nurseOnlyGuard = [authGuard, roleGuard(['nurse'])];
+const doctorOnlyGuard = [authGuard, roleGuard(['doctor', 'physician'])];
+
+/** Nurse portal: `/dashboard/nurse`, `/dashboard/nurse/alerts`, … */
+export const NurseRoutes: Routes = [
+  {
+    path: 'nurse',
+    canActivate: nurseOnlyGuard,
+    children: [
+      {
+        path: '',
+        component: NurseDashboardComponent,
+        data: { title: 'Nurse Dashboard' },
+      },
+      {
+        path: 'alerts',
+        component: NurseAlertsComponent,
+        data: { title: 'Nurse Alerts' },
+      },
+      {
+        path: 'reminders',
+        component: NurseRemindersComponent,
+        data: { title: 'Nurse Reminders' },
+      },
+      {
+        path: 'medical-file',
+        component: NurseMedicalFileComponent,
+        data: { title: 'Nurse Medical File' },
+      },
+    ],
+  },
+];
+
+/** Physician portal: `/dashboard/doctor`, `/dashboard/doctor/alerts`, … */
+export const DoctorRoutes: Routes = [
+  {
+    path: 'doctor',
+    canActivate: doctorOnlyGuard,
+    children: [
+      {
+        path: '',
+        component: DoctorDashboardComponent,
+        data: { title: 'Doctor Dashboard' },
+      },
+      {
+        path: 'alerts',
+        component: DoctorAlertsComponent,
+        data: { title: 'Doctor Alerts' },
+      },
+      {
+        path: 'history',
+        component: DoctorHistoryComponent,
+        data: { title: 'Doctor History' },
+      },
+      {
+        path: 'prescriptions',
+        component: DoctorPrescriptionsComponent,
+        data: { title: 'Doctor Prescriptions' },
+      },
+    ],
+  },
+];
+
+const superAdminOnlyGuard = [authGuard, roleGuard(['superadmin'])];
 
 // ✅ SUPER ADMIN ROUTES
 export const SuperAdminRoutes: Routes = [
-  { path: '', component: SuperAdminDashboardComponent },
-  { path: 'dashboard', component: SuperAdminDashboardComponent },
-  { path: 'profile', component: SuperAdminProfileComponent },
-  { path: 'patients', component: SuperPatients },
-  { path: 'medecins', component: SuperMedecins },
-  { path: 'nurses', component: SuperNurses },
-  { path: 'coordinateurs', component: SuperCoordinateurs },
-  { path: 'auditors', component: SuperAuditors },
-  { path: 'admin-users', component: AdminUsersComponent },
+  {
+    path: '',
+    component: SuperAdminDashboardComponent,
+    canActivate: superAdminOnlyGuard,
+  },
+  {
+    path: 'dashboard',
+    component: SuperAdminDashboardComponent,
+    canActivate: superAdminOnlyGuard,
+  },
+  {
+    path: 'profile',
+    component: SuperAdminProfileComponent,
+    canActivate: superAdminOnlyGuard,
+  },
+  { path: 'patients', component: SuperPatients, canActivate: superAdminOnlyGuard },
+  { path: 'medecins', component: SuperMedecins, canActivate: superAdminOnlyGuard },
+  { path: 'nurses', component: SuperNurses, canActivate: superAdminOnlyGuard },
+  {
+    path: 'coordinateurs',
+    component: SuperCoordinateurs,
+    canActivate: superAdminOnlyGuard,
+  },
+  { path: 'auditors', component: SuperAuditors, canActivate: superAdminOnlyGuard },
+  { path: 'admin-users', component: AdminUsersComponent, canActivate: superAdminOnlyGuard },
 ];
 
-// ✅ PATIENT ROUTES
+const patientOnlyGuard = [authGuard, roleGuard(['patient'])];
+
+// ✅ PATIENT ROUTES (portal — only `patient` role)
 export const PatientRoutes: Routes = [
   {
     path: 'patient',
+    canActivate: patientOnlyGuard,
     children: [
       { path: 'dashboard', component: DashboardComponent, data: { title: 'Dashboard' } },
       { path: 'dossiers', component: DossiersComponent, data: { title: 'Dossiers' } },
@@ -112,10 +233,11 @@ export const PatientRoutes: Routes = [
   },
 ];
 
-// ⚠️ PagesRoutes complet (optionnel)
+/** `/dashboard` lazy chunk: sub-admin, nurse/doctor portals, super-admin shell, patient portal — not coordinator (use `/admin/coordinator`). */
 export const PagesRoutes: Routes = [
   ...AdminRoutes,
-  ...CoordinatorRoutes,
+  ...NurseRoutes,
+  ...DoctorRoutes,
   ...SuperAdminRoutes,
   ...PatientRoutes,
 ];

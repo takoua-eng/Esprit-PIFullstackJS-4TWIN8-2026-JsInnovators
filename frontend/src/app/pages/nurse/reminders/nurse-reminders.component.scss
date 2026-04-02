@@ -1,0 +1,40 @@
+.nurse-reminders-table {
+  min-width: 720px;
+}
+
+/* Avoid truncating header labels in narrow columns */
+.rdv-col-message {
+  min-width: 160px;
+  max-width: 360px;
+}
+
+.reminder-message-cell {
+  min-width: 200px;
+  max-width: 420px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.status-pending {
+  font-weight: 600;
+  color: #0984e3;
+}
+
+.status-done {
+  color: #636e72;
+}
+
+.status-declined {
+  font-weight: 600;
+  color: #d63031;
+}
+
+.icon-18 {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.m-r-8 {
+  margin-right: 8px;
+}

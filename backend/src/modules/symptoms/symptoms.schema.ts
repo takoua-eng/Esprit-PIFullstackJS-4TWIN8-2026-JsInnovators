@@ -33,6 +33,15 @@ export class Symptoms {
 
   @Prop({ type: Date, required: true })
   reportedAt: Date; // date de saisie
+
+  @Prop({ enum: ['patient', 'nurse_assisted'], default: 'patient' })
+  entrySource?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  verifiedBy?: Types.ObjectId;
+
+  @Prop()
+  verifiedAt?: Date;
 }
 
 export const SymptomsSchema = SchemaFactory.createForClass(Symptoms);

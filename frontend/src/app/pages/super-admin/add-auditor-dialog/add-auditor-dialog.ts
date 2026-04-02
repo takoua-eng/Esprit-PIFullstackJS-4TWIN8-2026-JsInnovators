@@ -22,7 +22,7 @@ export interface AuditorData {
 }
 
 @Component({
-  selector: 'app-add-auditor-dialog',
+  selector: 'app-super-add-auditor-dialog',
   standalone: true,
   imports: [
     CommonModule,

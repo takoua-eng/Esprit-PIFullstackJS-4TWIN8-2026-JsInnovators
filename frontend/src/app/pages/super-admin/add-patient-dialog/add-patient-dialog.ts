@@ -22,7 +22,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatError, MatHint } from '@angular/material/form-field';
 
 @Component({
-  selector: 'app-add-patient-dialog',
+  selector: 'app-super-add-patient-dialog',
   standalone: true,
   imports: [
     CommonModule,

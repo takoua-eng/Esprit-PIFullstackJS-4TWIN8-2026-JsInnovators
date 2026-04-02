@@ -13,6 +13,8 @@ import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { PatientService } from 'src/app/services/patient.service';
+import { CoreService } from 'src/app/services/core.service';
+import { clearAuthLocalStorage } from 'src/app/core/app-storage';
 
 @Component({
   selector: 'app-header',
@@ -35,23 +37,22 @@ export class HeaderComponent implements OnInit {
   @Output() toggleMobileNav = new EventEmitter<void>();
 
   appName = 'MediFollow';
-  userRole: string | null = null;
   pendingAlertsCount = 0;
 
   constructor(
     private router: Router,
     private translate: TranslateService,
-    private patientService: PatientService
+    readonly core: CoreService,
+    private patientService: PatientService,
   ) {}
 
   ngOnInit(): void {
-    // Language change subscription
+    this.core.initUserRole();
+
     this.translate.onLangChange.subscribe(() => {
       // Refresh UI on language change
     });
 
-    // Get user role and pending alerts
-    this.userRole = localStorage.getItem('user_role');
     const patientId = this.patientService.getCurrentPatientId();
     if (patientId) {
       this.patientService.getPendingAlertsCount().subscribe({
@@ -62,11 +63,17 @@ export class HeaderComponent implements OnInit {
   }
 
   goToProfile(): void {
-    this.router.navigate(['/dashboard/patient/profile']);
+    const r = (localStorage.getItem('user_role') || '').toLowerCase();
+    if (r === 'patient') {
+      this.router.navigate(['/dashboard/patient/profile']);
+    } else {
+      this.router.navigate(['/dashboard/profile']);
+    }
   }
 
   logout(): void {
-    localStorage.clear();
+    clearAuthLocalStorage();
+    this.core.clearRole();
     this.router.navigate(['/authentication/login']);
   }
 }
