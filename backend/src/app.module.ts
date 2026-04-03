@@ -28,6 +28,7 @@ import { QuestionnaireResponseModule } from './modules/questionnaire-responses/q
 import { PatientNotesModule } from './modules/patient-notes/patient-notes.module';
 import { QuestionnaireTemplatesModule } from './modules/questionnaire-templates/questionnaire-templates.module';
 import { VideoCallsModule } from './modules/video-calls/video-calls.module';
+import { HospitalizationHandwritingModule } from './modules/hospitalization-handwriting/hospitalization-handwriting.module';
 
 import { User, UserSchema } from './modules/users/users.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
@@ -100,6 +101,7 @@ const DEFAULT_MONGODB_URI =
     PatientNotesModule,
     QuestionnaireTemplatesModule,
     VideoCallsModule,
+    HospitalizationHandwritingModule,
   ],
 })
 export class AppModule implements NestModule {
