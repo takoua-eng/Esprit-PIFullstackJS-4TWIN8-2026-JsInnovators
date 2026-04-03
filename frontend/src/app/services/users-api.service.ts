@@ -13,6 +13,8 @@ export interface UserListRow {
 /** Full user row from `GET /users` (role populated when present). */
 export interface UserApiRow extends UserListRow {
   role?: { _id: string; name: string } | null;
+  /** Doctor profile: patient Mongo ids assigned to this physician. */
+  assignedPatients?: string[];
   phone?: string;
   dateOfBirth?: string;
   gender?: string;
@@ -88,6 +90,11 @@ export class UsersApiService {
 
   getPhysicians(): Observable<UserListRow[]> {
     return this.http.get<UserListRow[]>(`${this.base}/physicians`);
+  }
+
+  /** Single user by Mongo `_id` or `userId` string (`GET /users/:id`). */
+  getUserById(id: string): Observable<UserApiRow> {
+    return this.http.get<UserApiRow>(`${this.base}/${encodeURIComponent(id)}`);
   }
 
   /** Latest nurse dossier for a patient (MongoDB `_id`). `null` if never saved on server. */

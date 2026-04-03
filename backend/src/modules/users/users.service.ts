@@ -61,7 +61,7 @@ export class UsersService {
 
     return this.userModel.create({
       ...dto,
-      password: hashedPassword,
+    password: hashedPassword,
       role: role._id,
       photo: file ? file.filename : null,
     });
@@ -109,8 +109,8 @@ export class UsersService {
     if (Types.ObjectId.isValid(id)) {
       user = await this.userModel
         .findOne({ _id: id, isArchived: { $ne: true } })
-        .populate('role')
-        .exec();
+      .populate('role')
+      .exec();
     }
     if (!user) {
       user = await this.userModel
@@ -565,5 +565,5 @@ export class UsersService {
       ...mergedStored,
       diagnosisEntries,
     };
-  }
+}
 }
