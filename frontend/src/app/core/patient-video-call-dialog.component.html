@@ -1,0 +1,21 @@
+<h2 mat-dialog-title class="d-flex align-items-center gap-2 m-b-0">
+  <i-tabler name="video" class="icon-24"></i-tabler>
+  {{ 'PATIENT_VIDEO_CALL_TITLE' | translate }}
+</h2>
+
+<mat-dialog-content>
+  <p class="m-t-8 m-b-0">{{ bodyText }}</p>
+  <p class="f-s-12 text-muted m-t-12 m-b-0">
+    {{ 'PATIENT_VIDEO_CALL_HINT' | translate }}
+  </p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="later()">
+    {{ 'PATIENT_VIDEO_CALL_LATER' | translate }}
+  </button>
+  <button mat-flat-button color="primary" type="button" (click)="join()">
+    <i-tabler name="video" class="icon-18 m-r-4"></i-tabler>
+    {{ 'PATIENT_VIDEO_CALL_JOIN' | translate }}
+  </button>
+</mat-dialog-actions>

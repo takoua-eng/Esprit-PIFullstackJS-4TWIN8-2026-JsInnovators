@@ -36,7 +36,19 @@
 }
 
 .doctor-review-table {
-  min-width: 960px;
+  min-width: 1040px;
+}
+
+.cell-video-call {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.btn-video-call {
+  font-size: 12px;
+  padding: 0 10px;
+  line-height: 32px;
+  min-height: 32px;
 }
 
 .cell-summary {

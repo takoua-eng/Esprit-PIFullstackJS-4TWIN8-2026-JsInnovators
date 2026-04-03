@@ -4,7 +4,7 @@ import { Document, Types } from 'mongoose';
 
 export type VitalParametersDocument = VitalParameters & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'vitalparameters' })
 export class VitalParameters {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })

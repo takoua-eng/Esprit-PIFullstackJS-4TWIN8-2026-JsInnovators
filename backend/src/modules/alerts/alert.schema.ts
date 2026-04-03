@@ -26,6 +26,13 @@ export class Alert {
   @Prop()
   threshold?: number;
 
+  /** Links to the clinical queue row (symptom or vital document id). */
+  @Prop()
+  sourceType?: string;
+
+  @Prop({ type: Types.ObjectId })
+  sourceId?: Types.ObjectId;
+
   @Prop({ required: true })
   message: string;
 

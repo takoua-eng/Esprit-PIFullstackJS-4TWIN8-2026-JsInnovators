@@ -15,6 +15,8 @@ export interface ClinicalReviewQueueItemDto {
   threshold?: number;
   recordedAt: string;
   heuristicSeverity: 'high' | 'medium' | 'low';
+  /** Urgent / warning / info — derived from vitals & symptoms thresholds */
+  severityCategory?: 'urgent' | 'warning' | 'info';
   sortScore: number;
 }
 
@@ -23,12 +25,19 @@ export interface ClinicalReviewQueueResponseDto {
   sortedBy: 'ai' | 'heuristic';
 }
 
+export interface AlertsDataSummaryDto {
+  database: string | null;
+  counts: Record<string, number>;
+  collections: Record<string, string>;
+}
+
 export interface AlertDto {
   _id: string;
   patientId: string;
   patientName: string;
   doctorId?: string;
   doctorName?: string;
+  /** Present when alert was sent from clinical review (links to symptom/vital doc). */
   sourceType?: string;
   sourceId?: string;
   type: string;
@@ -78,11 +87,20 @@ export class AlertsApiService {
   }
 
   /** Abnormal vitals/symptoms, urgency-sorted (AI when backend has GROQ_API_KEY). */
-  getClinicalReviewQueue(doctorId: string): Observable<ClinicalReviewQueueResponseDto> {
+  getClinicalReviewQueue(doctorId?: string): Observable<ClinicalReviewQueueResponseDto> {
+    let params = new HttpParams();
+    if (doctorId) {
+      params = params.set('doctorId', doctorId);
+    }
     return this.http.get<ClinicalReviewQueueResponseDto>(
       `${this.base}/clinical-review-queue`,
-      { params: { doctorId } },
+      { params },
     );
+  }
+
+  /** Compare with Compass: DB name + document counts per collection. */
+  getDataSummary(): Observable<AlertsDataSummaryDto> {
+    return this.http.get<AlertsDataSummaryDto>(`${this.base}/data-summary`);
   }
 
   getOpenCount(opts?: {
@@ -105,6 +123,20 @@ export class AlertsApiService {
     payload: CreateUrgentClinicAlertPayload,
   ): Observable<AlertDto> {
     return this.http.post<AlertDto>(this.base, payload);
+  }
+
+  /** Groq when server has GROQ_API_KEY; otherwise template text. */
+  suggestDoctorMessage(payload: {
+    patientName: string;
+    summary: string;
+    severityPreset: 'high' | 'medium' | 'low';
+    sourceType?: 'vital' | 'symptom';
+    parameter?: string;
+  }): Observable<{ message: string; source: 'groq' | 'template' }> {
+    return this.http.post<{ message: string; source: 'groq' | 'template' }>(
+      `${this.base}/doctor/suggest-message`,
+      payload,
+    );
   }
 
   acknowledge(

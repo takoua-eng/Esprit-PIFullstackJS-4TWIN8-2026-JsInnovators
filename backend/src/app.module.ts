@@ -1,4 +1,5 @@
 import {
+  Logger,
   MiddlewareConsumer,
   Module,
   NestModule,
@@ -6,7 +7,10 @@ import {
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-
+import {
+  ensureDatabasePathInUri,
+  readEnvTrimmed,
+} from './config/mongo-env.util';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -22,6 +26,7 @@ import { AutoAlertsModule } from './modules/auto-alerts/auto-alerts.module';
 import { QuestionnaireResponseModule } from './modules/questionnaire-responses/questionnaire-response.module';
 import { PatientNotesModule } from './modules/patient-notes/patient-notes.module';
 import { QuestionnaireTemplatesModule } from './modules/questionnaire-templates/questionnaire-templates.module';
+import { VideoCallsModule } from './modules/video-calls/video-calls.module';
 
 import { User, UserSchema } from './modules/users/users.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
@@ -29,9 +34,40 @@ import { Service, ServiceSchema } from './modules/service/services/service.schem
 
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
 
+const mongoConfigLogger = new Logger('MongoConfig');
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => {
+        const dbName = readEnvTrimmed(config, 'MONGODB_DB_NAME');
+        const mongoUri = readEnvTrimmed(config, 'MONGODB_URI');
+        let uri =
+          mongoUri || 'mongodb://127.0.0.1:27017/medifollow';
+
+        if (!mongoUri && uri.includes('127.0.0.1')) {
+          mongoConfigLogger.warn(
+            'MONGODB_URI not loaded — using local default. Remove any space before MONGODB_URI in .env, ensure the file is named `.env` (not only `.env.example`), and restart the server.',
+          );
+        } else {
+          uri = ensureDatabasePathInUri(uri, dbName);
+          mongoConfigLogger.log(
+            `MongoDB: ${uri.startsWith('mongodb+srv') ? 'Atlas' : 'local'} | dbName=${dbName ?? '(from URI)'}`,
+          );
+        }
+
+        return {
+          uri,
+          dbName: dbName || undefined,
+          serverSelectionTimeoutMS: 45_000,
+          retryWrites: true,
+          family: 4,
+        };
+      },
+      inject: [ConfigService],
+    }),
 
     MongooseModule.forRoot(
       'mongodb+srv://Medifollow:Medifollow2025@cluster0.15l0i6q.mongodb.net/?retryWrites=true&w=majority',
@@ -58,6 +94,7 @@ import { Upload, UploadAvatar } from './middleware/upload.middleware';
     QuestionnaireResponseModule,
     PatientNotesModule,
     QuestionnaireTemplatesModule,
+    VideoCallsModule,
   ],
 })
 export class AppModule implements NestModule {
