@@ -69,6 +69,8 @@ type VitalLikeFields = {
   heartRate?: number | null;
   bloodPressuresystolic?: number | null;
   bloodPressureDiastolic?: number | null;
+  /** Free text on vitalparameters — scanned for clinical keywords (dizziness, SOB, etc.). */
+  notes?: string | null;
 };
 
 /**
@@ -130,8 +132,15 @@ function buildRowsFromVitalFields(
       push('heartRate', hr, 120, `High heart rate: ${hr} bpm (> 120)`, 'warning');
     else if (hr > 110)
       push('heartRate', hr, 110, `Elevated heart rate: ${hr} bpm (> 110)`, 'warning');
-    else if (hr > 100)
-      push('heartRate', hr, 100, `Heart rate above resting range: ${hr} bpm (> 100)`, 'info');
+    /** 100–110 bpm: include exactly 100 (previously `> 100` skipped HR 100 entirely). */
+    else if (hr >= 100 && hr <= 110)
+      push(
+        'heartRate',
+        hr,
+        100,
+        `Elevated / high-normal heart rate: ${hr} bpm (100–110)`,
+        'warning',
+      );
     else if (hr < 45) push('heartRate', hr, 45, `Severe bradycardia: ${hr} bpm (< 45)`, 'urgent');
     else if (hr < 50) push('heartRate', hr, 50, `Low heart rate: ${hr} bpm (< 50)`, 'warning');
   }
@@ -156,6 +165,36 @@ function buildRowsFromVitalFields(
       push('bloodPressureDiastolic', dbp, 100, `High diastolic BP: ${dbp} mmHg`, 'warning');
   }
 
+  const notesRaw = v.notes?.trim();
+  if (notesRaw) {
+    const low = notesRaw.toLowerCase();
+    const urgentNote =
+      /chest\s*pain|crushing|can't\s*breathe|cannot\s*breathe|stroke|passed\s*out|unconscious|severe\s+short/i.test(
+        notesRaw,
+      );
+    const warnNote =
+      /dizz|vertigo|faint|palpitat|worsening|nausea|vomit|sob|shortness|breathless|migraine|weakness|blurred/i.test(
+        low,
+      );
+    if (urgentNote) {
+      push(
+        'vitalNotes',
+        1,
+        1,
+        `Vital notes (review): ${notesRaw.slice(0, 160)}`,
+        'urgent',
+      );
+    } else if (warnNote) {
+      push(
+        'vitalNotes',
+        1,
+        1,
+        `Vital notes (review): ${notesRaw.slice(0, 160)}`,
+        'warning',
+      );
+    }
+  }
+
   return rows;
 }
 
@@ -170,8 +209,10 @@ export function buildRowsFromVital(
   const fields: VitalLikeFields = {
     temperature: v.temperature,
     heartRate: v.heartRate,
-    bloodPressuresystolic: v.bloodPressuresystolic,
+    bloodPressuresystolic:
+      v.bloodPressureSystolic ?? v.bloodPressuresystolic ?? null,
     bloodPressureDiastolic: v.bloodPressureDiastolic,
+    notes: v.notes,
   };
   return buildRowsFromVitalFields(
     fields,

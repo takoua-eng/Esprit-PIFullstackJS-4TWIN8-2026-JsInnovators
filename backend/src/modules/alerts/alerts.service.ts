@@ -147,6 +147,86 @@ export class AlertsService implements OnModuleInit {
   }
 
   /**
+   * Explains why `GET /alerts?doctorId=` can return fewer rows than `alerts.countDocuments()` in Compass.
+   */
+  async getListScopeSummary(doctorId?: string): Promise<{
+    totalAlertsInDatabase: number;
+    matchingDoctorListFilter: number;
+    matchingOpenStatus: number;
+    doctorId: string | null;
+    patientScope: 'all_patients' | 'assigned_to_doctor_only';
+    assignedPatientCount: number;
+    explanation: string;
+  }> {
+    const totalAlertsInDatabase = await this.alertModel.countDocuments().exec();
+
+    const doctorOid =
+      doctorId && Types.ObjectId.isValid(doctorId)
+        ? new Types.ObjectId(doctorId)
+        : undefined;
+
+    const patientRole = await this.getPatientRole();
+    let assignedPatientCount = 0;
+    let patientScope: 'all_patients' | 'assigned_to_doctor_only' =
+      'all_patients';
+    if (doctorOid && patientRole) {
+      const assigned = await this.userModel
+        .find({
+          role: patientRole._id,
+          doctorId: doctorOid,
+        })
+        .select('_id')
+        .lean()
+        .exec();
+      assignedPatientCount = assigned.length;
+      if (assigned.length > 0) {
+        patientScope = 'assigned_to_doctor_only';
+      }
+    }
+
+    /** Same pool as `findAll({ doctorId })` — do not duplicate filter rules elsewhere. */
+    const patientIds = await this.getPatientIdsForDoctor(doctorId);
+
+    const orBranches: Record<string, unknown>[] = [];
+    if (patientIds.length > 0) {
+      orBranches.push({ patientId: { $in: patientIds } });
+    }
+    if (doctorOid) {
+      orBranches.push({ triggeredBy: doctorOid });
+    }
+
+    let matchingDoctorListFilter = 0;
+    let matchingOpenStatus = 0;
+    if (orBranches.length > 0) {
+      const scope =
+        orBranches.length === 1 ? orBranches[0]! : { $or: orBranches };
+      matchingDoctorListFilter = await this.alertModel
+        .countDocuments(scope as never)
+        .exec();
+      matchingOpenStatus = await this.alertModel
+        .countDocuments({
+          $and: [scope, { status: 'open' }],
+        } as never)
+        .exec();
+    }
+
+    const explanation =
+      patientScope === 'assigned_to_doctor_only'
+        ? `This doctor has ${assignedPatientCount} assigned patient(s). GET /alerts?doctorId= lists alerts where (patientId is one of them) OR (triggeredBy = this doctor). The other documents still exist in MongoDB. The Issued alerts table may show fewer rows if the UI toggle is "Open only" (see matchingOpenStatus vs matchingDoctorListFilter).`
+        : `Patient pool for this query is all patients (no exclusive assignments, or unscoped). GET /alerts still applies (patientId in pool OR triggeredBy = doctor). "Open only" in the UI limits to status=open.`;
+
+    return {
+      totalAlertsInDatabase,
+      matchingDoctorListFilter,
+      matchingOpenStatus,
+      doctorId: doctorId ?? null,
+      patientScope,
+      assignedPatientCount,
+      explanation,
+    };
+  }
+
+  /**
    * Patients with `doctorId` = this doctor; if none, all patients (demo / unassigned).
    */
   private async getPatientIdsForDoctor(

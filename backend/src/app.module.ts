@@ -5,9 +5,10 @@ import {
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
+  DEFAULT_MONGODB_DB_NAME,
   ensureDatabasePathInUri,
   readEnvTrimmed,
 } from './config/mongo-env.util';
@@ -33,34 +34,42 @@ import { Role, RoleSchema } from './modules/roles/role.schema';
 import { Service, ServiceSchema } from './modules/service/services/service.schema';
 
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 const mongoConfigLogger = new Logger('MongoConfig');
 
+/** Used when `MONGODB_URI` is not set in `.env` (single connection — do not add a second `MongooseModule.forRoot`). */
+const DEFAULT_MONGODB_URI =
+  'mongodb+srv://Medifollow:Medifollow2025@cluster0.15l0i6q.mongodb.net/?retryWrites=true&w=majority';
+
 @Module({
+  controllers: [AppController],
+  providers: [AppService],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => {
-        const dbName = readEnvTrimmed(config, 'MONGODB_DB_NAME');
+        const dbName =
+          readEnvTrimmed(config, 'MONGODB_DB_NAME') || DEFAULT_MONGODB_DB_NAME;
         const mongoUri = readEnvTrimmed(config, 'MONGODB_URI');
-        let uri =
-          mongoUri || 'mongodb://127.0.0.1:27017/medifollow';
+        let uri = mongoUri || DEFAULT_MONGODB_URI;
 
-        if (!mongoUri && uri.includes('127.0.0.1')) {
+        if (!mongoUri) {
           mongoConfigLogger.warn(
-            'MONGODB_URI not loaded — using local default. Remove any space before MONGODB_URI in .env, ensure the file is named `.env` (not only `.env.example`), and restart the server.',
-          );
-        } else {
-          uri = ensureDatabasePathInUri(uri, dbName);
-          mongoConfigLogger.log(
-            `MongoDB: ${uri.startsWith('mongodb+srv') ? 'Atlas' : 'local'} | dbName=${dbName ?? '(from URI)'}`,
+            'MONGODB_URI not set in .env — using DEFAULT_MONGODB_URI in app.module.ts. Set MONGODB_URI to override.',
           );
         }
 
+        uri = ensureDatabasePathInUri(uri, dbName);
+        mongoConfigLogger.log(
+          `MongoDB: ${uri.startsWith('mongodb+srv') ? 'Atlas' : 'local'} | using database "${dbName}" (alerts & all collections on this connection)`,
+        );
+
         return {
           uri,
-          dbName: dbName || undefined,
+          dbName,
           serverSelectionTimeoutMS: 45_000,
           retryWrites: true,
           family: 4,
@@ -68,10 +77,6 @@ const mongoConfigLogger = new Logger('MongoConfig');
       },
       inject: [ConfigService],
     }),
-
-    MongooseModule.forRoot(
-      'mongodb+srv://Medifollow:Medifollow2025@cluster0.15l0i6q.mongodb.net/?retryWrites=true&w=majority',
-    ),
 
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },

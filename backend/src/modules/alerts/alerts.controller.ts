@@ -60,6 +60,14 @@ export class AlertsController {
     return this.alertsService.getAlertsDataSummary();
   }
 
+  /**
+   * Why Compass shows more `alerts` than `GET /alerts?doctorId=` — list is scoped to assigned patients or triggeredBy.
+   */
+  @Get('list-scope')
+  getListScope(@Query('doctorId') doctorId?: string) {
+    return this.alertsService.getListScopeSummary(doctorId);
+  }
+
   /** AI-assisted (Groq when GROQ_API_KEY is set) or template patient message for doctor review. */
   @Post('doctor/suggest-message')
   async suggestDoctorMessage(@Body() body: SuggestDoctorMessageDto) {

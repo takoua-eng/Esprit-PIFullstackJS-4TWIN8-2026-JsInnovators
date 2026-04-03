@@ -17,7 +17,11 @@ export class VitalParameters {
   temperature?: number; // en °C, optionnel
 
   @Prop()
-  bloodPressuresystolic?: number; // mmHg, optionnel
+  bloodPressuresystolic?: number; // mmHg (legacy key)
+
+  /** Standard camelCase — some documents / Compass use this key instead of `bloodPressuresystolic`. */
+  @Prop()
+  bloodPressureSystolic?: number;
 
   @Prop()
   bloodPressureDiastolic?: number; // mmHg, optionnel

@@ -3,7 +3,8 @@ import { Document, Types } from 'mongoose';
 
 export type AlertDocument = Alert & Document;
 
-@Schema({ timestamps: true })
+/** Same collection as Compass: `test` DB → `alerts` (DB name comes from `MONGODB_DB_NAME`). */
+@Schema({ timestamps: true, collection: 'alerts' })
 export class Alert {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   patientId: Types.ObjectId;
