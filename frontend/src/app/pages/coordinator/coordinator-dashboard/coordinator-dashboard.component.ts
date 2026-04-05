@@ -31,9 +31,9 @@ export interface ChatMessage {
 export class CoordinatorDashboardComponent implements OnInit {
   private coordinatorService = inject(CoordinatorService);
   private router = inject(Router);
-  private http = inject(HttpClient);
 
-  @ViewChild('chatMessages') chatMessagesEl!: ElementRef;
+
+  @ViewChild('chatMsgsContainer') chatMessagesEl!: ElementRef;
 
   coordinatorId = '69c32545a5201407afd209cf';
   todayDate = new Date();
@@ -263,17 +263,16 @@ ${patientDetails}
 
 Write 3-5 professional sentences suitable for sharing with a physician. Include compliance rate, patients needing attention, and a brief recommendation. No bullet points — flowing paragraphs only.`;
 
-    this.http.post<any>('https://api.anthropic.com/v1/messages', {
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 400,
-      messages: [{ role: 'user', content: prompt }],
-    }).subscribe({
-      next: (res) => { this.summaryText = res.content?.[0]?.text || 'Unable to generate summary.'; this.summaryLoading = false; },
-      error: () => {
-        this.summaryText = `Daily Compliance Report — ${today}. Out of ${total} assigned patients, ${compliant} (${rate}%) have fully completed their daily health submissions. ${partial} patients have submitted partially, and ${noneSubmitted} have not submitted any data today. ${this.patientsNeedingAction.length > 0 ? `Patients requiring attention: ${this.patientsNeedingAction.map(p => p.name).join(', ')}.` : 'All patients are up to date.'} Coordinator follow-up is recommended for non-compliant patients.`;
-        this.summaryLoading = false;
-      }
-    });
+    this.coordinatorService.generateSummaryAI(this.coordinatorId, prompt).subscribe({
+  next: (res) => {
+    this.summaryText = res.response || `Daily Compliance Report — ${today}. Out of ${total} patients, ${compliant} (${rate}%) fully compliant.`;
+    this.summaryLoading = false;
+  },
+  error: () => {
+    this.summaryText = `Daily Compliance Report — ${today}. Out of ${total} assigned patients, ${compliant} (${rate}%) have fully completed their daily submissions.`;
+    this.summaryLoading = false;
+  }
+});
   }
 
   copySummary(): void {
@@ -320,25 +319,20 @@ ${patientContext}
 
 Coordinator asks: ${input}`;
 
-    this.http.post<any>('https://api.anthropic.com/v1/messages', {
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 250,
-      messages: [{ role: 'user', content: systemContext }],
-    }).subscribe({
-      next: (res) => {
-        const reply = res.content?.[0]?.text || 'I could not process your request.';
-        const idx = this.chatMessages.findIndex(m => m.loading);
-        if (idx !== -1) this.chatMessages[idx] = { role: 'assistant', content: reply };
-        this.chatLoading = false;
-        this.scrollChatToBottom();
-      },
-      error: () => {
-        const idx = this.chatMessages.findIndex(m => m.loading);
-        if (idx !== -1) this.chatMessages[idx] = { role: 'assistant', content: 'Sorry, I am temporarily unavailable. Please try again.' };
-        this.chatLoading = false;
-        this.scrollChatToBottom();
-      }
-    });
+    this.coordinatorService.askAI(this.coordinatorId, systemContext).subscribe({
+  next: (res) => {
+    const idx = this.chatMessages.findIndex(m => m.loading);
+    if (idx !== -1) this.chatMessages[idx] = { role: 'assistant', content: res.response };
+    this.chatLoading = false;
+    this.scrollChatToBottom();
+  },
+  error: () => {
+    const idx = this.chatMessages.findIndex(m => m.loading);
+    if (idx !== -1) this.chatMessages[idx] = { role: 'assistant', content: 'Sorry, AI is temporarily unavailable.' };
+    this.chatLoading = false;
+    this.scrollChatToBottom();
+  }
+});
   }
 
   onChatKeydown(event: KeyboardEvent): void {

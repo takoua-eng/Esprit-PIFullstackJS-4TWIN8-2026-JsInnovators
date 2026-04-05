@@ -350,7 +350,7 @@
     <button class="suggestion-chip" (click)="chatInput = 'Give me a compliance overview'; sendChatMessage()">Compliance overview</button>
   </div>
 
-  <div class="chat-messages" #chatMessages>
+  <div class="chat-messages" #chatMsgsContainer>
     <div *ngFor="let msg of chatMessages"
       class="chat-message"
       [class.chat-message-user]="msg.role === 'user'"
