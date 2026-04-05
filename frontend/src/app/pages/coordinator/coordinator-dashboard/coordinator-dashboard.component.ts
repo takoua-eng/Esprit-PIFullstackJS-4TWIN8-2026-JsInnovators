@@ -280,13 +280,22 @@ export class CoordinatorDashboardComponent implements OnInit {
   }
 
   openReminderFor(patient: ComplianceRow): void {
-    this.selectedReminderId = patient._id;
-    this.reminderMessageOptions = buildReminderMessages(
-      patient.missingVitalFields,
-      patient.missingSymptomFields,
-    );
-    this.selectedReminderMessage = this.reminderMessageOptions[0]?.value || '';
-  }
+  this.selectedReminderId = patient._id;
+  // Charger le message personnalisé depuis la DB
+  this.coordinatorService.getPersonalizedMessage(this.coordinatorId, patient._id).subscribe({
+    next: (data) => {
+      this.reminderMessageOptions = [
+        { value: data.message, label: 'Personalized message based on missing fields' },
+        { value: 'Reminder: Please complete your daily health follow-up as soon as possible.', label: 'General follow-up reminder' },
+      ];
+      this.selectedReminderMessage = data.message;
+    },
+    error: () => {
+      this.reminderMessageOptions = buildReminderMessages(patient.missingVitalFields, patient.missingSymptomFields);
+      this.selectedReminderMessage = this.reminderMessageOptions[0]?.value || '';
+    }
+  });
+}
 
   closeReminder(): void {
     this.selectedReminderId = null;
@@ -310,19 +319,18 @@ confirmReminder(patient: ComplianceRow): void {
       patientId: patient._id,
       type: 'follow_up',
       message: this.selectedReminderMessage,
-      status: 'sent', // ← directement sent
+      status: 'scheduled',
     })
     .subscribe({
       next: (reminder) => {
-        // Marquer reminder comme sent immédiatement
-        this.coordinatorService.sendReminder(reminder._id).subscribe();
-        // Ajouter l'indicateur pour ce patient
-        this.remindedPatientIds.add(patient._id);
-        localStorage.setItem(
-  'reminded_patients',
-  JSON.stringify([...this.remindedPatientIds])
-);
-        this.closeReminder();
+        // Envoyer immédiatement (email + planification SMS)
+        this.coordinatorService.sendReminder(reminder._id).subscribe({
+          next: () => {
+            this.remindedPatientIds.add(patient._id);
+            localStorage.setItem('reminded_patients', JSON.stringify([...this.remindedPatientIds]));
+            this.closeReminder();
+          }
+        });
       },
       error: (err) => console.error('Reminder error', err),
     });

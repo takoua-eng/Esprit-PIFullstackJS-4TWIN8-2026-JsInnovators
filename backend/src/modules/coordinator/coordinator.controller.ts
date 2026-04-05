@@ -75,4 +75,12 @@ export class CoordinatorController {
   deleteReminder(@Param('reminderId') reminderId: string) {
     return this.coordinatorService.deleteReminder(reminderId);
   }
+
+  @Get(':id/patients/:patientId/message')
+getPersonalizedMessage(
+  @Param('id') id: string,
+  @Param('patientId') patientId: string,
+) {
+  return this.coordinatorService.getPersonalizedMessage(id, patientId);
+}
 }

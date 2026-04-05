@@ -161,6 +161,10 @@ export class CoordinatorService {
   return this.http.put(`${this.apiUrl}/reminders/${reminderId}`, body);
 }
 
+getPersonalizedMessage(coordinatorId: string, patientId: string): Observable<{message: string; missingVitals: string[]; missingSymptoms: string[]}> {
+  return this.http.get<any>(`${this.apiUrl}/${coordinatorId}/patients/${patientId}/message`);
+}
+
   getPatientsWithCompliance(coordinatorId: string): Observable<CoordinatorPatientRow[]> {
     return new Observable((observer) => {
       let patients: CoordinatorPatientRow[] = [];
