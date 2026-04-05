@@ -3,11 +3,9 @@ import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
 import { CoreService } from 'src/app/services/core.service';
-
 import { filter } from 'rxjs/operators';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
-
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { HeaderComponent } from './header/header.component';
@@ -16,15 +14,13 @@ import { AppNavItemComponent } from './sidebar/nav-item/nav-item.component';
 import { navItems } from './sidebar/sidebar-data';
 import { patientNavItems } from './sidebar/sidebar-data';
 import { AppTopstripComponent } from './top-strip/topstrip.component';
-
 import { adminNavItems, coordinatorNavItems } from './sidebar/sidebar-data';
 import { nurseNavItems } from './sidebar/nurse-sidebar-data';
 import { doctorNavItems } from './sidebar/doctor-sidebar-data';
 import { NavItem } from './sidebar/nav-item/nav-item';
 import { normalizeRoleKey } from 'src/app/core/post-login-route';
-
-
-
+import { KeyboardGuideComponent } from 'src/app/pages/patient/keyboard-guide/keyboard-guide.component';
+import { KeyboardAccessibilityService } from 'src/app/services/keyboard-accessibility.service';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -41,6 +37,7 @@ const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
     TablerIconsModule,
     HeaderComponent,
     AppTopstripComponent,
+    KeyboardGuideComponent,
   ],
   templateUrl: './full.component.html',
   styleUrls: [],
@@ -70,20 +67,19 @@ export class FullComponent implements OnInit {
   constructor(
     private settings: CoreService,
     private router: Router,
-    private breakpointObserver: BreakpointObserver
+    private breakpointObserver: BreakpointObserver,
+    private kbService: KeyboardAccessibilityService, // injecter pour l'initialiser
   ) {
     this.layoutChangesSubscription = this.breakpointObserver
       .observe([MOBILE_VIEW, TABLET_VIEW])
       .subscribe((state) => {
         this.options.sidenavOpened = true;
         this.isMobileScreen = state.breakpoints[MOBILE_VIEW];
-
         if (this.options.sidenavCollapsed == false) {
           this.options.sidenavCollapsed = state.breakpoints[TABLET_VIEW];
         }
       });
 
-    // Scroll top
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -93,7 +89,6 @@ export class FullComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateSidebar(this.router.url);
-
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {
@@ -101,7 +96,6 @@ export class FullComponent implements OnInit {
       });
   }
 
-  // ✅ LOGIQUE FIX
   private updateSidebar(url: string) {
     const role = normalizeRoleKey(
       typeof localStorage !== 'undefined'

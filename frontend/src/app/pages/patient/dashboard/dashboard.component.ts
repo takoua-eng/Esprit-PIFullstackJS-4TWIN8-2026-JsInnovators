@@ -3,8 +3,9 @@ import { MaterialModule } from 'src/app/material.module';
 import { CommonModule } from '@angular/common';
 import { PatientService, VitalEntry, SymptomEntry, AlertEntry } from 'src/app/services/patient.service';
 import { forkJoin } from 'rxjs';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { KeyboardAccessibilityService } from 'src/app/services/keyboard-accessibility.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,11 +24,19 @@ export class DashboardComponent implements OnInit {
   pendingAlertsCount = 0;
   usageChartOptions: any;
 
-  constructor(private patientService: PatientService) {}
+  constructor(
+    private patientService: PatientService,
+    private router: Router,
+    private kbService: KeyboardAccessibilityService,
+  ) {}
 
   ngOnInit() {
     const patientId = this.patientService.getCurrentPatientId();
-    if (!patientId) { this.buildUsageChart([], [], []); this.isLoading = false; return; }
+    if (!patientId) {
+      this.buildUsageChart([], [], []);
+      this.isLoading = false;
+      return;
+    }
     forkJoin({
       vitalsToday: this.patientService.hasEnteredVitalsToday(),
       symptomsToday: this.patientService.hasEnteredSymptomsToday(),
@@ -49,7 +58,10 @@ export class DashboardComponent implements OnInit {
         this.buildUsageChart(data.allVitals, data.allSymptoms, data.allQuestionnaires as any[]);
         this.isLoading = false;
       },
-      error: () => { this.buildUsageChart([], [], []); this.isLoading = false; },
+      error: () => {
+        this.buildUsageChart([], [], []);
+        this.isLoading = false;
+      },
     });
   }
 
@@ -65,7 +77,10 @@ export class DashboardComponent implements OnInit {
       days.push(d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
       vitalsData.push(vitals.some(v => new Date(v.recordedAt).toDateString() === ds) ? 1 : 0);
       symptomsData.push(symptoms.some(s => new Date(s.reportedAt).toDateString() === ds) ? 1 : 0);
-      questData.push(questionnaires.some(q => { const d2 = q.submittedAt ?? q.createdAt; return d2 && new Date(d2).toDateString() === ds; }) ? 1 : 0);
+      questData.push(questionnaires.some(q => {
+        const d2 = q.submittedAt ?? q.createdAt;
+        return d2 && new Date(d2).toDateString() === ds;
+      }) ? 1 : 0);
     }
     this.usageChartOptions = {
       series: [
@@ -90,5 +105,13 @@ export class DashboardComponent implements OnInit {
       this.recentAlerts = this.recentAlerts.filter(a => a._id !== alertId);
       this.pendingAlertsCount = Math.max(0, this.pendingAlertsCount - 1);
     });
+  }
+
+  navigateTo(path: string): void {
+    this.router.navigate([path]);
+  }
+
+  showKeyboardGuide(): void {
+    this.kbService.toggleGuide();
   }
 }
