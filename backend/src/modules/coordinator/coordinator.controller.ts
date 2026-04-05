@@ -61,4 +61,12 @@ export class CoordinatorController {
   deleteReminder(@Param('reminderId') reminderId: string) {
     return this.coordinatorService.deleteReminder(reminderId);
   }
+
+  @Put('reminders/:reminderId')
+updateReminder(
+  @Param('reminderId') reminderId: string,
+  @Body() body: { type: string; message: string; scheduledAt?: string },
+) {
+  return this.coordinatorService.updateReminder(reminderId, body);
+}
 }

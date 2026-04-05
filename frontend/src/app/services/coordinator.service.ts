@@ -139,11 +139,11 @@ export class CoordinatorService {
   }
 
   createReminder(
-    coordinatorId: string,
-    body: { patientId: string; type: string; message: string; scheduledAt?: string }
-  ): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${coordinatorId}/reminders`, body);
-  }
+  coordinatorId: string,
+  body: { patientId: string; type: string; message: string; scheduledAt?: string; status?: string }
+): Observable<any> {
+  return this.http.post(`${this.apiUrl}/${coordinatorId}/reminders`, body);
+}
 
   sendReminder(reminderId: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/reminders/${reminderId}/send`, {});
@@ -156,6 +156,10 @@ export class CoordinatorService {
   deleteReminder(reminderId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/reminders/${reminderId}`);
   }
+
+  updateReminder(reminderId: string, body: { type: string; message: string; scheduledAt?: string }): Observable<any> {
+  return this.http.put(`${this.apiUrl}/reminders/${reminderId}`, body);
+}
 
   getPatientsWithCompliance(coordinatorId: string): Observable<CoordinatorPatientRow[]> {
     return new Observable((observer) => {

@@ -22,7 +22,7 @@
   <div class="row m-b-24">
     <div class="col-md-3 m-b-16">
       <mat-card class="stats-card purple-card clickable"
-        (click)="navigateTo('/dashboard/coordinator/patients')"
+(click)="navigateTo('/admin/coordinator/patients')"
         [matTooltip]="'ASSIGNED_PATIENTS_TOOLTIP' | translate">
         <mat-card-content class="p-16">
           <i-tabler name="users-group" class="kpi-icon d-block m-b-8"></i-tabler>
@@ -35,7 +35,7 @@
 
     <div class="col-md-3 m-b-16">
       <mat-card class="stats-card red-card clickable"
-        (click)="navigateTo('/dashboard/coordinator/patients')"
+(click)="navigateTo('/admin/coordinator/patients')"
         [matTooltip]="'INCOMPLETE_VITALS_TOOLTIP' | translate">
         <mat-card-content class="p-16">
           <i-tabler name="heart-broken" class="kpi-icon d-block m-b-8"></i-tabler>
@@ -48,7 +48,7 @@
 
     <div class="col-md-3 m-b-16">
       <mat-card class="stats-card yellow-card clickable"
-        (click)="navigateTo('/dashboard/coordinator/reminders')"
+(click)="navigateTo('/admin/coordinator/reminders')"
         [matTooltip]="'REMINDERS_SENT_TOOLTIP' | translate">
         <mat-card-content class="p-16">
           <i-tabler name="bell-ringing" class="kpi-icon d-block m-b-8"></i-tabler>
@@ -61,7 +61,7 @@
 
     <div class="col-md-3 m-b-16">
       <mat-card class="stats-card blue-card clickable"
-        (click)="navigateTo('/dashboard/coordinator/reminders')"
+(click)="navigateTo('/admin/coordinator/reminders')"
         [matTooltip]="'PENDING_REMINDERS_TOOLTIP' | translate">
         <mat-card-content class="p-16">
           <i-tabler name="clock" class="kpi-icon d-block m-b-8"></i-tabler>
@@ -160,7 +160,7 @@
               <mat-card-subtitle>{{ 'SUBMISSION_STATUS_SUB' | translate }}</mat-card-subtitle>
             </div>
             <button mat-stroked-button color="primary" class="details-btn"
-              (click)="navigateTo('/dashboard/coordinator/patients')">
+              (click)="navigateTo('/admin/coordinator/patients')">
               {{ 'VIEW_ALL' | translate }}
             </button>
           </div>
@@ -260,40 +260,49 @@
           <div class="action-list" *ngIf="patientsNeedingAction.length > 0">
             <div *ngFor="let patient of patientsNeedingAction">
               <div class="action-row"
-                [class.row-partial]="patient.vitalsSubmitted || patient.symptomsSubmitted"
-                [class.row-none]="!patient.vitalsSubmitted && !patient.symptomsSubmitted">
+  [class.row-partial]="patient.vitalsSubmitted || patient.symptomsSubmitted"
+  [class.row-none]="!patient.vitalsSubmitted && !patient.symptomsSubmitted"
+  [class.row-reminded]="remindedPatientIds.has(patient._id)">
 
-                <div class="action-patient-info">
-                  <div class="action-avatar">{{ patient.name.charAt(0) }}</div>
-                  <div>
-                    <div class="action-name">{{ patient.name }}</div>
-                    <div class="action-dept">{{ patient.department }}</div>
-                  </div>
-                </div>
+  <div class="action-patient-info">
+    <div class="action-avatar">{{ patient.name.charAt(0) }}</div>
+    <div>
+      <div class="action-name">
+        {{ patient.name }}
+        <!-- Indicateur reminded -->
+        <span class="reminded-badge" *ngIf="remindedPatientIds.has(patient._id)">
+          <i-tabler name="check" class="icon-12"></i-tabler>
+          Reminded
+        </span>
+      </div>
+      <div class="action-dept">{{ patient.department }}</div>
+    </div>
+  </div>
 
-                <div class="missing-detail-tags">
-                  <ng-container *ngIf="patient.missingVitalFields.length > 0">
-                    <span class="field-group-label">{{ 'VITALS' | translate }}:</span>
-                    <span class="missing-field-tag" *ngFor="let f of patient.missingVitalFields">
-                      {{ f }}
-                    </span>
-                  </ng-container>
-                  <ng-container *ngIf="patient.missingSymptomFields.length > 0">
-                    <span class="field-group-label symptoms-label">{{ 'SYMPTOMS' | translate }}:</span>
-                    <span class="missing-field-tag symptom-tag"
-                      *ngFor="let f of patient.missingSymptomFields">
-                      {{ f }}
-                    </span>
-                  </ng-container>
-                </div>
+  <div class="missing-detail-tags">
+    <ng-container *ngIf="patient.missingVitalFields.length > 0">
+      <span class="field-group-label">{{ 'VITALS' | translate }}:</span>
+      <span class="missing-field-tag" *ngFor="let f of patient.missingVitalFields">
+        {{ f }}
+      </span>
+    </ng-container>
+    <ng-container *ngIf="patient.missingSymptomFields.length > 0">
+      <span class="field-group-label symptoms-label">{{ 'SYMPTOMS' | translate }}:</span>
+      <span class="missing-field-tag symptom-tag"
+        *ngFor="let f of patient.missingSymptomFields">
+        {{ f }}
+      </span>
+    </ng-container>
+  </div>
 
-                <button mat-flat-button class="reminder-btn"
-                  (click)="openReminderFor(patient)"
-                  [class.active]="selectedReminderId === patient._id">
-                  <i-tabler name="send" class="icon-14"></i-tabler>
-                  {{ 'REMIND' | translate }}
-                </button>
-              </div>
+  <button mat-flat-button class="reminder-btn"
+    (click)="openReminderFor(patient)"
+    [class.active]="selectedReminderId === patient._id"
+    [class.already-reminded]="remindedPatientIds.has(patient._id)">
+    <i-tabler name="send" class="icon-14"></i-tabler>
+    {{ remindedPatientIds.has(patient._id) ? ('REMIND_AGAIN' | translate) : ('REMIND' | translate) }}
+  </button>
+</div>
 
               <div class="reminder-panel" *ngIf="selectedReminderId === patient._id">
                 <div class="reminder-panel-title">

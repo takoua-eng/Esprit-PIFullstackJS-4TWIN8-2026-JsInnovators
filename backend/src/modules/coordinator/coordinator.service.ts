@@ -284,24 +284,26 @@ export class CoordinatorService {
   }
 
   async createReminder(
-    coordinatorId: string,
-    body: {
-      patientId: string;
-      type: string;
-      message: string;
-      scheduledAt?: string;
-    },
-  ) {
-    const reminder = new this.reminderModel({
-      patientId: new Types.ObjectId(body.patientId),
-      sentBy: new Types.ObjectId(coordinatorId),
-      type: body.type,
-      message: body.message,
-      status: 'scheduled',
-      scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : new Date(),
-    });
-    return reminder.save();
-  }
+  coordinatorId: string,
+  body: {
+    patientId: string;
+    type: string;
+    message: string;
+    scheduledAt?: string;
+    status?: string;
+  },
+) {
+  const reminder = new this.reminderModel({
+    patientId: new Types.ObjectId(body.patientId),
+    sentBy: new Types.ObjectId(coordinatorId),
+    type: body.type,
+    message: body.message,
+    status: body.status || 'scheduled',
+    scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : new Date(),
+    sentAt: body.status === 'sent' ? new Date() : undefined,
+  });
+  return reminder.save();
+}
 
   async sendReminder(reminderId: string) {
     const reminder = await this.reminderModel.findById(reminderId).exec();
@@ -325,4 +327,13 @@ export class CoordinatorService {
     if (!deleted) throw new NotFoundException('Reminder not found');
     return { message: 'Reminder deleted' };
   }
+
+  async updateReminder(reminderId: string, body: { type: string; message: string; scheduledAt?: string }) {
+  const reminder = await this.reminderModel.findById(reminderId).exec();
+  if (!reminder) throw new NotFoundException('Reminder not found');
+  reminder.type = body.type;
+  reminder.message = body.message;
+  if (body.scheduledAt) reminder.scheduledAt = new Date(body.scheduledAt);
+  return reminder.save();
+}
 }

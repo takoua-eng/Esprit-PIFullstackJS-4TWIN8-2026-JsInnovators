@@ -469,5 +469,11 @@
   "NURSE_RECORDS_HINT_TAGS": "500 caract├¿res max",
   "NURSE_RECORDS_HINT_PAIN": "0ÔÇô10, entier si renseign├®",
   "NURSE_RECORDS_HINT_DESCRIPTION": "1000 caract├¿res max",
-  "RETRY": "R├®essayer"
+  "RETRY": "R├®essayer",
+
+
+  "EDIT_REMINDER": "Modifier le rappel",
+"SAVE_CHANGES": "Enregistrer",
+"SEARCH_PATIENT": "Rechercher par patient",
+"EDIT": "Modifier"
 }

@@ -27,6 +27,9 @@ export class CoordinatorDashboardComponent implements OnInit {
   private router = inject(Router);
 
   coordinatorId = '69c32545a5201407afd209cf';
+  remindedPatientIds: Set<string> = new Set(
+  JSON.parse(localStorage.getItem('reminded_patients') || '[]')
+);
 
   dashboardData: CoordinatorDashboardResponse = {
     summary: {
@@ -291,24 +294,37 @@ export class CoordinatorDashboardComponent implements OnInit {
     this.reminderMessageOptions = [];
   }
 
-  confirmReminder(patient: ComplianceRow): void {
-    if (!this.selectedReminderMessage.trim()) return;
-
-    this.coordinatorService
-      .createReminder(this.coordinatorId, {
-        patientId: patient._id,
-        type: 'follow_up',
-        message: this.selectedReminderMessage,
-      })
-      .subscribe({
-        next: () => {
-          this.closeReminder();
-        },
-        error: (err) => console.error('Reminder error', err),
-      });
-  }
-
   navigateTo(path: string): void {
-    this.router.navigate([path]);
-  }
+  const routeMap: Record<string, string> = {
+    '/dashboard/coordinator/patients': '/admin/coordinator/patients',
+    '/dashboard/coordinator/reminders': '/admin/coordinator/reminders',
+  };
+  this.router.navigate([routeMap[path] || path]);
+}
+
+confirmReminder(patient: ComplianceRow): void {
+  if (!this.selectedReminderMessage.trim()) return;
+
+  this.coordinatorService
+    .createReminder(this.coordinatorId, {
+      patientId: patient._id,
+      type: 'follow_up',
+      message: this.selectedReminderMessage,
+      status: 'sent', // ← directement sent
+    })
+    .subscribe({
+      next: (reminder) => {
+        // Marquer reminder comme sent immédiatement
+        this.coordinatorService.sendReminder(reminder._id).subscribe();
+        // Ajouter l'indicateur pour ce patient
+        this.remindedPatientIds.add(patient._id);
+        localStorage.setItem(
+  'reminded_patients',
+  JSON.stringify([...this.remindedPatientIds])
+);
+        this.closeReminder();
+      },
+      error: (err) => console.error('Reminder error', err),
+    });
+}
 }

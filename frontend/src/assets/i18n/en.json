@@ -469,5 +469,10 @@
   "NURSE_RECORDS_HINT_TAGS": "Max. 500 characters",
   "NURSE_RECORDS_HINT_PAIN": "0ÔÇô10, integer if filled",
   "NURSE_RECORDS_HINT_DESCRIPTION": "Max. 1000 characters",
-  "RETRY": "Retry"
+  "RETRY": "Retry",
+
+  "EDIT_REMINDER": "Edit Reminder",
+"SAVE_CHANGES": "Save Changes",
+"SEARCH_PATIENT": "Search by patient",
+"EDIT": "Edit"
 }

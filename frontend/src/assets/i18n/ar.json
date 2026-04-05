@@ -469,5 +469,11 @@
   "NURSE_RECORDS_HINT_TAGS": "500 Ï¡Ï▒┘ü┘ïÏº ┘âÏ¡Ï» Ïú┘éÏÁ┘ë",
   "NURSE_RECORDS_HINT_PAIN": "0ÔÇô10 Ï╣Ï»Ï» ÏÁÏ¡┘èÏ¡ ÏÑ┘å ┘ê┘ÅÏ¼Ï»",
   "NURSE_RECORDS_HINT_DESCRIPTION": "1000 Ï¡Ï▒┘ü ┘âÏ¡Ï» Ïú┘éÏÁ┘ë",
-  "RETRY": "ÏÑÏ╣ÏºÏ»Ï® Ïº┘ä┘àÏ¡Ïº┘ê┘äÏ®"
+  "RETRY": "ÏÑÏ╣ÏºÏ»Ï® Ïº┘ä┘àÏ¡Ïº┘ê┘äÏ®",
+
+
+  "EDIT_REMINDER": "تعديل التذكير",
+"SAVE_CHANGES": "حفظ التغييرات",
+"SEARCH_PATIENT": "بحث بالمريض",
+"EDIT": "تعديل"
 }
