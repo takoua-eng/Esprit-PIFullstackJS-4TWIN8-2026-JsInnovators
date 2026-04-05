@@ -170,10 +170,13 @@ export class UsersService {
     return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
   }
 
-  async getCoordinators() {
-    const role = await this.getRole('coordinator');
-    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
-  }
+async getCoordinators() {
+  const role = await this.getRole('coordinator');
+  return this.userModel.find({
+    role: role._id,
+    isArchived: { $ne: true },
+  });
+}
 
   async getAdmins() {
     const role = await this.getRole('admin');
@@ -566,4 +569,153 @@ export class UsersService {
       diagnosisEntries,
     };
 }
+  
+
+
+
+  async emailExists(email: string): Promise<{ exists: boolean }> {
+  const user = await this.userModel.findOne({ email });
+  return { exists: !!user };
+}
+
+
+// users.service.ts
+  async getDoctor(id: string) {
+    const doctorRole = await this.roleModel.findOne({ name: 'doctor' }).exec();
+    if (!doctorRole) throw new NotFoundException('Rôle doctor introuvable');
+
+    const doctor = await this.userModel
+      .findOne({ _id: id, role: doctorRole._id })
+      .populate('role') // inclure les infos du rôle
+      .exec();
+
+    if (!doctor) throw new NotFoundException('Doctor non trouvé');
+    return doctor;
+  }
+
+
+async updateDoctor(id: string, dto: any, file?: Express.Multer.File) {
+  if (file) {
+    dto.photo = file.filename; // ou le path complet si besoin
+  }
+
+  // Récupérer le rôle doctor
+  const doctorRole = await this.roleModel.findOne({ name: 'doctor' });
+  if (!doctorRole) {
+    throw new Error('Role "doctor" introuvable dans la base');
+  }
+
+  // Mettre à jour le doctor uniquement si rôle correct
+  return this.userModel
+    .findOneAndUpdate(
+      { _id: id, role: doctorRole._id },
+      { $set: dto },
+      { new: true },
+    )
+    .exec();
+}
+
+
+async archiveDoctor(id: string) {
+  const doctorRole = await this.roleModel.findOne({ name: 'doctor' });
+  if (!doctorRole) throw new Error('Role "doctor" introuvable');
+
+  return this.userModel
+    .findOneAndUpdate(
+      { _id: id, role: doctorRole._id },
+      { $set: { isArchived: true } },
+      { new: true },
+    )
+    .exec();
+}
+
+// Similar methods for Coordinator
+async getCoordinator(id: string) {
+  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' }).exec();
+  if (!coordinatorRole) throw new NotFoundException('Rôle coordinator introuvable');
+
+  const coordinator = await this.userModel
+    .findOne({ _id: id, role: coordinatorRole._id })
+    .populate('role')
+    .exec();
+
+  if (!coordinator) throw new NotFoundException('Coordinator non trouvé');
+  return coordinator;
+}
+
+async updateCoordinator(id: string, dto: any, file?: Express.Multer.File) {
+  if (file) {
+    dto.photo = file.filename;
+  }
+
+  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' });
+  if (!coordinatorRole) throw new Error('Role "coordinator" introuvable dans la base');
+
+  return this.userModel
+    .findOneAndUpdate(
+      { _id: id, role: coordinatorRole._id },
+      { $set: dto },
+      { new: true },
+    )
+    .exec();
+}
+
+async archiveCoordinator(id: string) {
+  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' });
+  if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
+
+  return this.userModel
+    .findOneAndUpdate(
+      { _id: id, role: coordinatorRole._id },
+      { $set: { isArchived: true } },
+      { new: true },
+    )
+    .exec();
+}
+
+async activateCoordinator(id: string) {
+  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' });
+  if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
+
+  return this.userModel
+    .findOneAndUpdate(
+      { _id: id, role: coordinatorRole._id },
+      { $set: { isActive: true } },
+      { new: true },
+    )
+    .exec();
+}
+
+async deactivateCoordinator(id: string) {
+  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' });
+  if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
+
+  return this.userModel
+    .findOneAndUpdate(
+      { _id: id, role: coordinatorRole._id },
+      { $set: { isActive: false } },
+      { new: true },
+    )
+    .exec();
+}
+
+async coordinatorEmailExists(email: string): Promise<{ exists: boolean }> {
+  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' });
+  if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
+
+  const user = await this.userModel.findOne({ email, role: coordinatorRole._id });
+  return { exists: !!user };
+}
+
+async findByEmail(email: string) {
+  const user = await this.userModel.findOne({ email: email.trim() });
+  console.log('User found:', user);
+  return user;
+}
+
+async findById(id: string) {
+  return this.userModel.findById(id);
+}
+
+
 }

@@ -1,13 +1,7 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  AfterViewInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MatCardModule } from '@angular/material/card';
@@ -19,19 +13,21 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
-import {
-  CoordinateurService,
-  Coordinator,
-} from './../../../services/superadmin/coordinateur.service';
+import { CoordinateurService, Coordinator } from './../../../services/superadmin/coordinateur.service';
+import { ConfirmDialogComponent } from 'src/app/components/confirm-dialog/confirm-dialog';
+import { AddCoordinatorDialog, CoordinatorData } from 'src/app/pages/admin/add-coordinateur-dialog/add-coordinateur-dialog';
 
-// ✅ Interface pour l'affichage
 interface CoordinatorRow {
   _id: string;
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string;
   photo?: string;
+  isActive?: boolean;
+  isArchived?: boolean;
 }
 
 @Component({
@@ -39,28 +35,30 @@ interface CoordinatorRow {
   standalone: true,
   imports: [
     CommonModule,
+    MatDialogModule,
+    MatSnackBarModule,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
     MatTableModule,
     MatTooltipModule,
-    MatDialogModule,
     TranslateModule,
     MatSortModule,
     MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './coordinateurs.html',
   styleUrls: ['./coordinateurs.scss'],
 })
 export class CoordinateursComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
-  private router = inject(Router);
   private coordService = inject(CoordinateurService);
+  private snackBar = inject(MatSnackBar);
 
-  displayedColumns: string[] = ['photo', 'name', 'email', 'actions'];
   title = 'COORDINATORS';
+  displayedColumns: string[] = ['photo', 'name', 'phone', 'status', 'actions'];
   dataSource = new MatTableDataSource<CoordinatorRow>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -68,6 +66,13 @@ export class CoordinateursComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.loadCoordinators();
+
+    // 🔍 Search filter
+    this.dataSource.filterPredicate = (data: CoordinatorRow, filter: string): boolean => {
+      const nameMatch = ((data.firstName ?? '') + ' ' + (data.lastName ?? '')).toLowerCase().includes(filter);
+      const emailMatch = (data.email ?? '').toLowerCase().includes(filter);
+      return nameMatch || emailMatch;
+    };
   }
 
   ngAfterViewInit(): void {
@@ -75,80 +80,115 @@ export class CoordinateursComponent implements OnInit, AfterViewInit {
     this.dataSource.paginator = this.paginator;
   }
 
-  // ✅ LOAD COORDINATORS
+  // ✅ Load coordinators
   loadCoordinators(): void {
     this.coordService.getCoordinators().subscribe({
-      next: (data: Coordinator[]) => {
-        this.dataSource.data = data.map((c: Coordinator) => ({
-          _id: c._id,
-          firstName: c.firstName,
-          lastName: c.lastName,
-          email: c.email,
-          photo: c.photo,
-        }));
+      next: (coords) => {
+        this.dataSource.data = coords
+          .filter(c => !c.isArchived)
+          .map(c => ({
+            ...c,
+            photo: c.photo ? `http://localhost:3000/uploads/${c.photo}` : '',
+            isActive: c.isActive ?? true,
+            isArchived: c.isArchived ?? false,
+          }));
+          
+        this.dataSource.sort = this.sort;
+        this.dataSource.paginator = this.paginator;
       },
-      error: (err) => console.error('Error loading coordinators:', err),
+      error: (err) => console.error('Erreur coordinators:', err),
     });
   }
 
-  // ✅ SEARCH
+  // ✅ Search
   applyFilter(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
+    const value = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = value.trim().toLowerCase();
+    if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
   }
 
-  // ✅ ADD COORDINATOR
+  // ✅ Add coordinator
   addCoordinator(): void {
-    // ✅ Ouvrir un dialog ou naviguer vers la page d'ajout
-    // this.router.navigate(['/super-admin/coordinators/add']);
-    console.log('Add coordinator clicked');
+    const dialogRef = this.dialog.open(AddCoordinatorDialog, {
+      width: '95vw',
+      maxWidth: '1200px',
+      height: '95vh',
+      data: {},
+    });
+
+    dialogRef.afterClosed().subscribe((result: CoordinatorData | undefined) => {
+      if (result) this.loadCoordinators();
+    });
   }
 
-  // ✅ EDIT COORDINATOR
-  editCoordinator(coord: CoordinatorRow): void {
-    // ✅ Naviguer vers la page d'édition
-    // this.router.navigate(['/super-admin/coordinators/edit', coord._id]);
-    console.log('Edit coordinator:', coord._id);
+  // ✅ Edit coordinator
+  editCoordinator(row: CoordinatorRow): void {
+    this.coordService.getCoordinatorById(row._id).subscribe({
+      next: (coord) => {
+        const dialogRef = this.dialog.open(AddCoordinatorDialog, {
+          width: '95vw',
+          maxWidth: '1200px',
+          data: { coordinator: coord },
+        });
+
+        dialogRef.afterClosed().subscribe(res => {
+          if (res) this.loadCoordinators();
+        });
+      },
+      error: (err) => {
+        console.error(err);
+        this.snackBar.open('Impossible de récupérer le coordinateur', 'Fermer', { duration: 3000 });
+      },
+    });
   }
 
-  // ✅ DELETE COORDINATOR
-  deleteCoordinator(coord: CoordinatorRow): void {
-    if (confirm(`Delete ${this.getFullName(coord)}?`)) {
-      this.coordService.deleteCoordinator?.(coord._id)?.subscribe({
-        next: () => this.loadCoordinators(),
-        error: (err: any) => {
-          console.error('Delete error:', err);
-          this.dataSource.data = this.dataSource.data.filter(
-            (c: CoordinatorRow) => c._id !== coord._id,
-          );
-        },
+  // ✅ Archive coordinator
+  archiveCoordinator(coord: CoordinatorRow): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Archiver coordinateur',
+        message: `Voulez-vous archiver ${coord.firstName} ${coord.lastName} ?`,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.coordService.archiveCoordinator(coord._id).subscribe({
+          next: () => {
+            this.snackBar.open('Archivé avec succès', 'Fermer', { duration: 3000 });
+            this.loadCoordinators();
+          },
+          error: (err) => {
+            console.error(err);
+            this.snackBar.open('Erreur archivage', 'Fermer', { duration: 3000 });
+          },
+        });
+      }
+    });
+  }
+
+  // ✅ Toggle active status
+  toggleStatus(row: CoordinatorRow): void {
+    if (!row._id) return;
+    if (row.isActive) {
+      this.coordService.deactivateCoordinator(row._id).subscribe({
+        next: () => row.isActive = false,
+        error: (err) => this.snackBar.open('Erreur désactivation', 'Fermer', { duration: 3000 }),
+      });
+    } else {
+      this.coordService.activateCoordinator(row._id).subscribe({
+        next: () => row.isActive = true,
+        error: (err) => this.snackBar.open('Erreur activation', 'Fermer', { duration: 3000 }),
       });
     }
   }
 
-  // ✅ GET FULL NAME
-  getFullName(user: CoordinatorRow): string {
-    return `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown';
+  // ✅ Utils
+  getInitials(first?: string, last?: string): string {
+    return ((first?.charAt(0) || '') + (last?.charAt(0) || '')).toUpperCase() || '?';
   }
 
-  // ✅ GET PHOTO URL
-  getPhoto(photo?: string): string {
-    return photo ? `http://localhost:3000/uploads/${photo}` : '';
-  }
-
-  // ✅ GET INITIALS FOR AVATAR
-  getInitials(name: string): string {
-    if (!name) return '?';
-    const names = name.split(' ');
-    return names.length >= 2
-      ? (names[0][0] + names[1][0]).toUpperCase()
-      : name.substring(0, 2).toUpperCase();
-  }
-
-  // ✅ HANDLE IMAGE ERROR
   onImageError(event: any): void {
     event.target.style.display = 'none';
   }

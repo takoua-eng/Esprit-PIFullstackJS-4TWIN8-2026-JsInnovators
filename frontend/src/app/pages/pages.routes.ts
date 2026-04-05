@@ -2,6 +2,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../core/auth.guard';
 import { roleGuard } from '../core/role.guard';
+//import { staffAdminGuard } from '../core/staff-admin.guard';
 
 // Admin Components
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
@@ -54,51 +55,57 @@ const staffAdminGuard = [
 ];
 
 // ✅ ADMIN ROUTES
+// ✅ ADMIN ROUTES — préfixe URL : `/dashboard/admin/...`
 export const AdminRoutes: Routes = [
   {
-    path: 'admin',
+    path: '',
     component: AdminDashboardComponent,
-    data: { title: 'Admin Dashboard' },
     canActivate: staffAdminGuard,
   },
   {
-    path: 'admin/patients',
+    path: 'patients',
     component: Patients,
-    data: { title: 'Patients', role: 'Patient' },
     canActivate: staffAdminGuard,
   },
   {
-    path: 'admin/physicians',
+    path: 'physicians',
     component: MedecinsComponent,
-    data: { title: 'Physicians', role: 'Physician' },
     canActivate: staffAdminGuard,
   },
   {
-    path: 'admin/nurses',
+    path: 'nurses',
     component: NursesComponent,
-    data: { title: 'Nurses', role: 'Nurse' },
     canActivate: staffAdminGuard,
   },
   {
-    path: 'admin/coordinators',
+    path: 'coordinators',
     component: CoordinateursComponent,
-    data: { title: 'Coordinators', role: 'Coordinator' },
     canActivate: staffAdminGuard,
   },
   {
-    path: 'admin/auditors',
+    path: 'auditors',
     component: AuditorsComponent,
-    data: { title: 'Auditors', role: 'Auditor' },
     canActivate: staffAdminGuard,
   },
+
+  // ✅ redirect SANS guard
+  {
+    path: 'template-builder',
+    redirectTo: 'templates/create',
+    pathMatch: 'full',
+  },
+  {
+    path: 'questionnaire-templates',
+    redirectTo: 'templates',
+    pathMatch: 'full',
+  },
+
   {
     path: 'profile',
     component: AdminProfileComponent,
-    data: { title: 'Profile' },
     canActivate: staffAdminGuard,
   },
 ];
-
 // ✅ COORDINATOR ROUTES — loaded only from `/admin/coordinator` (see `app.routes.ts`)
 export const CoordinatorRoutes: Routes = [
   {

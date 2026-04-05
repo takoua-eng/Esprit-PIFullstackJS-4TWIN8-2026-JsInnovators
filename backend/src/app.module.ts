@@ -26,9 +26,11 @@ import { VitalParametersModule } from './modules/vital-parameters/vital-paramete
 import { AutoAlertsModule } from './modules/auto-alerts/auto-alerts.module';
 import { QuestionnaireResponseModule } from './modules/questionnaire-responses/questionnaire-response.module';
 import { PatientNotesModule } from './modules/patient-notes/patient-notes.module';
-import { QuestionnaireTemplatesModule } from './modules/questionnaire-templates/questionnaire-templates.module';
+//import { QuestionnaireTemplateModule } from './modules/questionnaire-template/questionnaire-template.module';
 import { VideoCallsModule } from './modules/video-calls/video-calls.module';
 import { HospitalizationHandwritingModule } from './modules/hospitalization-handwriting/hospitalization-handwriting.module';
+import { QuestionnairesModule } from './modules/questionnaires/questionnaires.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 import { User, UserSchema } from './modules/users/users.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
@@ -43,10 +45,16 @@ const mongoConfigLogger = new Logger('MongoConfig');
 /** Used when `MONGODB_URI` is not set in `.env` (single connection — do not add a second `MongooseModule.forRoot`). */
 const DEFAULT_MONGODB_URI =
   'mongodb+srv://Medifollow:Medifollow2025@cluster0.15l0i6q.mongodb.net/?retryWrites=true&w=majority';
+import { QuestionnaireTemplate, QuestionnaireTemplateSchema } from './modules/questionnaire-template/questionnaire-template.schema';
+import { QuestionnaireResponse, QuestionnaireResponseSchema } from './modules/questionnaire-responses/questionnaire-response.schema';
+import { QuestionnaireInstance, QuestionnaireInstanceSchema } from './modules/questionnaire-instance/questionnaire-instance.schema';
+import { QuestionnaireTemplateModule } from './modules/questionnaire-template/questionnaire-template.module';
+import { QuestionnaireInstanceModule } from './modules/questionnaire-instance/questionnaire-instance.module';
+import { JwtStrategy } from './modules/auth/jwt.strategy';
 
 @Module({
   controllers: [AppController],
-  providers: [AppService],
+  
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
@@ -83,6 +91,9 @@ const DEFAULT_MONGODB_URI =
       { name: User.name, schema: UserSchema },
       { name: Role.name, schema: RoleSchema },
       { name: Service.name, schema: ServiceSchema },
+      {name: QuestionnaireTemplate.name, schema: QuestionnaireTemplateSchema},
+      {name: QuestionnaireResponse.name, schema: QuestionnaireResponseSchema},
+      {name: QuestionnaireInstance.name, schema: QuestionnaireInstanceSchema}, 
     ]),
 
     UsersModule,
@@ -97,12 +108,17 @@ const DEFAULT_MONGODB_URI =
     CoordinatorModule,
     VitalParametersModule,
     AutoAlertsModule,
+    QuestionnaireTemplateModule,
     QuestionnaireResponseModule,
+    QuestionnaireInstanceModule,
     PatientNotesModule,
-    QuestionnaireTemplatesModule,
+    QuestionnaireTemplateModule,
     VideoCallsModule,
     HospitalizationHandwritingModule,
+    QuestionnairesModule,
+    AdminModule,
   ],
+  providers: [JwtStrategy, AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

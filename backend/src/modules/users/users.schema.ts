@@ -133,6 +133,11 @@ export class User {
   /** Nurse medical dossier (globals); per-visit diagnoses live in `patientdiagnoses`. */
   @Prop({ type: mongoose.Schema.Types.Mixed })
   nurseDossier?: Record<string, unknown>;
+
+
+  //face recognition
+@Prop({ type: [Number], default: [] })
+faceDescriptor: number[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
