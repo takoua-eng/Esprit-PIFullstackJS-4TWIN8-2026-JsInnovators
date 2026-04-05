@@ -55,6 +55,13 @@ export const coordinatorNavItems: NavItem[] = [
     route: '/admin/coordinator/reminders',
     bgcolor: 'transparent',
   },
+
+  {
+  displayName: 'AI PREDICTION',
+  iconName: 'brain',
+  route: '/admin/coordinator/prediction',
+  bgcolor: 'transparent',
+},
 ];
 
 

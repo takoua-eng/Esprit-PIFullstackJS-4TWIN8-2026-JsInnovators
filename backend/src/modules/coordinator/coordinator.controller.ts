@@ -28,6 +28,11 @@ export class CoordinatorController {
     return this.coordinatorService.getComplianceToday(id);
   }
 
+  @Get(':id/prediction')
+  getPrediction(@Param('id') id: string) {
+    return this.coordinatorService.getPrediction(id);
+  }
+
   @Get(':id/reminders')
   getReminders(@Param('id') id: string) {
     return this.coordinatorService.getReminders(id);
@@ -42,6 +47,7 @@ export class CoordinatorController {
       type: string;
       message: string;
       scheduledAt?: string;
+      status?: string;
     },
   ) {
     return this.coordinatorService.createReminder(id, body);
@@ -57,16 +63,16 @@ export class CoordinatorController {
     return this.coordinatorService.cancelReminder(reminderId);
   }
 
+  @Put('reminders/:reminderId')
+  updateReminder(
+    @Param('reminderId') reminderId: string,
+    @Body() body: { type: string; message: string; scheduledAt?: string },
+  ) {
+    return this.coordinatorService.updateReminder(reminderId, body);
+  }
+
   @Delete('reminders/:reminderId')
   deleteReminder(@Param('reminderId') reminderId: string) {
     return this.coordinatorService.deleteReminder(reminderId);
   }
-
-  @Put('reminders/:reminderId')
-updateReminder(
-  @Param('reminderId') reminderId: string,
-  @Body() body: { type: string; message: string; scheduledAt?: string },
-) {
-  return this.coordinatorService.updateReminder(reminderId, body);
-}
 }

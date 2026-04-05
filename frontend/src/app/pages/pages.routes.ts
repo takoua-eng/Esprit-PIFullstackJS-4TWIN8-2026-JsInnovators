@@ -45,6 +45,7 @@ import { DoctorDashboardComponent } from './doctor/dashboard/doctor-dashboard.co
 import { DoctorAlertsComponent } from './doctor/alerts/doctor-alerts.component';
 import { DoctorHistoryComponent } from './doctor/history/doctor-history.component';
 import { DoctorPrescriptionsComponent } from './doctor/prescriptions/doctor-prescriptions.component';
+import { AiPredictionComponent } from './coordinator/ai-prediction/ai-prediction.component';
 
 /** Roles allowed to use the sub-admin `/dashboard/admin/...` area (not patients, not coordinators). */
 const staffAdminGuard = [
@@ -115,6 +116,8 @@ export const CoordinatorRoutes: Routes = [
     component: RemindersComponent,
     data: { title: 'Reminders' },
   },
+
+  { path: 'prediction', component: AiPredictionComponent, data: { title: 'AI Prediction' } },
 ];
 
 const nurseOnlyGuard = [authGuard, roleGuard(['nurse'])];
