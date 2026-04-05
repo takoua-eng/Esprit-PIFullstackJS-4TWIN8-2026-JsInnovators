@@ -21,13 +21,20 @@ import { VitalParametersModule } from './modules/vital-parameters/vital-paramete
 import { AutoAlertsModule } from './modules/auto-alerts/auto-alerts.module';
 import { QuestionnaireResponseModule } from './modules/questionnaire-responses/questionnaire-response.module';
 import { PatientNotesModule } from './modules/patient-notes/patient-notes.module';
-import { QuestionnaireTemplatesModule } from './modules/questionnaire-templates/questionnaire-templates.module';
+import { QuestionnairesModule } from './modules/questionnaires/questionnaires.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 import { User, UserSchema } from './modules/users/users.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
 import { Service, ServiceSchema } from './modules/service/services/service.schema';
 
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
+import { QuestionnaireTemplate, QuestionnaireTemplateSchema } from './modules/questionnaire-template/questionnaire-template.schema';
+import { QuestionnaireResponse, QuestionnaireResponseSchema } from './modules/questionnaire-responses/questionnaire-response.schema';
+import { QuestionnaireInstance, QuestionnaireInstanceSchema } from './modules/questionnaire-instance/questionnaire-instance.schema';
+import { QuestionnaireTemplateModule } from './modules/questionnaire-template/questionnaire-template.module';
+import { QuestionnaireInstanceModule } from './modules/questionnaire-instance/questionnaire-instance.module';
+import { JwtStrategy } from './modules/auth/jwt.strategy';
 
 @Module({
   imports: [
@@ -41,6 +48,9 @@ import { Upload, UploadAvatar } from './middleware/upload.middleware';
       { name: User.name, schema: UserSchema },
       { name: Role.name, schema: RoleSchema },
       { name: Service.name, schema: ServiceSchema },
+      {name: QuestionnaireTemplate.name, schema: QuestionnaireTemplateSchema},
+      {name: QuestionnaireResponse.name, schema: QuestionnaireResponseSchema},
+      {name: QuestionnaireInstance.name, schema: QuestionnaireInstanceSchema}, 
     ]),
 
     UsersModule,
@@ -55,10 +65,14 @@ import { Upload, UploadAvatar } from './middleware/upload.middleware';
     CoordinatorModule,
     VitalParametersModule,
     AutoAlertsModule,
+    QuestionnaireTemplateModule,
     QuestionnaireResponseModule,
+    QuestionnaireInstanceModule,
     PatientNotesModule,
-    QuestionnaireTemplatesModule,
+    QuestionnairesModule,
+    AdminModule,
   ],
+  providers: [JwtStrategy],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

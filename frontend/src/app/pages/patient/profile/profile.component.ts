@@ -1,63 +1,56 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { MaterialModule } from 'src/app/material.module';
 import { CommonModule } from '@angular/common';
-
-interface UserProfile {
-  _id?: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  dateOfBirth?: string;
-  gender?: string;
-  department?: string;
-  specialization?: string;
-  photo?: string;
-  medicalRecordNumber?: string;
-}
+import { MaterialModule } from 'src/app/material.module';
+import { TranslateModule } from '@ngx-translate/core';
+import { TablerIconsModule } from 'angular-tabler-icons';
+import { UserService } from 'src/app/services/users.service';
 
 @Component({
-  selector: 'app-profile',
-  imports: [MaterialModule, CommonModule],
+  selector: 'app-admin-profile',
+  standalone: true,
+  imports: [CommonModule, MaterialModule, TranslateModule, TablerIconsModule],
   templateUrl: './profile.component.html',
-  styleUrl: './profile.component.scss',
+  styleUrls: ['./profile.component.scss'],
 })
 export class ProfileComponent implements OnInit {
-  user: UserProfile | null = null;
-  isLoading = true;
-  error = '';
 
-  private readonly API = 'http://localhost:3000';
+  profile = {
+    name: '',
+    email: '',
+    role: '',
+    phone: '',
+    service: '',
+    hospital: 'MediFollow Demo Hospital',
+    avatar: '/assets/images/profile/user-1.jpg',
+  };
 
-  constructor(private http: HttpClient) {}
+  constructor(private userService: UserService) {}
 
-  ngOnInit() {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      this.error = 'User not found. Please log in again.';
-      this.isLoading = false;
-      return;
-    }
-    this.http.get<UserProfile>(`${this.API}/users/${userId}`).subscribe({
-      next: (data) => {
-        this.user = data;
-        this.isLoading = false;
+  ngOnInit(): void {
+    this.loadProfile();
+  }
+
+  loadProfile() {
+    this.userService.getProfile().subscribe({
+      next: (user) => {
+
+        this.profile = {
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          role: user.role?.name || user.role,
+          phone: user.phone,
+          service: user.service?.name || '—',
+          hospital: 'MediFollow Demo Hospital',
+          avatar: user.photo
+            ? `http://localhost:3000/${user.photo}`
+            : '/assets/images/profile/user-1.jpg'
+        };
+
       },
-      error: () => {
-        this.error = 'Failed to load profile. Please try again.';
-        this.isLoading = false;
-      },
+      error: (err) => {
+        console.error('Erreur chargement profil', err);
+      }
     });
   }
 
-  getInitials(): string {
-    if (!this.user) return '?';
-    return `${this.user.firstName?.[0] ?? ''}${this.user.lastName?.[0] ?? ''}`.toUpperCase();
-  }
-
-  formatDate(d?: string): string {
-    if (!d) return 'Not provided';
-    return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-  }
 }

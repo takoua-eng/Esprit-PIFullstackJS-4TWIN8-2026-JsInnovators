@@ -1,0 +1,143 @@
+.template-builder-card {
+  max-width: 960px;
+}
+
+.builder-loading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.builder-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 1rem 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: rgba(244, 67, 54, 0.08);
+  color: #c62828;
+  font-size: 0.9rem;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.flex-grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.questions-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.questions-count {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.875rem;
+}
+
+.questions-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.question-panel {
+  border-radius: 8px !important;
+}
+
+.question-preview {
+  margin-left: 0.5rem;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 280px;
+}
+
+.question-body {
+  padding-top: 0.5rem;
+}
+
+.question-actions-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.remove-question-btn {
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.options-block {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.options-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 0.5rem;
+}
+
+.option-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.option-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.option-field-invalid {
+  ::ng-deep .mdc-notched-outline__leading,
+  ::ng-deep .mdc-notched-outline__notch,
+  ::ng-deep .mdc-notched-outline__trailing {
+    border-color: var(--mat-form-field-error-text-color, #f44336) !important;
+  }
+}
+
+.options-error {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--mat-form-field-error-text-color, #f44336);
+}
+
+.empty-hint {
+  margin: 1rem 0 0;
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 0.9rem;
+}
+
+.questions-list-error {
+  margin: -0.25rem 0 0.75rem;
+  font-size: 0.75rem;
+  color: var(--mat-form-field-error-text-color, #f44336);
+}
+
+.template-builder-actions {
+  padding: 0 1rem 1rem !important;
+  margin: 0;
+}

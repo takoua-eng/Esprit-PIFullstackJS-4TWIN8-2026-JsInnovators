@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -15,6 +15,9 @@ import { API_BASE_URL } from 'src/app/core/api.config';
 import { getPostLoginPath } from 'src/app/core/post-login-route';
 import { CoreService } from 'src/app/services/core.service';
 
+// ✅ FACE API
+import { FaceRecognitionService } from 'src/app/services/face-recognition';
+
 @Component({
   selector: 'app-side-login',
   standalone: true,
@@ -27,30 +30,35 @@ import { CoreService } from 'src/app/services/core.service';
     HttpClientModule,
   ],
   templateUrl: './side-login.component.html',
-  styles: [
-    `
-      .login-error {
-        margin-bottom: 1rem;
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        background: #fdecea;
-        color: #611a15;
-        font-size: 0.875rem;
-        line-height: 1.4;
-      }
-    `,
-  ],
 })
-export class AppSideLoginComponent {
+export class AppSideLoginComponent implements OnInit {
+
+  // 🔐 CLASSIC LOGIN
   loading = false;
   errorMessage = '';
+
+  // 🤖 FACE LOGIN
+  @ViewChild('video') video!: ElementRef<HTMLVideoElement>;
+  @ViewChild('image') image!: ElementRef<HTMLImageElement>;
+
+  showCamera = false;
+  loadingFace = false;
+  faceMessage = '';
+  useVideo = true; // pour tests avec vidéo ou image
 
   constructor(
     private router: Router,
     private http: HttpClient,
     private core: CoreService,
+    private faceService: FaceRecognitionService
   ) {}
 
+  // ================= INIT =================
+  async ngOnInit() {
+    await this.faceService.loadModels();
+  }
+
+  // ================= FORM =================
   form = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required]),
@@ -61,27 +69,23 @@ export class AppSideLoginComponent {
     return this.form.controls;
   }
 
-  /** NestJS often returns `{ message: string | string[] }`; sometimes `error` is a string. */
+  // ================= ERROR HANDLING =================
   private messageFromHttpError(err: HttpErrorResponse): string {
     const e = err.error as
       | string
       | { message?: string | string[] }
       | null
       | undefined;
-    if (!e) {
-      return err.status === 401
-        ? 'Wrong email or password, or no user in this database. Create a user first or check spelling.'
-        : 'Request failed';
-    }
+
+    if (!e) return err.status === 401 ? 'Wrong email or password.' : 'Request failed';
     if (typeof e === 'string') return e;
     const m = e.message;
     if (typeof m === 'string') return m;
     if (Array.isArray(m)) return m.join(', ');
-    return err.status === 401
-      ? 'Wrong email or password, or no user in this database.'
-      : 'Request failed';
+    return 'Request failed';
   }
 
+  // ================= CLASSIC LOGIN =================
   submit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -96,27 +100,90 @@ export class AppSideLoginComponent {
     this.http
       .post<{ accessToken: string; role: string }>(
         `${API_BASE_URL}/auth/login`,
-        { email, password },
+        { email, password }
       )
       .pipe(
         catchError((err: HttpErrorResponse) => {
           this.loading = false;
-          if (err.status === 0) {
-            this.errorMessage = `Cannot reach API at ${API_BASE_URL}. Start the backend (e.g. cd backend && npm run start:dev) and ensure it listens on that URL.`;
-          } else {
-            this.errorMessage = this.messageFromHttpError(err);
-          }
+          this.errorMessage = this.messageFromHttpError(err);
           return throwError(() => err);
         }),
       )
       .subscribe((res) => {
         this.loading = false;
-
         localStorage.setItem('accessToken', res.accessToken);
         this.core.setRoleFromLogin(res.role || '');
-
         this.router.navigateByUrl(getPostLoginPath(res.role));
       });
+  }
+
+  // ================= FACE LOGIN =================
+  async startFaceLogin() {
+    try {
+      this.showCamera = true;
+      this.faceMessage = '⏳ Initializing camera...';
+
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      this.video.nativeElement.srcObject = stream;
+    } catch (err: any) {
+      console.error('Camera error:', err);
+      if (err.name === 'NotReadableError') {
+        this.faceMessage = 'Camera is in use by another app or tab.';
+      } else if (err.name === 'NotAllowedError') {
+        this.faceMessage = 'Camera permission denied.';
+      } else {
+        this.faceMessage = 'Cannot access camera.';
+      }
+      this.showCamera = false;
+    }
+  }
+
+stopCamera() {
+  // Typage explicite pour TS
+  const stream = this.video?.nativeElement?.srcObject as MediaStream | null;
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+  }
+}
+
+  closeCamera() {
+    this.showCamera = false;
+    this.stopCamera();
+  }
+
+  async captureFace(): Promise<number[] | null> {
+    const result = await this.faceService.detectFace(this.video.nativeElement);
+    if (!result) return null;
+    return Array.from(result.descriptor);
+  }
+
+  async captureAndLogin() {
+    this.loadingFace = true;
+    this.faceMessage = '⏳ Scanning face...';
+
+    const descriptor = await this.captureFace();
+    if (!descriptor) {
+      this.faceMessage = '❌ No face detected';
+      this.loadingFace = false;
+      return;
+    }
+
+    this.faceMessage = '✅ Face detected';
+
+    this.http.post<any>(`${API_BASE_URL}/auth/face-login`, { faceDescriptor: descriptor }).subscribe({
+      next: (res) => {
+        this.faceMessage = '🎉 Login success';
+        this.loadingFace = false;
+        localStorage.setItem('accessToken', res.token);
+        this.core.setRoleFromLogin(res.user?.role || '');
+        this.stopCamera();
+        this.router.navigateByUrl(getPostLoginPath(res.user?.role));
+      },
+      error: () => {
+        this.faceMessage = '❌ Face not recognized';
+        this.loadingFace = false;
+      }
+    });
   }
 
   async loginWithFaceID() {
@@ -132,10 +199,7 @@ export class AppSideLoginComponent {
       }
 
       const options: unknown = await this.http
-        .get(
-          `${API_BASE_URL}/auth/webauthn/login-challenge?email=` +
-            encodeURIComponent(email),
-        )
+        .get(`${API_BASE_URL}/auth/webauthn/login-challenge?email=` + encodeURIComponent(email))
         .toPromise();
 
       const assertion = await SimpleWebAuthnBrowser.startAuthentication({
@@ -143,21 +207,54 @@ export class AppSideLoginComponent {
       });
 
       const res = (await this.http
-        .post<{ accessToken: string; role?: string }>(
-          `${API_BASE_URL}/auth/webauthn/verify`,
-          assertion,
-        )
+        .post<{ accessToken: string; role?: string }>(`${API_BASE_URL}/auth/webauthn/verify`, assertion)
         .toPromise())!;
 
       localStorage.setItem('accessToken', res.accessToken);
       this.core.setRoleFromLogin(res.role || '');
       this.router.navigateByUrl(getPostLoginPath(res.role));
       this.loading = false;
-    } catch (err: unknown) {
+    } catch (err) {
       console.error(err);
       this.loading = false;
-      const e = err as { error?: { message?: string } };
-      this.errorMessage = e?.error?.message || 'Face ID login failed';
+      this.errorMessage = 'Face ID login failed';
+    }
+  }
+
+  async registerFace() {
+    const descriptor = await this.captureFace();
+    if (!descriptor) return;
+
+    this.http.post('/api/auth/register-face', { faceDescriptor: descriptor }).subscribe(() => {
+      console.log('✅ Face saved');
+    });
+  }
+
+  // ================= TEST AVEC VIDEO/IMAGE =================
+  async startTestFace() {
+    this.faceMessage = '⏳ Loading models...';
+    await this.faceService.loadModels();
+
+    if (this.useVideo) {
+      const videoEl = this.video.nativeElement;
+      videoEl.src = 'assets/test/test-face.mp4';
+      await videoEl.play();
+      const result = await this.faceService.detectFace(videoEl);
+      if (!result) {
+        this.faceMessage = '❌ No face detected';
+        return;
+      }
+      this.faceMessage = '✅ Face detected';
+      console.log('Face Descriptor:', Array.from(result.descriptor));
+    } else {
+      const imgEl = this.image.nativeElement;
+      const result = await this.faceService.detectFaceFromImage(imgEl);
+      if (!result) {
+        this.faceMessage = '❌ No face detected';
+        return;
+      }
+      this.faceMessage = '✅ Face detected';
+      console.log('Face Descriptor:', Array.from(result.descriptor));
     }
   }
 }

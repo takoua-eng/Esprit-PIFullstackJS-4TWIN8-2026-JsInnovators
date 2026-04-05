@@ -1,70 +1,77 @@
-﻿<div class="profile-container">
-  <div class="page-header">
-    <h2>My Profile</h2>
-    <p class="subtitle">Your account information</p>
-  </div>
-
-  <div *ngIf="isLoading" class="loading-state">
-    <mat-spinner diameter="40"></mat-spinner>
-    <p>Loading profile...</p>
-  </div>
-
-  <div *ngIf="error" class="error-state">
-    <mat-icon>error_outline</mat-icon>
-    <p>{{ error }}</p>
-  </div>
-
-  <div *ngIf="!isLoading && !error && user" class="profile-content">
-    <!-- Avatar card -->
-    <mat-card class="avatar-card">
+﻿<div class="profile-page">
+  <div class="profile-wrapper">
+    <mat-card class="profile-card cardWithShadow">
       <mat-card-content>
-        <div class="avatar-circle">{{ getInitials() }}</div>
-        <h3>{{ user.firstName }} {{ user.lastName }}</h3>
-        <p class="role-badge">Patient</p>
-        <p class="email">{{ user.email }}</p>
-      </mat-card-content>
-    </mat-card>
 
-    <!-- Info card -->
-    <mat-card class="info-card">
-      <mat-card-header>
-        <mat-card-title>Personal Information</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="label">First Name</span>
-            <span class="value">{{ user.firstName }}</span>
+        <!-- Header -->
+        <div class="profile-header">
+          <div class="avatar-wrapper">
+            <img [src]="profile.avatar" [alt]="profile.name" class="profile-avatar" />
+            <div class="role-dot"></div>
           </div>
-          <div class="info-item">
-            <span class="label">Last Name</span>
-            <span class="value">{{ user.lastName }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Email</span>
-            <span class="value">{{ user.email }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Phone</span>
-            <span class="value">{{ user.phone || 'Not provided' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Date of Birth</span>
-            <span class="value">{{ formatDate(user.dateOfBirth) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Gender</span>
-            <span class="value">{{ user.gender ? (user.gender | titlecase) : 'Not provided' }}</span>
-          </div>
-          <div class="info-item" *ngIf="user.medicalRecordNumber">
-            <span class="label">Medical Record #</span>
-            <span class="value">{{ user.medicalRecordNumber }}</span>
-          </div>
-          <div class="info-item" *ngIf="user.department">
-            <span class="label">Department</span>
-            <span class="value">{{ user.department }}</span>
+          <div class="profile-identity">
+            <h2 class="profile-name">{{ profile?.name }}</h2>
+            <div class="profile-role-badge">{{ profile?.role }}</div>
+            <div class="profile-hospital">{{ profile?.hospital }}</div>
           </div>
         </div>
+
+        <mat-divider class="m-t-16 m-b-24"></mat-divider>
+
+        <!-- Fields -->
+        <div class="profile-fields">
+
+          <div class="profile-field">
+            <div class="field-icon-wrap">
+              <i-tabler name="mail" class="field-icon"></i-tabler>
+            </div>
+            <div class="field-content">
+              <div class="field-label">{{ 'EMAIL' | translate }}</div>
+              <div class="field-value">{{ profile.email }}</div>
+            </div>
+          </div>
+
+          <div class="profile-field">
+            <div class="field-icon-wrap">
+              <i-tabler name="phone" class="field-icon"></i-tabler>
+            </div>
+            <div class="field-content">
+              <div class="field-label">{{ 'PHONE' | translate }}</div>
+              <div class="field-value">{{ profile.phone || '—' }}</div>
+            </div>
+          </div>
+
+          <div class="profile-field">
+            <div class="field-icon-wrap">
+              <i-tabler name="building-hospital" class="field-icon"></i-tabler>
+            </div>
+            <div class="field-content">
+              <div class="field-label">{{ 'SERVICE_UNIT' | translate }}</div>
+              <div class="field-value">{{ profile.service || '—' }}</div>
+            </div>
+          </div>
+
+          <div class="profile-field">
+            <div class="field-icon-wrap">
+              <i-tabler name="shield-check" class="field-icon"></i-tabler>
+            </div>
+            <div class="field-content">
+              <div class="field-label">{{ 'STATUS' | translate }}</div>
+              <div class="field-value">
+                <span class="active-badge">{{ 'ACTIVE' | translate }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="profile-actions">
+          <button mat-flat-button color="primary">
+            <i-tabler name="edit" class="icon-16"></i-tabler>
+            {{ 'EDIT_PROFILE' | translate }}
+          </button>
+        </div>
+
       </mat-card-content>
     </mat-card>
   </div>

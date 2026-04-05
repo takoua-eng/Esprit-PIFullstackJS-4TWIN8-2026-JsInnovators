@@ -1,111 +1,203 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+
+import { CoordinateurService } from 'src/app/services/superadmin/coordinateur.service';
+
+// Angular Material
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatOptionModule } from '@angular/material/core';
 
 export interface CoordinatorData {
+  _id?: string;
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
-  department: string;
-  role: string;
-  yearsExperience: number;
-  specialization: string;
+  password?: string;
+  phone?: string;
+  role?: string;
+  yearsExperience?: number;
+  photo?: File | string;
 }
 
 @Component({
-  selector: 'app-super-add-coordinateur-dialog',
+  selector: 'AddCoordinatorDialog',
   standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule,
     MatSelectModule,
+    MatOptionModule,
+    MatButtonModule,
     MatIconModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
   ],
   templateUrl: './add-coordinateur-dialog.html',
   styleUrls: ['./add-coordinateur-dialog.scss'],
 })
-export class AddCoordinateurDialog {
-  private fb = inject(FormBuilder);
-  private dialogRef = inject(MatDialogRef<AddCoordinateurDialog>);
+export class AddCoordinatorDialog implements OnInit {
+  coordinatorForm: FormGroup;
 
-  coordinatorForm: FormGroup = this.fb.group({
-    firstName: ['', [Validators.required, Validators.minLength(2)]],
-    lastName: ['', [Validators.required, Validators.minLength(2)]],
-    email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.pattern(/^[\+]?[1-9][\d]{0,15}$/)]],
-    department: ['', Validators.required],
-    role: ['', Validators.required],
-    yearsExperience: [0, [Validators.required, Validators.min(0), Validators.max(60)]],
-    specialization: ['', Validators.required],
-  });
+  photoPreview: string | null = null;
+  selectedFile: File | null = null;
 
-  departmentOptions = [
-    'Cardiology',
-    'Neurology',
-    'Oncology',
-    'Pediatrics',
-    'Orthopedics',
-    'General Medicine',
-  ];
+  isSubmitted = false;
+  isEditMode = false;
+  roleOptions: any;
+  departmentOptions: any;
 
-  roleOptions = [
-    'Department Head',
-    'Project Manager',
-    'Quality Coordinator',
-    'Administrative Coordinator',
-  ];
+  constructor(
+    private fb: FormBuilder,
+    private dialogRef: MatDialogRef<AddCoordinatorDialog>,
+    private coordService: CoordinateurService,
+    @Inject(MAT_DIALOG_DATA) public data: { coordinator?: CoordinatorData }
+  ) {
+    this.coordinatorForm = this.fb.group({
+      firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.minLength(8)]], // obligatoire seulement pour ajout
+      phone: ['', [Validators.required, Validators.pattern(/^(\+216|00216|0)?[2-9]\d{7}$/)]],
+      gender: ['', Validators.required],
+      address: ['', [Validators.minLength(5), Validators.maxLength(200)]],
+      licenseNumber: [{ value: this.generateLicenseNumber(), disabled: true }],
+      yearsOfExperience: [0, [Validators.required, Validators.min(0)]],
+      assignedService: [''],
+    });
 
-  onSubmit(): void {
-    if (this.coordinatorForm.valid) {
-      this.dialogRef.close(this.coordinatorForm.value);
-    } else {
-      this.markFormGroupTouched();
+    // ✅ MODE EDIT
+    if (data.coordinator) {
+      this.isEditMode = true;
+
+      this.coordinatorForm.patchValue({
+        ...data.coordinator,
+        password: '',
+      });
+
+      this.coordinatorForm.get('password')?.clearValidators();
+      this.coordinatorForm.get('password')?.updateValueAndValidity();
+
+      if (data.coordinator.photo) {
+        this.photoPreview =
+          typeof data.coordinator.photo === 'string'
+            ? data.coordinator.photo
+            : URL.createObjectURL(data.coordinator.photo);
+      }
     }
   }
 
+  ngOnInit(): void { }
+
+  // ✅ IMAGE
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (input.files?.[0]) {
+      const file = input.files[0];
+
+      if (!file.type.startsWith('image/')) {
+        alert('Image invalide');
+        input.value = '';
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Max 5MB');
+        input.value = '';
+        return;
+      }
+
+      this.selectedFile = file;
+
+      const reader = new FileReader();
+      reader.onload = () => (this.photoPreview = reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removePhoto(): void {
+    this.photoPreview = null;
+    this.selectedFile = null;
+  }
+
+  // ✅ SUBMIT
+  onSubmit(): void {
+    this.isSubmitted = true;
+
+    // Marquer tous les champs comme touchés
+    Object.keys(this.coordinatorForm.controls).forEach((key) =>
+      this.coordinatorForm.get(key)?.markAsTouched()
+    );
+
+    if (!this.coordinatorForm.valid) {
+      alert('Veuillez remplir tous les champs obligatoires correctement.');
+      return;
+    }
+
+    const values = this.coordinatorForm.getRawValue();
+
+    // Si gender existe, passer en minuscule
+    if (values.gender) values.gender = values.gender.toLowerCase();
+
+    const formData = new FormData();
+    Object.keys(values).forEach((key) => {
+      // ignorer mot de passe vide en édition
+      if (this.isEditMode && key === 'password' && !values[key]) return;
+      const value = values[key];
+      if (value !== null && value !== undefined) formData.append(key, value);
+    });
+
+    if (this.selectedFile) formData.append('file', this.selectedFile);
+
+    if (!this.isEditMode) {
+      // Création
+      this.coordService.checkEmail(values.email).subscribe({
+        next: (res) => {
+          if (res.exists) {
+            alert(`L'email ${values.email} est déjà utilisé.`);
+            return;
+          }
+          this.coordService.createCoordinator(formData).subscribe({
+            next: (res) => this.dialogRef.close(res),
+            error: (err) =>
+              alert(err.error?.message || 'Erreur création coordinator.'),
+          });
+        },
+        error: (err) =>
+          alert(err.error?.message || 'Erreur vérification email coordinator.'),
+      });
+    } else if (this.data.coordinator?._id) {
+      // Mise à jour
+      this.coordService
+        .updateCoordinator(this.data.coordinator._id, formData)
+        .subscribe({
+          next: (res) => this.dialogRef.close(res),
+          error: (err) =>
+            alert(err.error?.message || 'Erreur mise à jour coordinator.'),
+        });
+    }
+  }
   onCancel(): void {
     this.dialogRef.close();
   }
 
-  private markFormGroupTouched(): void {
-    Object.keys(this.coordinatorForm.controls).forEach((key) => {
-      const control = this.coordinatorForm.get(key);
-      control?.markAsTouched();
-    });
-  }
-
-  getErrorMessage(fieldName: string): string {
-    const control = this.coordinatorForm.get(fieldName);
-    if (control?.hasError('required')) {
-      return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} is required`;
-    }
-    if (control?.hasError('email')) {
-      return 'Please enter a valid email address';
-    }
-    if (control?.hasError('minlength')) {
-      return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} must be at least ${control.errors?.['minlength'].requiredLength} characters`;
-    }
-    if (control?.hasError('pattern')) {
-      return 'Please enter a valid phone number';
-    }
-    if (control?.hasError('min') || control?.hasError('max')) {
-      return 'Please enter a realistic number';
-    }
-    return '';
+  private generateLicenseNumber(): string {
+    const prefix = 'CORD';
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0');
+    return `${prefix}-${timestamp}-${random}`;
   }
 }
