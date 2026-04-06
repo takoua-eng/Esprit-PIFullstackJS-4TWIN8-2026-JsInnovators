@@ -1,23 +1,33 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { AnswerItem, AnswerItemSchema } from './answer-item.schema';
 
 export type QuestionnaireResponseDocument = QuestionnaireResponse & Document;
 
 @Schema({ timestamps: true })
 export class QuestionnaireResponse {
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'QuestionnaireInstance',
+    required: true,
+  })
+  questionnaireInstanceId: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  patientId: Types.ObjectId;
+  patientId: Types.ObjectId;          // The patient who submitted the response
 
-  @Prop({ type: Types.ObjectId, ref: 'QuestionnaireTemplate', default: null })
-  templateId: Types.ObjectId | null;
-
-  // Responses as key/value { q1: '8', q2: 'Yes', ... }
   @Prop({ type: Object, required: true })
-  answers: Record<string, string>;
+  answers: Record<string, any>;
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  doctorId: Types.ObjectId;           // The doctor who assigned/sent the questionnaire
 
-  @Prop({ required: true })
-  submittedAt: Date;
+  // Optional: track if the doctor has reviewed the response
+  @Prop({ default: false })
+  reviewedByDoctor: boolean;
+
+  // Optional: doctor's notes after reviewing
+  @Prop()
+  doctorNotes?: string;
 }
 
-export const QuestionnaireResponseSchema =
-  SchemaFactory.createForClass(QuestionnaireResponse);
+export const QuestionnaireResponseSchema = SchemaFactory.createForClass(QuestionnaireResponse);

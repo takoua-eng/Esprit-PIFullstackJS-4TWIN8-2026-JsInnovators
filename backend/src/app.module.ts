@@ -1,12 +1,17 @@
 import {
+  Logger,
   MiddlewareConsumer,
   Module,
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-
+import {
+  DEFAULT_MONGODB_DB_NAME,
+  ensureDatabasePathInUri,
+  readEnvTrimmed,
+} from './config/mongo-env.util';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -21,6 +26,12 @@ import { VitalParametersModule } from './modules/vital-parameters/vital-paramete
 import { AutoAlertsModule } from './modules/auto-alerts/auto-alerts.module';
 import { QuestionnaireResponseModule } from './modules/questionnaire-responses/questionnaire-response.module';
 import { QuestionnaireTemplatesModule } from './modules/questionnaire-templates/questionnaire-templates.module';
+import { PatientNotesModule } from './modules/patient-notes/patient-notes.module';
+//import { QuestionnaireTemplateModule } from './modules/questionnaire-template/questionnaire-template.module';
+import { VideoCallsModule } from './modules/video-calls/video-calls.module';
+import { HospitalizationHandwritingModule } from './modules/hospitalization-handwriting/hospitalization-handwriting.module';
+import { QuestionnairesModule } from './modules/questionnaires/questionnaires.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 import { User, UserSchema } from './modules/users/users.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
@@ -28,19 +39,63 @@ import { Service, ServiceSchema } from './modules/service/services/service.schem
 
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
 import { MessagesPatientDoctorModule } from './modules/messages-patient-doctor/messages-patient-doctor.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+
+const mongoConfigLogger = new Logger('MongoConfig');
+
+/** Used when `MONGODB_URI` is not set in `.env` (single connection — do not add a second `MongooseModule.forRoot`). */
+const DEFAULT_MONGODB_URI =
+  'mongodb+srv://Medifollow:Medifollow2025@cluster0.15l0i6q.mongodb.net/?retryWrites=true&w=majority';
+import { QuestionnaireTemplate, QuestionnaireTemplateSchema } from './modules/questionnaire-template/questionnaire-template.schema';
+import { QuestionnaireResponse, QuestionnaireResponseSchema } from './modules/questionnaire-responses/questionnaire-response.schema';
+import { QuestionnaireInstance, QuestionnaireInstanceSchema } from './modules/questionnaire-instance/questionnaire-instance.schema';
+import { QuestionnaireTemplateModule } from './modules/questionnaire-template/questionnaire-template.module';
+import { QuestionnaireInstanceModule } from './modules/questionnaire-instance/questionnaire-instance.module';
+import { JwtStrategy } from './modules/auth/jwt.strategy';
 
 @Module({
+  controllers: [AppController],
+  
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => {
+        const dbName =
+          readEnvTrimmed(config, 'MONGODB_DB_NAME') || DEFAULT_MONGODB_DB_NAME;
+        const mongoUri = readEnvTrimmed(config, 'MONGODB_URI');
+        let uri = mongoUri || DEFAULT_MONGODB_URI;
 
-    MongooseModule.forRoot(
-      'mongodb+srv://Medifollow:Medifollow2025@cluster0.15l0i6q.mongodb.net/?retryWrites=true&w=majority',
-    ),
+        if (!mongoUri) {
+          mongoConfigLogger.warn(
+            'MONGODB_URI not set in .env — using DEFAULT_MONGODB_URI in app.module.ts. Set MONGODB_URI to override.',
+          );
+        }
+
+        uri = ensureDatabasePathInUri(uri, dbName);
+        mongoConfigLogger.log(
+          `MongoDB: ${uri.startsWith('mongodb+srv') ? 'Atlas' : 'local'} | using database "${dbName}" (alerts & all collections on this connection)`,
+        );
+
+        return {
+          uri,
+          dbName,
+          serverSelectionTimeoutMS: 45_000,
+          retryWrites: true,
+          family: 4,
+        };
+      },
+      inject: [ConfigService],
+    }),
 
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Role.name, schema: RoleSchema },
       { name: Service.name, schema: ServiceSchema },
+      {name: QuestionnaireTemplate.name, schema: QuestionnaireTemplateSchema},
+      {name: QuestionnaireResponse.name, schema: QuestionnaireResponseSchema},
+      {name: QuestionnaireInstance.name, schema: QuestionnaireInstanceSchema}, 
     ]),
 
     UsersModule,
@@ -55,10 +110,18 @@ import { MessagesPatientDoctorModule } from './modules/messages-patient-doctor/m
     CoordinatorModule,
     VitalParametersModule,
     AutoAlertsModule,
+    QuestionnaireTemplateModule,
     QuestionnaireResponseModule,
-    QuestionnaireTemplatesModule,
     MessagesPatientDoctorModule,
+    QuestionnaireInstanceModule,
+    PatientNotesModule,
+    QuestionnaireTemplateModule,
+    VideoCallsModule,
+    HospitalizationHandwritingModule,
+    QuestionnairesModule,
+    AdminModule,
   ],
+  providers: [JwtStrategy, AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

@@ -1,33 +1,55 @@
-﻿<div class="db-wrap">
+﻿<div class="db-wrap" role="main" aria-label="Health Dashboard">
 
   <!-- ── TOP HERO ── -->
-  <div class="db-hero">
+  <div class="db-hero" role="banner">
     <div class="hero-left">
       <p class="hero-greeting">{{ 'GOOD_DAY' | translate }}</p>
       <h1 class="hero-name">{{ 'MY_HEALTH_DASHBOARD' | translate }}</h1>
       <p class="hero-date">{{ todayDate | date:'EEEE, MMMM d, y' }}</p>
     </div>
-      <div class="hero-right" *ngIf="pendingAlertsCount > 0">
-      <a routerLink="/dashboard/patient/alerts" class="alert-chip">
+    <div class="hero-right" *ngIf="pendingAlertsCount > 0">
+      <a
+        routerLink="/dashboard/patient/alerts"
+        class="alert-chip"
+        role="alert"
+        aria-live="polite"
+        [attr.aria-label]="pendingAlertsCount + ' alerts pending — press Enter to view'">
         <mat-icon>warning</mat-icon>
         {{ pendingAlertsCount }} {{ 'ALERTS' | translate }} {{ 'PENDING' | translate }}
       </a>
     </div>
+    <!-- Keyboard hint -->
+    <button
+      class="kb-hint-btn"
+      (click)="showKeyboardGuide()"
+      title="Keyboard shortcuts (? or F1)"
+      aria-label="Show keyboard shortcuts guide">
+      <mat-icon>keyboard</mat-icon>
+      <span>Shortcuts</span>
+    </button>
   </div>
 
   <!-- Loading -->
-  <div *ngIf="isLoading" class="db-loading">
+  <div *ngIf="isLoading" class="db-loading" role="status" aria-live="polite">
     <mat-spinner diameter="48"></mat-spinner>
     <p>{{ 'LOADING_YOUR_HEALTH_DATA' | translate }}</p>
   </div>
 
   <ng-container *ngIf="!isLoading">
 
-    <!-- ── TODAY STATUS — always 3 columns ── -->
-    <p class="section-label">{{ 'TODAYS_STATUS' | translate }}</p>
-    <div class="today-row">
+    <!-- ── TODAY STATUS ── -->
+    <p class="section-label" id="today-status-label">{{ 'TODAYS_STATUS' | translate }}</p>
+    <div class="today-row" role="list" aria-labelledby="today-status-label">
 
-      <div class="today-card" [class.tc-done]="vitalsEnteredToday" [class.tc-todo]="!vitalsEnteredToday">
+      <div
+        class="today-card"
+        [class.tc-done]="vitalsEnteredToday"
+        [class.tc-todo]="!vitalsEnteredToday"
+        role="listitem"
+        tabindex="0"
+        [attr.aria-label]="'Vital Parameters: ' + (vitalsEnteredToday ? ('SUBMITTED_TODAY' | translate) : ('NOT_SUBMITTED_YET' | translate))"
+        (keydown.enter)="!vitalsEnteredToday && navigateTo('/dashboard/patient/parameters')"
+        (keydown.space)="!vitalsEnteredToday && navigateTo('/dashboard/patient/parameters')">
         <div class="tc-icon-box">
           <mat-icon>{{ vitalsEnteredToday ? 'check_circle' : 'monitor_heart' }}</mat-icon>
         </div>
@@ -35,13 +57,25 @@
           <span class="tc-title">{{ 'VITAL_PARAMETERS' | translate }}</span>
           <span class="tc-sub">{{ vitalsEnteredToday ? ('SUBMITTED_TODAY' | translate) : ('NOT_SUBMITTED_YET' | translate) }}</span>
         </div>
-        <a *ngIf="!vitalsEnteredToday" routerLink="/dashboard/patient/parameters" class="tc-action">
+        <a
+          *ngIf="!vitalsEnteredToday"
+          routerLink="/dashboard/patient/parameters"
+          class="tc-action"
+          aria-label="Submit vital parameters">
           Submit <mat-icon>arrow_forward</mat-icon>
         </a>
-        <span *ngIf="vitalsEnteredToday" class="tc-check"><mat-icon>done</mat-icon></span>
+        <span *ngIf="vitalsEnteredToday" class="tc-check" aria-hidden="true"><mat-icon>done</mat-icon></span>
       </div>
 
-      <div class="today-card" [class.tc-done]="symptomsEnteredToday" [class.tc-todo]="!symptomsEnteredToday">
+      <div
+        class="today-card"
+        [class.tc-done]="symptomsEnteredToday"
+        [class.tc-todo]="!symptomsEnteredToday"
+        role="listitem"
+        tabindex="0"
+        [attr.aria-label]="'Symptoms: ' + (symptomsEnteredToday ? 'Reported today' : 'Not reported yet — press Enter to report')"
+        (keydown.enter)="!symptomsEnteredToday && navigateTo('/dashboard/patient/symptoms')"
+        (keydown.space)="!symptomsEnteredToday && navigateTo('/dashboard/patient/symptoms')">
         <div class="tc-icon-box">
           <mat-icon>{{ symptomsEnteredToday ? 'check_circle' : 'sick' }}</mat-icon>
         </div>
@@ -49,13 +83,25 @@
           <span class="tc-title">{{ 'SYMPTOMS' | translate }}</span>
           <span class="tc-sub">{{ symptomsEnteredToday ? ('REPORTED_TODAY' | translate) : ('NOT_REPORTED_YET' | translate) }}</span>
         </div>
-        <a *ngIf="!symptomsEnteredToday" routerLink="/dashboard/patient/symptoms" class="tc-action">
+        <a
+          *ngIf="!symptomsEnteredToday"
+          routerLink="/dashboard/patient/symptoms"
+          class="tc-action"
+          aria-label="Report symptoms">
           Report <mat-icon>arrow_forward</mat-icon>
         </a>
-        <span *ngIf="symptomsEnteredToday" class="tc-check"><mat-icon>done</mat-icon></span>
+        <span *ngIf="symptomsEnteredToday" class="tc-check" aria-hidden="true"><mat-icon>done</mat-icon></span>
       </div>
 
-      <div class="today-card" [class.tc-done]="questionnaireAnsweredToday" [class.tc-todo]="!questionnaireAnsweredToday">
+      <div
+        class="today-card"
+        [class.tc-done]="questionnaireAnsweredToday"
+        [class.tc-todo]="!questionnaireAnsweredToday"
+        role="listitem"
+        tabindex="0"
+        [attr.aria-label]="'Questionnaire: ' + (questionnaireAnsweredToday ? 'Completed today' : 'Not completed yet — press Enter to fill')"
+        (keydown.enter)="!questionnaireAnsweredToday && navigateTo('/dashboard/patient/questionnaires')"
+        (keydown.space)="!questionnaireAnsweredToday && navigateTo('/dashboard/patient/questionnaires')">
         <div class="tc-icon-box">
           <mat-icon>{{ questionnaireAnsweredToday ? 'check_circle' : 'assignment' }}</mat-icon>
         </div>
@@ -63,50 +109,54 @@
           <span class="tc-title">{{ 'QUESTIONNAIRE' | translate }}</span>
           <span class="tc-sub">{{ questionnaireAnsweredToday ? ('COMPLETED_TODAY' | translate) : ('NOT_COMPLETED_YET' | translate) }}</span>
         </div>
-        <a *ngIf="!questionnaireAnsweredToday" routerLink="/dashboard/patient/questionnaires" class="tc-action">
+        <a
+          *ngIf="!questionnaireAnsweredToday"
+          routerLink="/dashboard/patient/questionnaires"
+          class="tc-action"
+          aria-label="Fill questionnaire">
           Fill <mat-icon>arrow_forward</mat-icon>
         </a>
-        <span *ngIf="questionnaireAnsweredToday" class="tc-check"><mat-icon>done</mat-icon></span>
+        <span *ngIf="questionnaireAnsweredToday" class="tc-check" aria-hidden="true"><mat-icon>done</mat-icon></span>
       </div>
 
     </div>
 
     <!-- ── LATEST VITALS ── -->
-    <p class="section-label">{{ 'LATEST_RECORDED_VALUES' | translate }}</p>
-    <div *ngIf="latestVital; else noVitals" class="vitals-row">
-      <div class="vt-card vt-temp">
-        <mat-icon>thermostat</mat-icon>
+    <p class="section-label" id="vitals-label">{{ 'LATEST_RECORDED_VALUES' | translate }}</p>
+    <div *ngIf="latestVital; else noVitals" class="vitals-row" role="list" aria-labelledby="vitals-label">
+      <div class="vt-card vt-temp" role="listitem" tabindex="0" aria-label="Temperature: {{ latestVital.temperature ?? 'not recorded' }} degrees Celsius">
+        <mat-icon aria-hidden="true">thermostat</mat-icon>
         <span class="vt-val">{{ latestVital.temperature ?? '--' }}<small>&deg;C</small></span>
         <span class="vt-lbl">{{ 'TEMPERATURE' | translate }}</span>
       </div>
-      <div class="vt-card vt-hr">
-        <mat-icon>favorite</mat-icon>
+      <div class="vt-card vt-hr" role="listitem" tabindex="0" aria-label="Heart Rate: {{ latestVital.heartRate ?? 'not recorded' }} bpm">
+        <mat-icon aria-hidden="true">favorite</mat-icon>
         <span class="vt-val">{{ latestVital.heartRate ?? '--' }}<small>bpm</small></span>
         <span class="vt-lbl">{{ 'HEART_RATE' | translate }}</span>
       </div>
-      <div class="vt-card vt-weight">
-        <mat-icon>monitor_weight</mat-icon>
+      <div class="vt-card vt-weight" role="listitem" tabindex="0" aria-label="Weight: {{ latestVital.weight ?? 'not recorded' }} kg">
+        <mat-icon aria-hidden="true">monitor_weight</mat-icon>
         <span class="vt-val">{{ latestVital.weight ?? '--' }}<small>kg</small></span>
         <span class="vt-lbl">{{ 'WEIGHT' | translate }}</span>
       </div>
-      <div class="vt-card vt-bp">
-        <mat-icon>bloodtype</mat-icon>
+      <div class="vt-card vt-bp" role="listitem" tabindex="0" aria-label="Blood Pressure: {{ latestVital.bloodPressuresystolic ?? 'not recorded' }} over {{ latestVital.bloodPressureDiastolic ?? 'not recorded' }}">
+        <mat-icon aria-hidden="true">bloodtype</mat-icon>
         <span class="vt-val">{{ latestVital.bloodPressuresystolic ?? '--' }}<small>/{{ latestVital.bloodPressureDiastolic ?? '--' }}</small></span>
         <span class="vt-lbl">{{ 'BLOOD_PRESSURE' | translate }}</span>
       </div>
     </div>
     <ng-template #noVitals>
-      <div class="empty-box">
-        <mat-icon>query_stats</mat-icon>
+      <div class="empty-box" role="status">
+        <mat-icon aria-hidden="true">query_stats</mat-icon>
         <p>{{ 'NO_VITAL_PARAMETERS_YET' | translate }}</p>
       </div>
     </ng-template>
 
-    <!-- ── CHART + ALERTS side by side ── -->
+    <!-- ── CHART + ALERTS ── -->
     <div class="bottom-row">
       <div class="bottom-col">
         <p class="section-label">{{ 'WEEKLY_ACTIVITY' | translate }}</p>
-        <div class="glass-card chart-card">
+        <div class="glass-card chart-card" role="img" aria-label="Weekly activity chart showing vitals, symptoms and questionnaire submissions for the past 7 days">
           <apx-chart
             [series]="usageChartOptions.series"
             [chart]="usageChartOptions.chart"
@@ -123,19 +173,31 @@
       </div>
 
       <div class="bottom-col bottom-col--narrow">
-        <p class="section-label">{{ 'RECENT_ALERTS' | translate }}</p>
-        <div class="glass-card alerts-card">
-            <div *ngIf="recentAlerts.length === 0" class="empty-box-sm">
-            <mat-icon>notifications_none</mat-icon>
+        <p class="section-label" id="alerts-label">{{ 'RECENT_ALERTS' | translate }}</p>
+        <div class="glass-card alerts-card" role="list" aria-labelledby="alerts-label">
+          <div *ngIf="recentAlerts.length === 0" class="empty-box-sm" role="status">
+            <mat-icon aria-hidden="true">notifications_none</mat-icon>
             <p>{{ 'NO_RECENT_ALERTS' | translate }}</p>
           </div>
-          <div *ngFor="let alert of recentAlerts" class="alert-row" [class.ar-pending]="alert.status === 'pending'">
-            <mat-icon class="ar-icon">{{ alert.status === 'pending' ? 'warning' : 'check_circle' }}</mat-icon>
+          <div
+            *ngFor="let alert of recentAlerts"
+            class="alert-row"
+            [class.ar-pending]="alert.status === 'pending'"
+            role="listitem"
+            tabindex="0"
+            [attr.aria-label]="'Alert: ' + alert.message + (alert.status === 'pending' ? ' — press Enter to resolve' : ' — resolved')"
+            (keydown.enter)="alert.status === 'pending' && resolveAlert(alert._id!)">
+            <mat-icon class="ar-icon" aria-hidden="true">{{ alert.status === 'pending' ? 'warning' : 'check_circle' }}</mat-icon>
             <div class="ar-body">
               <p class="ar-msg">{{ alert.message }}</p>
               <span class="ar-date">{{ alert.createdAt | date:'MMM d, HH:mm' }}</span>
             </div>
-            <button *ngIf="alert.status === 'pending'" mat-icon-button (click)="resolveAlert(alert._id!)" matTooltip="Resolve">
+            <button
+              *ngIf="alert.status === 'pending'"
+              mat-icon-button
+              (click)="resolveAlert(alert._id!)"
+              matTooltip="Resolve"
+              aria-label="Resolve this alert">
               <mat-icon>done</mat-icon>
             </button>
           </div>
@@ -144,19 +206,23 @@
     </div>
 
     <!-- ── QUICK ACCESS ── -->
-    <p class="section-label">{{ 'QUICK_ACCESS' | translate }}</p>
-    <div class="quick-row">
-        <a routerLink="/dashboard/patient/parameters" class="qk-btn qk-blue">
-        <mat-icon>monitor_heart</mat-icon><span>{{ 'VITAL_PARAMETERS' | translate }}</span>
+    <p class="section-label" id="quick-access-label">Quick Access</p>
+    <div class="quick-row" role="navigation" aria-labelledby="quick-access-label">
+      <a routerLink="/dashboard/patient/parameters" class="qk-btn qk-blue" aria-label="Vital Parameters (Alt+V)">
+        <mat-icon aria-hidden="true">monitor_heart</mat-icon><span>Vital Parameters</span>
+        <kbd class="qk-kbd">Alt+V</kbd>
       </a>
-      <a routerLink="/dashboard/patient/symptoms" class="qk-btn qk-red">
-        <mat-icon>sick</mat-icon><span>{{ 'SYMPTOMS' | translate }}</span>
+      <a routerLink="/dashboard/patient/symptoms" class="qk-btn qk-red" aria-label="Symptoms (Alt+S)">
+        <mat-icon aria-hidden="true">sick</mat-icon><span>Symptoms</span>
+        <kbd class="qk-kbd">Alt+S</kbd>
       </a>
-      <a routerLink="/dashboard/patient/questionnaires" class="qk-btn qk-green">
-        <mat-icon>assignment</mat-icon><span>{{ 'QUESTIONNAIRES' | translate }}</span>
+      <a routerLink="/dashboard/patient/questionnaires" class="qk-btn qk-green" aria-label="Questionnaires (Alt+Q)">
+        <mat-icon aria-hidden="true">assignment</mat-icon><span>Questionnaires</span>
+        <kbd class="qk-kbd">Alt+Q</kbd>
       </a>
-      <a routerLink="/dashboard/patient/history" class="qk-btn qk-purple">
-        <mat-icon>history</mat-icon><span>{{ 'MY_HISTORY' | translate }}</span>
+      <a routerLink="/dashboard/patient/history" class="qk-btn qk-purple" aria-label="My History (Alt+R)">
+        <mat-icon aria-hidden="true">history</mat-icon><span>My History</span>
+        <kbd class="qk-kbd">Alt+R</kbd>
       </a>
     </div>
 

@@ -1,7 +1,14 @@
-﻿<div class="container">
+﻿<div class="container" role="main">
+  <!-- Skip to form -->
+  <a href="#parameters-form" class="skip-to-form">Skip to form</a>
+
   <div class="page-header">
-    <h2>Vital Parameters</h2>
-    <p class="subtitle">Enter your daily vital measurements below</p>
+    <h2 id="page-title">Vital Parameters</h2>
+    <p class="subtitle">Enter your daily vital measurements below. Tab through fields, Enter to submit.</p>
+    <p class="kb-tip" role="note">
+      <mat-icon aria-hidden="true">keyboard</mat-icon>
+      Use <kbd>Tab</kbd> to move between fields, <kbd>Enter</kbd> to submit, <kbd>Alt+V</kbd> to come back here anytime.
+    </p>
   </div>
 
   <mat-card>
@@ -11,75 +18,148 @@
     </mat-card-header>
 
     <mat-card-content>
-      <div *ngIf="submittedToday" class="already-submitted">
-        <mat-card>
-          <mat-card-content>
-            <p>You have already submitted your vital parameters today. You can submit again tomorrow.</p>
-          </mat-card-content>
-        </mat-card>
-      </div>
 
-      <form *ngIf="!submittedToday" [formGroup]="parametersForm" (ngSubmit)="onSubmit()">
+      <div *ngIf="submittedToday" class="already-submitted">
+  <mat-card>
+    <mat-card-content>
+      <p>
+        You have already submitted your vital parameters today. You can submit again tomorrow.
+      </p>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<form
+  *ngIf="!submittedToday"
+  id="parameters-form"
+  [formGroup]="parametersForm"
+  (ngSubmit)="onSubmit()"
+  aria-labelledby="page-title"
+  novalidate>
+
         <div class="form-row">
           <mat-form-field appearance="outline">
-            <mat-label>Temperature (&deg;C)</mat-label>
-            <input matInput type="number" formControlName="temperature" step="0.1" placeholder="36.5">
-            <mat-hint>Normal: 36.1 - 37.2</mat-hint>
-            <mat-error *ngIf="parametersForm.get('temperature')?.hasError('required')">Required field</mat-error>
-            <mat-error *ngIf="parametersForm.get('temperature')?.hasError('min') || parametersForm.get('temperature')?.hasError('max')">Value must be between 35 and 42</mat-error>
+            <mat-label>Temperature (°C)</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="temperature"
+              step="0.1"
+              placeholder="36.5"
+              id="temperature"
+              aria-required="true"
+              aria-describedby="temperature-hint temperature-error"
+              tabindex="0">
+            <mat-hint id="temperature-hint">Normal: 36.1 - 37.2</mat-hint>
+            <mat-error id="temperature-error" *ngIf="parametersForm.get('temperature')?.hasError('required')" role="alert">Required field</mat-error>
+            <mat-error *ngIf="parametersForm.get('temperature')?.hasError('min') || parametersForm.get('temperature')?.hasError('max')" role="alert">Value must be between 35 and 42</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Weight (kg)</mat-label>
-            <input matInput type="number" formControlName="weight" step="0.1" placeholder="70">
-            <mat-error *ngIf="parametersForm.get('weight')?.hasError('required')">Required field</mat-error>
-            <mat-error *ngIf="parametersForm.get('weight')?.hasError('min') || parametersForm.get('weight')?.hasError('max')">Value must be between 30 and 200</mat-error>
+            <input
+              matInput
+              type="number"
+              formControlName="weight"
+              step="0.1"
+              placeholder="70"
+              id="weight"
+              aria-required="true"
+              aria-describedby="weight-error"
+              tabindex="0">
+            <mat-error id="weight-error" *ngIf="parametersForm.get('weight')?.hasError('required')" role="alert">Required field</mat-error>
+            <mat-error *ngIf="parametersForm.get('weight')?.hasError('min') || parametersForm.get('weight')?.hasError('max')" role="alert">Value must be between 30 and 200</mat-error>
           </mat-form-field>
         </div>
 
         <div class="form-row">
           <mat-form-field appearance="outline">
             <mat-label>Systolic Blood Pressure (mmHg)</mat-label>
-            <input matInput type="number" formControlName="bloodPressureSystolic" placeholder="120">
-            <mat-hint>Normal: 90 - 120</mat-hint>
-            <mat-error *ngIf="parametersForm.get('bloodPressureSystolic')?.hasError('required')">Required field</mat-error>
-            <mat-error *ngIf="parametersForm.get('bloodPressureSystolic')?.hasError('min') || parametersForm.get('bloodPressureSystolic')?.hasError('max')">Value must be between 80 and 200</mat-error>
+            <input
+              matInput
+              type="number"
+              formControlName="bloodPressureSystolic"
+              placeholder="120"
+              id="systolic"
+              aria-required="true"
+              aria-describedby="systolic-hint systolic-error"
+              tabindex="0">
+            <mat-hint id="systolic-hint">Normal: 90 - 120</mat-hint>
+            <mat-error id="systolic-error" *ngIf="parametersForm.get('bloodPressureSystolic')?.hasError('required')" role="alert">Required field</mat-error>
+            <mat-error *ngIf="parametersForm.get('bloodPressureSystolic')?.hasError('min') || parametersForm.get('bloodPressureSystolic')?.hasError('max')" role="alert">Value must be between 80 and 200</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Diastolic Blood Pressure (mmHg)</mat-label>
-            <input matInput type="number" formControlName="bloodPressureDiastolic" placeholder="80">
-            <mat-hint>Normal: 60 - 80</mat-hint>
-            <mat-error *ngIf="parametersForm.get('bloodPressureDiastolic')?.hasError('required')">Required field</mat-error>
-            <mat-error *ngIf="parametersForm.get('bloodPressureDiastolic')?.hasError('min') || parametersForm.get('bloodPressureDiastolic')?.hasError('max')">Value must be between 50 and 120</mat-error>
+            <input
+              matInput
+              type="number"
+              formControlName="bloodPressureDiastolic"
+              placeholder="80"
+              id="diastolic"
+              aria-required="true"
+              aria-describedby="diastolic-hint diastolic-error"
+              tabindex="0">
+            <mat-hint id="diastolic-hint">Normal: 60 - 80</mat-hint>
+            <mat-error id="diastolic-error" *ngIf="parametersForm.get('bloodPressureDiastolic')?.hasError('required')" role="alert">Required field</mat-error>
+            <mat-error *ngIf="parametersForm.get('bloodPressureDiastolic')?.hasError('min') || parametersForm.get('bloodPressureDiastolic')?.hasError('max')" role="alert">Value must be between 50 and 120</mat-error>
           </mat-form-field>
         </div>
 
         <div class="form-row single">
           <mat-form-field appearance="outline">
             <mat-label>Heart Rate (bpm)</mat-label>
-            <input matInput type="number" formControlName="heartRate" placeholder="72">
-            <mat-hint>Normal: 60 - 100</mat-hint>
-            <mat-error *ngIf="parametersForm.get('heartRate')?.hasError('required')">Required field</mat-error>
-            <mat-error *ngIf="parametersForm.get('heartRate')?.hasError('min') || parametersForm.get('heartRate')?.hasError('max')">Value must be between 40 and 200</mat-error>
+            <input
+              matInput
+              type="number"
+              formControlName="heartRate"
+              placeholder="72"
+              id="heartRate"
+              aria-required="true"
+              aria-describedby="heartrate-hint heartrate-error"
+              tabindex="0">
+            <mat-hint id="heartrate-hint">Normal: 60 - 100</mat-hint>
+            <mat-error id="heartrate-error" *ngIf="parametersForm.get('heartRate')?.hasError('required')" role="alert">Required field</mat-error>
+            <mat-error *ngIf="parametersForm.get('heartRate')?.hasError('min') || parametersForm.get('heartRate')?.hasError('max')" role="alert">Value must be between 40 and 200</mat-error>
           </mat-form-field>
         </div>
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Additional Notes (optional)</mat-label>
-          <textarea matInput formControlName="notes" rows="3" placeholder="Any symptoms or observations..."></textarea>
+          <textarea
+            matInput
+            formControlName="notes"
+            rows="3"
+            placeholder="Any symptoms or observations..."
+            id="notes"
+            aria-describedby="notes-desc"
+            tabindex="0">
+          </textarea>
+          <mat-hint id="notes-desc">Optional — describe any unusual feelings or observations</mat-hint>
         </mat-form-field>
 
         <div class="form-actions">
-          <button mat-raised-button color="primary" type="submit" [disabled]="!parametersForm.valid || isLoading">
-            <mat-icon>save</mat-icon>
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="!parametersForm.valid || isLoading"
+            aria-label="Save vital parameters"
+            tabindex="0">
+            <mat-icon aria-hidden="true">save</mat-icon>
             <span *ngIf="!isLoading">Save Vital Parameters</span>
-            <span *ngIf="isLoading">Saving...</span>
+            <span *ngIf="isLoading" aria-live="polite">Saving...</span>
           </button>
         </div>
 
-        <div *ngIf="successMessage" class="alert-success">{{ successMessage }}</div>
-        <div *ngIf="errorMessage" class="alert-error">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="alert-success" role="alert" aria-live="polite">
+          <mat-icon>check_circle</mat-icon>
+          {{ successMessage }}
+        </div>
+        <div *ngIf="errorMessage" class="alert-error" role="alert" aria-live="assertive">
+          <mat-icon>error</mat-icon>
+          {{ errorMessage }}
+        </div>
       </form>
     </mat-card-content>
   </mat-card>

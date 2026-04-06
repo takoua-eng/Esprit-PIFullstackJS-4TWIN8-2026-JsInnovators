@@ -4,8 +4,7 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { FullSuperComponent } from './pages/super-admin/full-super/full-super';
 import { LandingComponent } from './pages/landing/landing.component';
-import { authGuard } from './core/auth.guard';
-import { roleGuard } from './core/role.guard';
+import { staffAdminGuard } from './core/staff-admin.guard';
 
 export const routes: Routes = [
   {
@@ -14,6 +13,7 @@ export const routes: Routes = [
       { path: '', redirectTo: '/landing', pathMatch: 'full' },
       { path: 'landing', component: LandingComponent },
 
+      // ✅ Coordinator routes
       {
         path: 'admin/coordinator',
         component: FullComponent,
@@ -21,6 +21,32 @@ export const routes: Routes = [
           import('./pages/pages.routes').then((m) => m.CoordinatorRoutes),
       },
 
+      // ✅ Admin Templates (protected)
+      {
+        path: 'admin/templates',
+        component: FullComponent,
+        canActivate: staffAdminGuard, // juste la fonction, pas de tableau
+        loadChildren: () =>
+          import('./pages/admin/admin-templates.routes').then(
+            (m) => m.ADMIN_TEMPLATES_ROUTES
+          ),
+      },
+
+      // ✅ Redirect /template-builder → /templates/create
+      {
+        path: 'admin/template-builder',
+        redirectTo: 'admin/templates/create',
+        pathMatch: 'full',
+      },
+
+      // ✅ Redirect /questionnaire-templates → /templates
+      {
+        path: 'admin/questionnaire-templates',
+        redirectTo: 'admin/templates',
+        pathMatch: 'full',
+      },
+
+      // ✅ Dashboard routes
       {
         path: 'dashboard',
         component: FullComponent,
@@ -39,17 +65,20 @@ export const routes: Routes = [
             path: 'ui-components',
             loadChildren: () =>
               import('./pages/ui-components/ui-components.routes').then(
-                (m) => m.UiComponentsRoutes,
+                (m) => m.UiComponentsRoutes
               ),
           },
           {
             path: 'extra',
             loadChildren: () =>
-              import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
+              import('./pages/extra/extra.routes').then(
+                (m) => m.ExtraRoutes
+              ),
           },
         ],
       },
 
+      // ✅ Super Admin routes
       {
         path: 'super-admin',
         component: FullSuperComponent,
@@ -59,6 +88,7 @@ export const routes: Routes = [
     ],
   },
 
+  // ✅ Authentication routes
   {
     path: '',
     component: BlankComponent,
@@ -67,11 +97,12 @@ export const routes: Routes = [
         path: 'authentication',
         loadChildren: () =>
           import('./pages/authentication/authentication.routes').then(
-            (m) => m.AuthenticationRoutes,
+            (m) => m.AuthenticationRoutes
           ),
       },
     ],
   },
 
+  // ✅ Catch-all 404
   { path: '**', redirectTo: 'authentication/error' },
 ];

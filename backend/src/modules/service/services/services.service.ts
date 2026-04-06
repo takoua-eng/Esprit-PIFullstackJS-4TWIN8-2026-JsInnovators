@@ -19,7 +19,7 @@ export class ServicesService {
 
   // GET ALL
   async findAll() {
-    return this.serviceModel.find().sort({ createdAt: -1 });
+    return this.serviceModel.find();
   }
 
   // GET ONE

@@ -1,73 +1,191 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { DoctorService } from 'src/app/services/superadmin/doctor.service';
+
+// Angular Material Imports
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatOptionModule } from '@angular/material/core';
+import { ServiceService } from 'src/app/services/superadmin/service.service';
 
 export interface DoctorData {
+  _id?: string; // seulement pour update
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
-  specialty: string;
-  licenseNumber: string;
-  department: string;
-  yearsExperience: number;
+  phone?: string;
+  gender?: string;
+  specialty?: string;
+  licenseNumber?: string;
+  yearsOfExperience?: number;
+  
+  address?: string;
+  assignedService?: string;
+  photo?: File | string;
 }
 
 @Component({
-  selector: 'app-super-add-medecin-dialog',
+  selector: 'AddMedecinDialog',
   standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule,
     MatSelectModule,
+    MatOptionModule,
+    MatButtonModule,
     MatIconModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
   ],
   templateUrl: './add-medecin-dialog.html',
   styleUrls: ['./add-medecin-dialog.scss'],
 })
-export class AddMedecinDialog {
-  private fb = inject(FormBuilder);
-  private dialogRef = inject(MatDialogRef<AddMedecinDialog>);
+export class AddMedecinDialog implements OnInit {
+  doctorForm: FormGroup;
+  photoPreview: string | null = null;
+  selectedFile: File | null = null;
+  isSubmitted = false;
+  isEditMode = false; // différencie ajout / update
+     servicesList: any[] = [];
 
-  doctorForm: FormGroup = this.fb.group({
-    firstName: ['', [Validators.required, Validators.minLength(2)]],
-    lastName: ['', [Validators.required, Validators.minLength(2)]],
-    email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.pattern(/^[\+]?[1-9][\d]{0,15}$/)]],
-    specialty: ['', Validators.required],
-    licenseNumber: ['', Validators.required],
-    department: ['', Validators.required],
-    yearsExperience: [0, [Validators.required, Validators.min(0), Validators.max(60)]],
+  constructor(
+    private fb: FormBuilder,
+    private dialogRef: MatDialogRef<AddMedecinDialog>,
+    private doctorService: DoctorService,
+          private serviceService: ServiceService,
+    
+    @Inject(MAT_DIALOG_DATA) public data: { doctor?: DoctorData }
+  ) {
+    this.doctorForm = this.fb.group({
+      firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.minLength(8)]], // obligatoire seulement pour ajout
+      phone: ['', [Validators.required, Validators.pattern(/^(\+216|00216|0)?[2-9]\d{7}$/)]],
+      gender: ['', Validators.required],
+      address: ['', [Validators.minLength(5), Validators.maxLength(200)]],
+      specialization: ['', Validators.required],
+      licenseNumber: [{ value: this.generateLicenseNumber(), disabled: true }],
+      yearsOfExperience: [0, [Validators.required, Validators.min(0)]],
+      assignedService: [''],
+    });
+
+    // Mode édition si on reçoit des données
+    if (data.doctor) {
+      this.isEditMode = true;
+      this.doctorForm.patchValue({
+        ...data.doctor,
+        password: '', // jamais pré-rempli
+      });
+      this.doctorForm.get('password')?.clearValidators();
+      this.doctorForm.get('password')?.updateValueAndValidity();
+
+      if (data.doctor.photo) {
+        // si photo existante dans BD
+        this.photoPreview =
+          typeof data.doctor.photo === 'string'
+            ? data.doctor.photo
+            : URL.createObjectURL(data.doctor.photo);
+      }
+    }
+  }
+
+    ngOnInit(): void {
+  this.serviceService.getServices().subscribe({
+    next: (res) => {
+      this.servicesList = res;
+    },
+    error: (err) => console.error(err)
   });
+}
 
-  specialtyOptions = [
-    'Cardiology',
-    'Internal Medicine',
-    'Pediatrics',
-    'Neurology',
-    'Orthopedics',
-    'General Surgery',
-  ];
+  removePhoto(): void {
+    this.photoPreview = null;
+    this.selectedFile = null;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (input) input.value = '';
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.[0]) {
+      const file = input.files[0];
+      if (!file.type.startsWith('image/')) {
+        alert('Veuillez sélectionner une image valide');
+        input.value = '';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image trop volumineuse (max 5MB)');
+        input.value = '';
+        return;
+      }
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = () => (this.photoPreview = reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  }
 
   onSubmit(): void {
-    if (this.doctorForm.valid) {
-      this.dialogRef.close(this.doctorForm.value);
-    } else {
-      this.markFormGroupTouched();
+    this.isSubmitted = true;
+    Object.keys(this.doctorForm.controls).forEach((key) =>
+      this.doctorForm.get(key)?.markAsTouched()
+    );
+
+    if (!this.doctorForm.valid) {
+      alert('Veuillez remplir tous les champs obligatoires correctement.');
+      return;
+    }
+
+    const values = this.doctorForm.getRawValue();
+    if (values.gender) values.gender = values.gender.toLowerCase();
+
+    const formData = new FormData();
+    Object.keys(values).forEach((key) => {
+      // ignore password vide en édition
+      if (this.isEditMode && key === 'password' && !values[key]) return;
+      const value = values[key];
+      if (value !== null && value !== undefined) formData.append(key, value);
+    });
+
+    if (this.selectedFile) formData.append('file', this.selectedFile);
+
+    if (!this.isEditMode) {
+      // Création
+      if (!values.licenseNumber) {
+        values.licenseNumber = this.generateLicenseNumber();
+        this.doctorForm.get('licenseNumber')?.setValue(values.licenseNumber);
+      }
+
+      this.doctorService.checkEmail(values.email).subscribe({
+        next: (exists) => {
+          if (exists) {
+            alert(`L'email ${values.email} est déjà utilisé.`);
+            return;
+          }
+          this.doctorService.createDoctor(formData).subscribe({
+            next: (res) => this.dialogRef.close(res),
+            error: (err) => alert(err.error?.message || 'Erreur création doctor.'),
+          });
+        },
+      });
+    } else if (this.data.doctor?._id) {
+      // Mise à jour
+      this.doctorService.updateDoctor(this.data.doctor._id, formData).subscribe({
+        next: (res) => this.dialogRef.close(res),
+        error: (err) => alert(err.error?.message || 'Erreur mise à jour doctor.'),
+      });
     }
   }
 
@@ -75,33 +193,12 @@ export class AddMedecinDialog {
     this.dialogRef.close();
   }
 
-  private markFormGroupTouched(): void {
-    Object.keys(this.doctorForm.controls).forEach((key) => {
-      const control = this.doctorForm.get(key);
-      control?.markAsTouched();
-    });
-  }
-
-  getErrorMessage(fieldName: string): string {
-    const control = this.doctorForm.get(fieldName);
-    if (control?.hasError('required')) {
-      return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} is required`;
-    }
-    if (control?.hasError('email')) {
-      return 'Please enter a valid email address';
-    }
-    if (control?.hasError('minlength')) {
-      return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} must be at least ${control.errors?.['minlength'].requiredLength} characters`;
-    }
-    if (control?.hasError('maxlength')) {
-      return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} must be at most ${control.errors?.['maxlength'].requiredLength} characters`;
-    }
-    if (control?.hasError('pattern')) {
-      return 'Please enter a valid value';
-    }
-    if (control?.hasError('min') || control?.hasError('max')) {
-      return 'Please enter a realistic number';
-    }
-    return '';
+  private generateLicenseNumber(): string {
+    const prefix = 'DOC';
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0');
+    return `${prefix}-${timestamp}-${random}`;
   }
 }

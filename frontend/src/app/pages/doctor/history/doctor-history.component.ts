@@ -14,11 +14,15 @@ import {
   UrgentClinicDialogComponent,
   UrgentClinicDialogResult,
 } from './urgent-clinic-dialog.component';
+import { QuestionnaireApiService } from 'src/app/services/questionnaire-api.service';
+import { CoreService } from 'src/app/services/core.service';
+import { SendQuestionnaireDialog } from '../send-questionnaire-dialog/send-questionnaire-dialog.component';
+import { ReviewQuestionnaireDialog } from '../review-questionnaire-dialog/review-questionnaire-dialog.component';
 
 type HistoryRow = {
   when: string;
   patientName: string;
-  source: 'vital' | 'symptom';
+  source: 'vital' | 'symptom' | 'questionnaire';
   summary: string;
 };
 
@@ -37,6 +41,8 @@ type DayTrend = {
     RouterModule,
     TranslateModule,
     MaterialModule,
+    SendQuestionnaireDialog,
+    ReviewQuestionnaireDialog,
   ],
   templateUrl: './doctor-history.component.html',
   styleUrls: ['./doctor-history.component.scss'],
@@ -52,6 +58,8 @@ export class DoctorHistoryComponent implements OnInit {
   vitals: VitalDto[] = [];
   symptoms: SymptomDto[] = [];
   alerts: AlertDto[] = [];
+  unreviewedResponses: any[] = [];
+  allResponses: any[] = [];
 
   displayedColumns: string[] = ['when', 'patient', 'source', 'summary'];
 
@@ -60,9 +68,11 @@ export class DoctorHistoryComponent implements OnInit {
     private readonly vitalsApi: VitalsApiService,
     private readonly symptomsApi: SymptomsApiService,
     private readonly alertsApi: AlertsApiService,
+    private readonly questionnaireApi: QuestionnaireApiService,
     private readonly dialog: MatDialog,
     private readonly snack: MatSnackBar,
     private readonly translate: TranslateService,
+    private readonly core: CoreService,
   ) {}
 
   ngOnInit(): void {
@@ -79,7 +89,16 @@ export class DoctorHistoryComponent implements OnInit {
     this.usersApi.getPhysicians().subscribe({
       next: (rows) => {
         this.physicians = rows;
-        this.activePhysicianId = rows.length ? rows[0]._id : null;
+        
+        // 👋 Favor the current user if they are a doctor
+        const me = this.core.currentUser();
+        if (me && me._id) {
+          const foundMe = rows.find(r => r._id === me._id);
+          this.activePhysicianId = foundMe ? foundMe._id : (rows.length ? rows[0]._id : null);
+        } else {
+          this.activePhysicianId = rows.length ? rows[0]._id : null;
+        }
+
         this.loadAlerts();
       },
     });
@@ -108,6 +127,21 @@ export class DoctorHistoryComponent implements OnInit {
         this.symptoms = [];
       },
     });
+
+    if (pid) {
+      this.questionnaireApi.getResponsesByPatient(pid).subscribe({
+        next: (rows) => {
+          this.allResponses = rows;
+          this.unreviewedResponses = rows.filter((r: any) => !r.reviewedByDoctor);
+          this.loading = false;
+        },
+        error: () => {
+          this.allResponses = [];
+          this.unreviewedResponses = [];
+          this.loading = false;
+        }
+      });
+    }
 
     this.loadAlerts();
   }
@@ -150,94 +184,24 @@ export class DoctorHistoryComponent implements OnInit {
       summary: this.symptomSummary(s),
     }));
 
-    return [...vitalRows, ...symptomRows].sort(
+    // Find patient name for questionnaires
+    const patientName = this.patients.find(p => p._id === this.selectedPatientId);
+    const pName = patientName ? `${patientName.firstName} ${patientName.lastName}` : 'Patient';
+
+    const questionnaireRows: HistoryRow[] = this.allResponses
+      .filter(r => r.reviewedByDoctor)
+      .map(r => ({
+        when: r.updatedAt || r.createdAt, // Preferably reviewed date
+        patientName: pName,
+        source: 'questionnaire',
+        summary: r.doctorNotes || 'No notes provided',
+      }));
+
+    return [...vitalRows, ...symptomRows, ...questionnaireRows].sort(
       (a, b) => new Date(b.when).getTime() - new Date(a.when).getTime(),
     );
   }
 
-  get avgTemperature(): string {
-    const vals = this.vitals
-      .map((x) => x.temperature)
-      .filter((x): x is number => typeof x === 'number');
-    if (!vals.length) return '—';
-    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    return avg.toFixed(1);
-  }
-
-  get avgHeartRate(): string {
-    const vals = this.vitals
-      .map((x) => x.heartRate)
-      .filter((x): x is number => typeof x === 'number');
-    if (!vals.length) return '—';
-    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    return Math.round(avg).toString();
-  }
-
-  get latestPain(): string {
-    const vals = this.symptoms
-      .map((x) => x.painLevel)
-      .filter((x): x is number => typeof x === 'number');
-    if (!vals.length) return '—';
-    return vals[0].toString();
-  }
-
-  get bpOutOfRangeCount(): number {
-    return this.vitals.filter((v) => this.isBloodPressureOutOfRange(v.bloodPressure))
-      .length;
-  }
-
-  get temperatureTrend(): TrendDirection {
-    return this.computeTrend(
-      this.vitals
-        .map((x) => x.temperature)
-        .filter((x): x is number => typeof x === 'number'),
-    );
-  }
-
-  get heartRateTrend(): TrendDirection {
-    return this.computeTrend(
-      this.vitals
-        .map((x) => x.heartRate)
-        .filter((x): x is number => typeof x === 'number'),
-    );
-  }
-
-  get painTrend(): TrendDirection {
-    return this.computeTrend(
-      this.symptoms
-        .map((x) => x.painLevel)
-        .filter((x): x is number => typeof x === 'number'),
-    );
-  }
-
-  get trendsLast7Days(): DayTrend[] {
-    const now = new Date();
-    const days = [...Array(7).keys()].map((i) => {
-      const d = new Date(now);
-      d.setDate(now.getDate() - (6 - i));
-      const key = d.toISOString().slice(0, 10);
-      return { date: d, key };
-    });
-
-    const counts = new Map<string, number>();
-    for (const d of days) counts.set(d.key, 0);
-
-    for (const v of this.vitals) {
-      const key = new Date(v.recordedAt).toISOString().slice(0, 10);
-      if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
-    for (const s of this.symptoms) {
-      const key = new Date(s.reportedAt).toISOString().slice(0, 10);
-      if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
-
-    const max = Math.max(...Array.from(counts.values()), 1);
-    return days.map((d) => ({
-      label: d.date.toLocaleDateString(undefined, { weekday: 'short' }),
-      value: counts.get(d.key) ?? 0,
-      max,
-    }));
-  }
 
   /** Urgent instructions sent by this physician to the selected patient (newest first). */
   get alertsForSelectedPatient(): AlertDto[] {
@@ -254,22 +218,6 @@ export class DoctorHistoryComponent implements OnInit {
 
   get pendingValidationSymptoms(): SymptomDto[] {
     return this.symptoms.filter((s) => !s.verifiedAt);
-  }
-
-  trendIcon(direction: TrendDirection): string {
-    if (direction === 'up') return 'trending-up';
-    if (direction === 'down') return 'trending-down';
-    return 'minus';
-  }
-
-  trendClass(direction: TrendDirection): string {
-    if (direction === 'up') return 'trend-up';
-    if (direction === 'down') return 'trend-down';
-    return 'trend-flat';
-  }
-
-  barWidth(day: DayTrend): string {
-    return `${Math.max(8, Math.round((day.value / day.max) * 100))}%`;
   }
 
   validateVital(v: VitalDto): void {
@@ -373,6 +321,24 @@ export class DoctorHistoryComponent implements OnInit {
       onReady(this.activePhysicianId);
       return;
     }
+
+    // ✅ Try to get the current user's ID from CoreService (already set after login)
+    const userData = this.core.currentUser();
+    
+    // 👋 Safe role check: role could be string or populated object
+    const r = userData?.role;
+    const isDoctor = 
+      typeof r === 'string' ? r === 'doctor' :
+      (r && typeof r === 'object' && 'name' in r) ? String(r.name) === 'doctor' : 
+      false;
+
+    if (userData && isDoctor && userData._id) {
+      this.activePhysicianId = userData._id;
+      onReady(userData._id);
+      return;
+    }
+
+    // 🔍 Fallback to the first physician in the system if session data is missing
     this.usersApi.getPhysicians().subscribe({
       next: (rows) => {
         const id = rows[0]?._id ?? null;
@@ -394,6 +360,65 @@ export class DoctorHistoryComponent implements OnInit {
           { duration: 6000 },
         );
       },
+    });
+  }
+
+  openSendQuestionnaireDialog(): void {
+    if (!this.selectedPatientId) return;
+    const patient = this.patients.find(p => p._id === this.selectedPatientId);
+    
+    const dialogRef = this.dialog.open(SendQuestionnaireDialog, {
+      width: '500px',
+      data: { 
+        patientName: patient ? `${patient.firstName} ${patient.lastName}` : 'Patient', 
+        patientId: this.selectedPatientId 
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(templateId => {
+      if (templateId) {
+        this.ensurePhysicianId((doctorId) => {
+          this.questionnaireApi.createInstance({
+            templateId,
+            patientId: this.selectedPatientId,
+            doctorId
+          }).subscribe({
+            next: () => {
+              this.snack.open('Questionnaire envoyé avec succès', 'OK', { duration: 3000 });
+              this.loadHistory();
+            },
+            error: () => {
+              this.snack.open('Échec de l\'envoi du questionnaire', 'OK', { duration: 3000 });
+            }
+          });
+        });
+      }
+    });
+  }
+
+  openReviewDialog(response: any): void {
+    const dialogRef = this.dialog.open(ReviewQuestionnaireDialog, {
+      width: 'min(650px, 98vw)',
+      data: { response }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.ensurePhysicianId((doctorId) => {
+          this.questionnaireApi.updateReview(response._id, doctorId, {
+            reviewedByDoctor: true,
+            doctorNotes: result.notes
+          }).subscribe({
+            next: () => {
+              this.snack.open('Réponse validée', 'OK', { duration: 3000 });
+              this.loadHistory();
+            },
+            error: () => {
+              this.snack.open('Échec de la validation', 'OK', { duration: 3000 });
+            }
+          });
+        });
+      }
     });
   }
 

@@ -30,6 +30,28 @@
   }
 }
 
+.doctor-filters {
+  .doctor-filter-field {
+    min-width: 200px;
+  }
+}
+
+.trend-box {
+  border-radius: 12px;
+  background: rgba(56, 103, 214, 0.06);
+  border: 1px solid rgba(56, 103, 214, 0.15);
+}
+
+.recent-alert-item {
+  height: auto !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+.text-success {
+  color: #2e7d32;
+}
+
 .status-pill {
   display: inline-block;
   padding: 4px 12px;

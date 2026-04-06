@@ -25,6 +25,13 @@ export const adminNavItems: NavItem[] = [
       { displayName: 'AUDITORS', iconName: 'check', route: '/dashboard/admin/auditors', bgcolor: 'transparent' },
     ],
   },
+
+  {
+    displayName: 'QUESTIONNAIRE ',
+    iconName: 'list',
+    route: '/admin/templates',
+    bgcolor: 'secondary',
+  },
 ];
 
 // Sidebar pour le coordinator
@@ -55,6 +62,13 @@ export const coordinatorNavItems: NavItem[] = [
     route: '/admin/coordinator/reminders',
     bgcolor: 'transparent',
   },
+
+  {
+  displayName: 'AI PREDICTION',
+  iconName: 'brain',
+  route: '/admin/coordinator/prediction',
+  bgcolor: 'transparent',
+},
 ];
 
 

@@ -16,8 +16,18 @@ import {
   UsersApiService,
 } from 'src/app/services/users-api.service';
 import { UploadApiService } from 'src/app/services/upload-api.service';
+import { HospitalizationHandwritingApiService } from 'src/app/services/hospitalization-handwriting-api.service';
 import { recognize } from 'tesseract.js';
-import { Subject, debounceTime, EMPTY, filter, finalize, map, switchMap } from 'rxjs';
+import {
+  Subject,
+  debounceTime,
+  EMPTY,
+  filter,
+  finalize,
+  firstValueFrom,
+  map,
+  switchMap,
+} from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 type DossierForm = {
@@ -159,6 +169,7 @@ export class NurseMedicalFileComponent implements OnInit {
   constructor(
     private readonly usersApi: UsersApiService,
     private readonly uploadApi: UploadApiService,
+    private readonly hospitalizationHwApi: HospitalizationHandwritingApiService,
     private readonly translate: TranslateService,
     private readonly route: ActivatedRoute,
     private readonly snackBar: MatSnackBar,
@@ -1287,11 +1298,108 @@ export class NurseMedicalFileComponent implements OnInit {
     return '';
   }
 
+  /** Non-destructive merge: only sets fields present in the AI payload (user can edit after). */
+  private applyAiHospitalizationExtract(data: Record<string, unknown>): number {
+    const t = this.ensureEditingTargetForImport();
+    let n = 0;
+
+    const adRaw = String(
+      data['admissionDate'] ?? data['admission_date'] ?? '',
+    ).trim();
+    if (adRaw) {
+      const nd = this.normalizeDate(adRaw);
+      if (nd) {
+        t.admissionDate = nd;
+        n++;
+      }
+    }
+    const ddRaw = String(
+      data['dischargeDate'] ?? data['discharge_date'] ?? '',
+    ).trim();
+    if (ddRaw) {
+      const nd = this.normalizeDate(ddRaw);
+      if (nd) {
+        t.dischargeDate = nd;
+        n++;
+      }
+    }
+    const duRaw = String(
+      data['dischargeUnit'] ?? data['discharge_unit'] ?? '',
+    ).trim();
+    if (duRaw) {
+      const mapped = this.matchDischargeUnitToOption(duRaw);
+      t.dischargeUnit = mapped || duRaw;
+      n++;
+    }
+    const pd = String(
+      data['primaryDiagnosis'] ?? data['primary_diagnosis'] ?? '',
+    ).trim();
+    if (pd) {
+      t.primaryDiagnosis = pd;
+      n++;
+    }
+    const hr = String(
+      data['hospitalizationReason'] ?? data['reasonForHospitalization'] ?? '',
+    ).trim();
+    if (hr) {
+      t.hospitalizationReason = hr;
+      n++;
+    }
+    const sd = String(
+      data['secondaryDiagnoses'] ?? data['secondary_diagnoses'] ?? '',
+    ).trim();
+    if (sd) {
+      t.secondaryDiagnoses = sd;
+      n++;
+    }
+    const proc = String(
+      data['proceduresPerformed'] ?? data['procedures'] ?? '',
+    ).trim();
+    if (proc) {
+      t.proceduresPerformed = proc;
+      n++;
+    }
+    const notes = String(
+      data['dischargeSummaryNotes'] ?? data['discharge_summary'] ?? '',
+    ).trim();
+    if (notes) {
+      t.dischargeSummaryNotes = notes;
+      n++;
+    }
+
+    this.diagnosisEntries = [...this.diagnosisEntries];
+    if (n > 0) this.onDossierFieldChange();
+    return n;
+  }
+
   private async importFromImage(file: File): Promise<void> {
+    let aiResponded = false;
+    try {
+      const result = await firstValueFrom(
+        this.hospitalizationHwApi.parseImage(file),
+      );
+      aiResponded = true;
+      const n = this.applyAiHospitalizationExtract(
+        result as unknown as Record<string, unknown>,
+      );
+      if (n > 0) {
+        this.importStatus = 'NURSE_MEDICAL_FILE_IMPORT_AI_SUCCESS';
+        return;
+      }
+    } catch {
+      // 503 without GROQ_API_KEY, network, or Groq error — fall back to OCR
+    }
+
     try {
       const result = await recognize(file, 'eng+fra');
       const text = result?.data?.text ?? '';
       this.importFromText(text, { fromOcr: true });
+      if (
+        !aiResponded &&
+        this.importStatus === 'NURSE_MEDICAL_FILE_IMPORT_SUCCESS'
+      ) {
+        this.importStatus = 'NURSE_MEDICAL_FILE_IMPORT_AI_FALLBACK_OCR';
+      }
     } catch {
       this.importStatus = 'NURSE_MEDICAL_FILE_IMPORT_FAILED';
     }

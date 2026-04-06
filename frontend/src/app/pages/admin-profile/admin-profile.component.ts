@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MaterialModule } from 'src/app/material.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
+import { UserService } from 'src/app/services/users.service';
 
 @Component({
   selector: 'app-admin-profile',
@@ -12,6 +13,7 @@ import { TablerIconsModule } from 'angular-tabler-icons';
   styleUrls: ['./admin-profile.component.scss'],
 })
 export class AdminProfileComponent implements OnInit {
+
   profile = {
     name: '',
     email: '',
@@ -22,29 +24,33 @@ export class AdminProfileComponent implements OnInit {
     avatar: '/assets/images/profile/user-1.jpg',
   };
 
-  ngOnInit(): void {
-    const role = (localStorage.getItem('user_role') || '').toLowerCase();
+  constructor(private userService: UserService) {}
 
-    if (role === 'coordinator') {
-      this.profile = {
-        name: 'Takoua Outay',
-        email: 'outaytakwa@gmail.com',
-        role: 'Coordinator',
-        phone: '28043310',
-        service: 'Cardiology',
-        hospital: 'MediFollow Demo Hospital',
-        avatar: '/assets/images/profile/user-2.jpg',
-      };
-    } else {
-      this.profile = {
-        name: 'Super Admin',
-        email: 'super.admin@hospital.tn',
-        role: 'Admin',
-        phone: '+216 20 000 000',
-        service: 'Global platform',
-        hospital: 'MediFollow Demo Hospital',
-        avatar: '/assets/images/profile/user-1.jpg',
-      };
-    }
+  ngOnInit(): void {
+    this.loadProfile();
   }
+
+  loadProfile() {
+    this.userService.getProfile().subscribe({
+      next: (user) => {
+
+        this.profile = {
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          role: user.role?.name || user.role,
+          phone: user.phone,
+          service: user.service?.name || '—',
+          hospital: 'MediFollow Demo Hospital',
+          avatar: user.photo
+            ? `http://localhost:3000/${user.photo}`
+            : '/assets/images/profile/user-1.jpg'
+        };
+
+      },
+      error: (err) => {
+        console.error('Erreur chargement profil', err);
+      }
+    });
+  }
+
 }

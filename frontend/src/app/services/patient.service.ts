@@ -53,22 +53,36 @@ export class PatientService {
 
 
 
-  /** Retourne le patientId en décodant le JWT (claim 'sub') stocké après connexion */
-  getCurrentPatientId(): string {
-    // Priorité : userId explicite si jamais stocké
-    const direct = localStorage.getItem('userId');
-    if (direct) return direct;
+  
+  /** Retourne le patientId depuis localStorage ou JWT */
+getCurrentPatientId(): string {
+  // 1️⃣ Vérifie userId direct
+  const direct = localStorage.getItem('userId');
+  if (direct) return direct;
 
-    // Sinon décoder le JWT pour extraire sub
-    const token = localStorage.getItem('accessToken');
-    if (!token) return '';
+  // 2️⃣ Vérifie medi_follow_user_data
+  const raw = localStorage.getItem('medi_follow_user_data');
+  if (raw) {
+    try {
+      const user = JSON.parse(raw);
+      if (user._id || user.id) return user._id || user.id;
+    } catch {}
+  }
+
+  // 3️⃣ Vérifie JWT accessToken
+  const token = localStorage.getItem('accessToken');
+  if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.sub ?? payload._id ?? payload.id ?? '';
-    } catch {
-      return '';
-    }
+    } catch {}
   }
+
+  return ''; // Aucun ID trouvé
+}
+
+
+
 
   // â”€â”€â”€ VITAL PARAMETERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -228,7 +242,13 @@ export class PatientService {
 
   getAssignedQuestionnaires(): Observable<any[]> {
     const patientId = this.getCurrentPatientId();
-    return this.http.get<any[]>(`${this.API}/questionnaire-templates/patient/${patientId}`);
+    return this.http.get<any[]>(`${this.API}/questionnaire-instances/patient/${patientId}`);
+  }
+
+  hasCompletedInstance(instanceId: string): Observable<boolean> {
+    return this.http.get<boolean>(
+      `${this.API}/questionnaire-responses/instance/${instanceId}/today`,
+    );
   }
 
   hasCompletedTemplate(templateId: string): Observable<boolean> {
@@ -238,12 +258,31 @@ export class PatientService {
     );
   }
 
-  submitQuestionnaireWithTemplate(templateId: string, answers: Record<string, string>): Observable<any> {
+  submitInstanceResponse(instanceId: string, answers: any[]): Observable<any> {
     const patientId = this.getCurrentPatientId();
-    return this.http.post(`${this.API}/questionnaire-responses`, { patientId, templateId, answers });
+    return this.http.post(`${this.API}/questionnaire-responses`, { 
+      questionnaireInstanceId: instanceId,
+      patientId,
+      answers 
+    });
   }
 
-
+  // ─── MESSAGES ────────────────────────────────────────────────────────────────
+  getDoctorsAndNurses(): Observable<any[]> {
+    return new Observable(obs => {
+      // Fetch Doctor and Nurse roles in parallel
+      Promise.all([
+        fetch(`${this.API}/users/by-role/Doctor`).then(r => r.json()),
+        fetch(`${this.API}/users/by-role/Nurse`).then(r => r.json()),
+      ]).then(([doctors, nurses]) => {
+        obs.next([
+          ...(Array.isArray(doctors) ? doctors : []),
+          ...(Array.isArray(nurses) ? nurses : []),
+        ]);
+        obs.complete();
+      }).catch(e => obs.error(e));
+    });
+  }
 
 
 }

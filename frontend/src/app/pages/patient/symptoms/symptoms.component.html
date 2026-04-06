@@ -1,49 +1,126 @@
-<div class="container">
-  <h2>Mes Symptômes</h2>
+<div class="container" role="main">
+  <!-- Skip to form -->
+  <a href="#symptoms-form" class="skip-to-form">Skip to form</a>
+
+  <div class="page-header">
+    <h2 id="symptoms-title">Mes Symptômes</h2>
+    <p class="kb-tip" role="note">
+      <mat-icon aria-hidden="true">keyboard</mat-icon>
+      Use <kbd>Tab</kbd> to navigate, <kbd>Space</kbd> to check/uncheck symptoms, <kbd>Enter</kbd> to submit.
+    </p>
+  </div>
 
   <mat-card>
     <mat-card-header>
       <mat-card-title>Signaler mes symptômes</mat-card-title>
+      <mat-card-subtitle>Check all symptoms you are experiencing today</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
         <div *ngIf="submittedToday" class="already-submitted">
-          <mat-card>
-            <mat-card-content>
-              <p>Vous avez déjà signalé vos symptômes aujourd'hui. Vous pouvez le faire de nouveau demain.</p>
-            </mat-card-content>
-          </mat-card>
-        </div>
+  <mat-card>
+    <mat-card-content>
+      <p>Vous avez déjà signalé vos symptômes aujourd'hui. Vous pouvez le faire de nouveau demain.</p>
+    </mat-card-content>
+  </mat-card>
+</div>
 
-        <form *ngIf="!submittedToday" [formGroup]="symptomsForm" (ngSubmit)="onSubmit()">
-        <div class="symptoms-list">
-          <div *ngFor="let symptom of availableSymptoms" class="symptom-item">
-            <mat-checkbox [formControl]="getFormControl(symptom.name)">
-              {{ symptom.label }}
-            </mat-checkbox>
+<form
+  *ngIf="!submittedToday"
+  id="symptoms-form"
+  [formGroup]="symptomsForm"
+  (ngSubmit)="onSubmit()"
+  aria-labelledby="symptoms-title"
+  novalidate>
+  
+  <div class="symptoms-list">
+    <div *ngFor="let symptom of availableSymptoms" class="symptom-item">
+      <mat-checkbox [formControl]="getFormControl(symptom.name)">
+        {{ symptom.label }}
+      </mat-checkbox>
+    </div>
+  </div>
 
-            <mat-form-field *ngIf="symptom.scale && symptomsForm.get(symptom.name)?.value" appearance="outline" class="scale-field">
-              <mat-label>Échelle (0-10)</mat-label>
-              <input matInput type="number" [formControl]="getFormControl(symptom.name + 'Scale')" min="0" max="10">
-              <mat-error *ngIf="symptomsForm.get(symptom.name + 'Scale')?.hasError('min') || symptomsForm.get(symptom.name + 'Scale')?.hasError('max')">Entre 0 et 10</mat-error>
-            </mat-form-field>
+</form>
+
+        <fieldset class="symptoms-fieldset">
+          <legend class="symptoms-legend">Select your symptoms</legend>
+
+          <div class="symptoms-list" role="group" aria-label="Symptom checkboxes">
+            <div
+              *ngFor="let symptom of availableSymptoms; let i = index"
+              class="symptom-item"
+              role="listitem">
+
+              <mat-checkbox
+                [formControl]="getFormControl(symptom.name)"
+                [id]="'symptom-' + symptom.name"
+                [attr.aria-label]="symptom.label"
+                tabindex="0">
+                {{ symptom.label }}
+              </mat-checkbox>
+
+              <mat-form-field
+                *ngIf="symptom.scale && symptomsForm.get(symptom.name)?.value"
+                appearance="outline"
+                class="scale-field">
+                <mat-label>Échelle (0-10)</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  [formControl]="getFormControl(symptom.name + 'Scale')"
+                  min="0"
+                  max="10"
+                  [id]="'scale-' + symptom.name"
+                  [attr.aria-label]="symptom.label + ' severity scale 0 to 10'"
+                  tabindex="0">
+                <mat-hint>0 = none, 10 = severe</mat-hint>
+                <mat-error
+                  *ngIf="symptomsForm.get(symptom.name + 'Scale')?.hasError('min') || symptomsForm.get(symptom.name + 'Scale')?.hasError('max')"
+                  role="alert">
+                  Entre 0 et 10
+                </mat-error>
+              </mat-form-field>
+
+            </div>
           </div>
-        </div>
+        </fieldset>
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Notes supplémentaires</mat-label>
-          <textarea matInput formControlName="notes" rows="3"></textarea>
+          <textarea
+            matInput
+            formControlName="notes"
+            rows="3"
+            id="symptoms-notes"
+            aria-describedby="notes-hint"
+            tabindex="0">
+          </textarea>
+          <mat-hint id="notes-hint">Optional — add any additional details about your symptoms</mat-hint>
         </mat-form-field>
 
         <div class="form-actions">
-          <button mat-raised-button color="primary" type="submit" [disabled]="isLoading">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="isLoading"
+            aria-label="Submit symptoms report"
+            tabindex="0">
+            <mat-icon aria-hidden="true">send</mat-icon>
             <span *ngIf="!isLoading">Enregistrer</span>
-            <span *ngIf="isLoading">Enregistrement...</span>
+            <span *ngIf="isLoading" aria-live="polite">Enregistrement...</span>
           </button>
         </div>
 
-        <div *ngIf="successMessage" class="alert-success">{{ successMessage }}</div>
-        <div *ngIf="errorMessage" class="alert-error">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="alert-success" role="alert" aria-live="polite">
+          <mat-icon>check_circle</mat-icon>
+          {{ successMessage }}
+        </div>
+        <div *ngIf="errorMessage" class="alert-error" role="alert" aria-live="assertive">
+          <mat-icon>error</mat-icon>
+          {{ errorMessage }}
+        </div>
       </form>
     </mat-card-content>
   </mat-card>

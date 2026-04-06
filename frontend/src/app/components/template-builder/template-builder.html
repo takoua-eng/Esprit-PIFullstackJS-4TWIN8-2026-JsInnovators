@@ -1,0 +1,174 @@
+<mat-card class="template-builder-card">
+  <mat-card-header>
+    <mat-card-title>Éditeur de modèle</mat-card-title>
+  </mat-card-header>
+
+  <div class="builder-loading" *ngIf="loadingTemplate">
+    <mat-spinner diameter="48"></mat-spinner>
+    <span>Chargement du modèle…</span>
+  </div>
+
+  <div class="builder-error" *ngIf="!loadingTemplate && loadError" role="alert">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ loadError }}</span>
+  </div>
+
+  <form
+    #templateForm="ngForm"
+    (ngSubmit)="onSubmit(templateForm)"
+    *ngIf="!loadingTemplate && !loadError"
+  >
+    <mat-card-content>
+      <div class="fields">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Titre</mat-label>
+          <input
+            matInput
+            [(ngModel)]="title"
+            name="title"
+            required
+            #titleCtrl="ngModel"
+            (blur)="title = title.trim()"
+          />
+          <mat-error *ngIf="titleRequiredError(titleCtrl)">Le titre est obligatoire.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Catégorie</mat-label>
+          <input
+            matInput
+            [(ngModel)]="category"
+            name="category"
+            required
+            #categoryCtrl="ngModel"
+            (blur)="category = category.trim()"
+          />
+          <mat-error *ngIf="categoryRequiredError(categoryCtrl)">La catégorie est obligatoire.</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="questions-toolbar">
+        <button mat-raised-button color="primary" type="button" (click)="addQuestion()">
+          <mat-icon>add</mat-icon>
+          Ajouter une question
+        </button>
+        <span class="questions-count">{{ questions.length }} question(s)</span>
+      </div>
+
+      <div
+        class="questions-list-error"
+        *ngIf="questionsListRequiredError(titleCtrl, categoryCtrl)"
+        role="alert"
+      >
+        Au moins une question est requise.
+      </div>
+
+    <mat-accordion class="questions-accordion" multi>
+      <mat-expansion-panel *ngFor="let q of questions; let qi = index" class="question-panel">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Question {{ qi + 1 }}
+            <span class="question-preview" *ngIf="q.text">{{ q.text }}</span>
+          </mat-panel-title>
+          <mat-panel-description>
+            {{ getTypeLabel(q.type) }}
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="question-body">
+          <div class="question-actions-row">
+            <mat-form-field appearance="outline" class="flex-grow">
+              <mat-label>Intitulé</mat-label>
+              <input
+                matInput
+                [(ngModel)]="q.text"
+                [name]="'qtext-' + qi"
+                required
+                #qTextCtrl="ngModel"
+                placeholder="Libellé de la question"
+                (blur)="q.text = q.text.trim()"
+              />
+              <mat-error *ngIf="questionTextRequiredError(q, qTextCtrl)"
+                >L’intitulé de la question est obligatoire.</mat-error
+              >
+            </mat-form-field>
+
+            <button
+              mat-icon-button
+              type="button"
+              color="warn"
+              class="remove-question-btn"
+              (click)="removeQuestion(qi); $event.stopPropagation()"
+              aria-label="Supprimer la question"
+            >
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Type de réponse</mat-label>
+            <mat-select
+              [ngModel]="q.type"
+              (ngModelChange)="onTypeChange(q, $event)"
+              [name]="'qtype-' + qi"
+            >
+              <mat-option *ngFor="let opt of typeOptions" [value]="opt.value">
+                {{ opt.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div *ngIf="isChoiceType(q)" class="options-block">
+            <div class="options-label">Options</div>
+            <div class="option-row" *ngFor="let opt of q.options!; let oi = index">
+              <mat-form-field
+                appearance="outline"
+                class="option-field"
+                [class.option-field-invalid]="choiceOptionsInvalid(q)"
+              >
+                <mat-label>Option {{ oi + 1 }}</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="q.options![oi]"
+                  [name]="'opt-' + qi + '-' + oi"
+                />
+              </mat-form-field>
+              <button
+                mat-icon-button
+                type="button"
+                (click)="removeOption(q, oi)"
+                [disabled]="(q.options?.length ?? 0) <= 1"
+                aria-label="Supprimer l'option"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            <button mat-stroked-button type="button" (click)="addOption(q)">
+              <mat-icon>add</mat-icon>
+              Ajouter une option
+            </button>
+            <div class="options-error" *ngIf="choiceOptionsInvalid(q)" role="alert">
+              Au moins une option avec un libellé non vide est requise.
+            </div>
+          </div>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+
+      <p *ngIf="questions.length === 0" class="empty-hint">
+        Aucune question pour l’instant. Utilisez « Ajouter une question » pour commencer.
+      </p>
+    </mat-card-content>
+
+    <mat-card-actions align="end" class="template-builder-actions">
+      <button
+        mat-flat-button
+        color="primary"
+        type="submit"
+        [disabled]="!isFormValid() || submitting"
+      >
+        {{ submitting ? 'Enregistrement…' : 'Enregistrer le modèle' }}
+      </button>
+    </mat-card-actions>
+  </form>
+</mat-card>
