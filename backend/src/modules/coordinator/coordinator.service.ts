@@ -6,12 +6,6 @@ import { User, UserDocument } from '../users/users.schema';
 import { Reminder, ReminderDocument } from './reminder.schema';
 import { NotificationService } from '../notifications/notification.service';
 
-const REQUIRED_VITAL_FIELDS = [
-  'temperature', 'heartRate', 'bloodPressureSystolic', 'bloodPressureDiastolic', 'weight',
-];
-
-const REQUIRED_SYMPTOM_FIELDS = ['painLevel', 'fatigueLevel', 'symptoms'];
-
 @Injectable()
 export class CoordinatorService {
   private readonly logger = new Logger(CoordinatorService.name);
@@ -62,6 +56,78 @@ export class CoordinatorService {
     return missing;
   }
 
+  private async _getMissingFields(patientId: string): Promise<{
+    missingVitals: string[];
+    missingSymptoms: string[];
+  }> {
+    const { start, end } = this.getTodayRange();
+    const pid = new Types.ObjectId(patientId);
+
+    const [vitalDoc, symptomDoc] = await Promise.all([
+      this.vitalModel.findOne({ patientId: pid, recordedAt: { $gte: start, $lte: end } }).lean(),
+      this.symptomModel.findOne({ patientId: pid, reportedAt: { $gte: start, $lte: end } }).lean(),
+    ]);
+
+    const missingVitals = vitalDoc
+      ? this.checkVitalFields(vitalDoc)
+      : ['Temperature', 'Heart Rate', 'Blood Pressure', 'Weight'];
+
+    const missingSymptoms = symptomDoc
+      ? this.checkSymptomFields(symptomDoc)
+      : ['Pain Level', 'Fatigue Level', 'Symptoms List'];
+
+    return { missingVitals, missingSymptoms };
+  }
+
+  // ─── Message personnalisé selon champs manquants ──────────────
+
+  buildPersonalizedMessage(
+    patientName: string,
+    missingVitals: string[],
+    missingSymptoms: string[],
+  ): string {
+    const firstName = patientName.split(' ')[0];
+    const allVitalsMissing = missingVitals.length === 4;
+    const allSymptomsMissing = missingSymptoms.length === 3;
+    const noVitalsAtAll = missingVitals.length === 4;
+    const noSymptomsAtAll = missingSymptoms.length === 3;
+
+    if (noVitalsAtAll && noSymptomsAtAll) {
+      return `Dear ${firstName}, you have not submitted your daily health follow-up today. Please complete both your Vital Parameters and Symptoms report as soon as possible.`;
+    }
+
+    if (noVitalsAtAll && missingSymptoms.length === 0) {
+      return `Dear ${firstName}, your vital signs have not been submitted today. Please complete your Vital Parameters (Temperature, Heart Rate, Blood Pressure, Weight).`;
+    }
+
+    if (noSymptomsAtAll && missingVitals.length === 0) {
+      return `Dear ${firstName}, your symptoms report has not been submitted today. Please complete your Symptoms report (Pain Level, Fatigue Level, Symptoms List).`;
+    }
+
+    const parts: string[] = [];
+    if (missingVitals.length > 0) {
+      parts.push(`missing vital fields: ${missingVitals.join(', ')}`);
+    }
+    if (missingSymptoms.length > 0) {
+      parts.push(`missing symptom fields: ${missingSymptoms.join(', ')}`);
+    }
+
+    return `Dear ${firstName}, your daily follow-up is incomplete — ${parts.join(' and ')}. Please submit the missing data as soon as possible.`;
+  }
+
+  // ─── Endpoint message personnalisé (appelé par le frontend) ──
+
+  async getPersonalizedMessage(coordinatorId: string, patientId: string) {
+    const patient = await this.userModel.findById(patientId).lean();
+    if (!patient) throw new NotFoundException('Patient not found');
+
+    const patientName = `${patient.firstName} ${patient.lastName}`;
+    const { missingVitals, missingSymptoms } = await this._getMissingFields(patientId);
+    const message = this.buildPersonalizedMessage(patientName, missingVitals, missingSymptoms);
+
+    return { message, missingVitals, missingSymptoms };
+  }
+
   // ─── DASHBOARD ───────────────────────────────────────────────
 
   async getDashboard(coordinatorId: string) {
@@ -83,7 +149,8 @@ export class CoordinatorService {
     for (const patient of patients) {
       const dept = patient.department || 'Unknown';
       departmentMap[dept] = (departmentMap[dept] || 0) + 1;
-      const isComplete = !!patient.phone && !!patient.address && !!patient.emergencyContact && !!patient.email;
+      const isComplete =
+        !!patient.phone && !!patient.address && !!patient.emergencyContact && !!patient.email;
       if (isComplete) completeProfiles++;
       if (!patient.emergencyContact) missingEmergencyContact++;
       if (patient.medicalRecordNumber) patientsWithMedicalRecord++;
@@ -118,9 +185,15 @@ export class CoordinatorService {
         missingVitalsToday,
         missingSymptomsToday,
       },
-      departmentDistribution: Object.entries(departmentMap).map(([label, value]) => ({ label, value })),
+      departmentDistribution: Object.entries(departmentMap).map(([label, value]) => ({
+        label,
+        value,
+      })),
       recentPatients: [...patients]
-        .sort((a: any, b: any) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime())
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime(),
+        )
         .slice(0, 5)
         .map((p) => ({
           _id: p._id,
@@ -141,8 +214,12 @@ export class CoordinatorService {
     const { start, end } = this.getTodayRange();
 
     const [vitalDocs, symptomDocs] = await Promise.all([
-      this.vitalModel.find({ patientId: { $in: patientIds }, recordedAt: { $gte: start, $lte: end } }).lean(),
-      this.symptomModel.find({ patientId: { $in: patientIds }, reportedAt: { $gte: start, $lte: end } }).lean(),
+      this.vitalModel
+        .find({ patientId: { $in: patientIds }, recordedAt: { $gte: start, $lte: end } })
+        .lean(),
+      this.symptomModel
+        .find({ patientId: { $in: patientIds }, reportedAt: { $gte: start, $lte: end } })
+        .lean(),
     ]);
 
     return patients.map((p) => {
@@ -150,8 +227,12 @@ export class CoordinatorService {
       const vitalDoc = vitalDocs.find((v: any) => v.patientId?.toString() === pid);
       const symptomDoc = symptomDocs.find((s: any) => s.patientId?.toString() === pid);
 
-      const missingVitalFields = vitalDoc ? this.checkVitalFields(vitalDoc) : ['Temperature', 'Heart Rate', 'Blood Pressure', 'Weight'];
-      const missingSymptomFields = symptomDoc ? this.checkSymptomFields(symptomDoc) : ['Pain Level', 'Fatigue Level', 'Symptoms List'];
+      const missingVitalFields = vitalDoc
+        ? this.checkVitalFields(vitalDoc)
+        : ['Temperature', 'Heart Rate', 'Blood Pressure', 'Weight'];
+      const missingSymptomFields = symptomDoc
+        ? this.checkSymptomFields(symptomDoc)
+        : ['Pain Level', 'Fatigue Level', 'Symptoms List'];
 
       const vitalsSubmitted = !!vitalDoc;
       const vitalsFullyComplete = vitalsSubmitted && missingVitalFields.length === 0;
@@ -224,20 +305,32 @@ export class CoordinatorService {
     const { start, end } = this.getDateRange(14);
 
     const [vitalHistory, symptomHistory] = await Promise.all([
-      this.vitalModel.find({ patientId: { $in: patientIds }, recordedAt: { $gte: start, $lte: end } }).lean(),
-      this.symptomModel.find({ patientId: { $in: patientIds }, reportedAt: { $gte: start, $lte: end } }).lean(),
+      this.vitalModel
+        .find({ patientId: { $in: patientIds }, recordedAt: { $gte: start, $lte: end } })
+        .lean(),
+      this.symptomModel
+        .find({ patientId: { $in: patientIds }, reportedAt: { $gte: start, $lte: end } })
+        .lean(),
     ]);
 
     const patientStats = patients.map((p) => {
       const pid = p._id.toString();
       const patientVitals = vitalHistory.filter((v: any) => v.patientId?.toString() === pid);
-      const patientSymptoms = symptomHistory.filter((s: any) => s.patientId?.toString() === pid);
+      const patientSymptoms = symptomHistory.filter(
+        (s: any) => s.patientId?.toString() === pid,
+      );
 
-      const vitalDays = new Set(patientVitals.map((v: any) => new Date(v.recordedAt).toISOString().split('T')[0]));
-      const symptomDays = new Set(patientSymptoms.map((s: any) => new Date(s.reportedAt).toISOString().split('T')[0]));
+      const vitalDays = new Set(
+        patientVitals.map((v: any) => new Date(v.recordedAt).toISOString().split('T')[0]),
+      );
+      const symptomDays = new Set(
+        patientSymptoms.map((s: any) => new Date(s.reportedAt).toISOString().split('T')[0]),
+      );
 
       const allDays = new Set([...vitalDays, ...symptomDays]);
-      const fullComplianceDays = [...allDays].filter(d => vitalDays.has(d) && symptomDays.has(d)).length;
+      const fullComplianceDays = [...allDays].filter(
+        (d) => vitalDays.has(d) && symptomDays.has(d),
+      ).length;
       const complianceRate = Math.round((fullComplianceDays / 14) * 100);
 
       let consecutiveMissingDays = 0;
@@ -254,9 +347,10 @@ export class CoordinatorService {
         ...patientVitals.map((v: any) => new Date(v.recordedAt).getTime()),
         ...patientSymptoms.map((s: any) => new Date(s.reportedAt).getTime()),
       ];
-      const lastSubmission = allSubmissionDates.length > 0
-        ? new Date(Math.max(...allSubmissionDates)).toISOString()
-        : null;
+      const lastSubmission =
+        allSubmissionDates.length > 0
+          ? new Date(Math.max(...allSubmissionDates)).toISOString()
+          : null;
 
       let riskScore = 0;
       if (complianceRate < 30) riskScore += 50;
@@ -291,10 +385,14 @@ export class CoordinatorService {
     });
 
     patientStats.sort((a, b) => b.riskScore - a.riskScore);
-    return { generatedAt: new Date().toISOString(), periodDays: 14, patients: patientStats };
+    return {
+      generatedAt: new Date().toISOString(),
+      periodDays: 14,
+      patients: patientStats,
+    };
   }
 
-  // ─── REMINDERS + NOTIFICATIONS ───────────────────────────────
+  // ─── REMINDERS ───────────────────────────────────────────────
 
   async getReminders(coordinatorId: string) {
     return this.reminderModel
@@ -304,6 +402,7 @@ export class CoordinatorService {
       .exec();
   }
 
+  // createReminder — crée uniquement, AUCUN email ni SMS
   async createReminder(
     coordinatorId: string,
     body: {
@@ -314,39 +413,61 @@ export class CoordinatorService {
       status?: string;
     },
   ) {
-    // Récupérer le patient avec email et emergencyContact
-    const patient = await this.userModel.findById(body.patientId).lean();
-    if (!patient) throw new NotFoundException('Patient not found');
-
-    const patientName = `${patient.firstName} ${patient.lastName}`;
-
-    // Récupérer les champs manquants actuels
-    const { missingVitals, missingSymptoms } = await this._getMissingFields(body.patientId);
-
-    // Créer le reminder
-    const smsScheduledAt = new Date(Date.now() + 1 * 60 * 1000); // 1 minute pour le test
-
     const reminder = new this.reminderModel({
       patientId: new Types.ObjectId(body.patientId),
       sentBy: new Types.ObjectId(coordinatorId),
       type: body.type,
       message: body.message,
-      status: body.status || 'sent',
+      status: body.status || 'scheduled',
       scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : new Date(),
-      sentAt: new Date(),
-      smsScheduledAt,
       emailSent: false,
       smsSent: false,
       smsJobDone: false,
     });
 
-    const saved = await reminder.save();
+    return reminder.save();
+  }
 
-    // Envoyer l'email immédiatement si le patient a un email
+  // sendReminder — SEULE source d'envoi email + planification SMS
+  async sendReminder(reminderId: string) {
+    const reminder = await this.reminderModel
+      .findById(reminderId)
+      .populate('patientId', 'firstName lastName email emergencyContact')
+      .exec();
+
+    if (!reminder) throw new NotFoundException('Reminder not found');
+
+    // Éviter le double envoi
+    if (reminder.emailSent) {
+      this.logger.warn(`Email already sent for reminder ${reminderId} — skipping`);
+      reminder.status = 'sent';
+      reminder.sentAt = new Date();
+      return reminder.save();
+    }
+
+    reminder.status = 'sent';
+    reminder.sentAt = new Date();
+    await reminder.save();
+
+    const patient = reminder.patientId as any;
+    const patientName = `${patient.firstName} ${patient.lastName}`;
+    const patientId = patient._id.toString();
+
+    // Champs manquants depuis la DB au moment de l'envoi
+    const { missingVitals, missingSymptoms } = await this._getMissingFields(patientId);
+
+    // Message personnalisé pour le mail
+    const personalizedMessage = this.buildPersonalizedMessage(
+      patientName,
+      missingVitals,
+      missingSymptoms,
+    );
+
+    // Envoyer email
     if (patient.email) {
       const emailHtml = this.notificationService.buildEmailHtml(
         patientName,
-        body.message,
+        personalizedMessage,
         missingVitals,
         missingSymptoms,
       );
@@ -358,7 +479,7 @@ export class CoordinatorService {
       );
 
       if (emailSent) {
-        await this.reminderModel.findByIdAndUpdate(saved._id, {
+        await this.reminderModel.findByIdAndUpdate(reminderId, {
           emailSent: true,
           emailSentAt: new Date(),
         });
@@ -366,25 +487,13 @@ export class CoordinatorService {
       }
     }
 
-    // Planifier le SMS après 1 minute (vérification de compliance d'abord)
-    this._scheduleSmsCheck(saved._id.toString(), body.patientId, patientName, patient, missingVitals, missingSymptoms);
+    // Planifier SMS court après 1 minute
+    const patientDoc = await this.userModel.findById(patient._id).lean();
+    if (patientDoc) {
+      this._scheduleSmsCheck(reminderId, patientId, patientName, patientDoc);
+    }
 
-    return saved;
-  }
-
-  private async _getMissingFields(patientId: string): Promise<{ missingVitals: string[]; missingSymptoms: string[] }> {
-    const { start, end } = this.getTodayRange();
-    const pid = new Types.ObjectId(patientId);
-
-    const [vitalDoc, symptomDoc] = await Promise.all([
-      this.vitalModel.findOne({ patientId: pid, recordedAt: { $gte: start, $lte: end } }).lean(),
-      this.symptomModel.findOne({ patientId: pid, reportedAt: { $gte: start, $lte: end } }).lean(),
-    ]);
-
-    const missingVitals = vitalDoc ? this.checkVitalFields(vitalDoc) : ['Temperature', 'Heart Rate', 'Blood Pressure', 'Weight'];
-    const missingSymptoms = symptomDoc ? this.checkSymptomFields(symptomDoc) : ['Pain Level', 'Fatigue Level', 'Symptoms List'];
-
-    return { missingVitals, missingSymptoms };
+    return reminder;
   }
 
   private _scheduleSmsCheck(
@@ -392,32 +501,21 @@ export class CoordinatorService {
     patientId: string,
     patientName: string,
     patient: any,
-    missingVitals: string[],
-    missingSymptoms: string[],
   ): void {
-    // Attendre 1 minute puis vérifier si le patient a soumis
     setTimeout(async () => {
       try {
-        // Vérifier que le job n'a pas déjà tourné
         const reminder = await this.reminderModel.findById(reminderId);
         if (!reminder || reminder.smsJobDone) return;
 
-        // Vérifier la compliance actuelle du patient
-        const { missingVitals: currentMissingVitals, missingSymptoms: currentMissingSymptoms } =
-          await this._getMissingFields(patientId);
-
-        const stillNonCompliant = currentMissingVitals.length > 0 || currentMissingSymptoms.length > 0;
+        const { missingVitals, missingSymptoms } = await this._getMissingFields(patientId);
+        const stillNonCompliant = missingVitals.length > 0 || missingSymptoms.length > 0;
 
         if (stillNonCompliant) {
-          // Le patient n'a toujours pas soumis — envoyer SMS au contact d'urgence
           const emergencyContact = patient.emergencyContact;
 
           if (emergencyContact) {
-            const smsMessage = this.notificationService.buildSmsMessage(
-              patientName,
-              currentMissingVitals,
-              currentMissingSymptoms,
-            );
+            // SMS très court
+            const smsMessage = `MediFollow: Please submit now. Your health team is monitoring.`;
 
             const smsSent = await this.notificationService.sendSms(emergencyContact, smsMessage);
 
@@ -427,81 +525,24 @@ export class CoordinatorService {
                 smsSentAt: new Date(),
                 smsJobDone: true,
               });
-              this.logger.log(`SMS sent to emergency contact ${emergencyContact} for patient ${patientName}`);
+              this.logger.log(
+                `SMS sent to ${emergencyContact} for patient ${patientName}`,
+              );
             } else {
               await this.reminderModel.findByIdAndUpdate(reminderId, { smsJobDone: true });
             }
           } else {
-            this.logger.warn(`No emergency contact for patient ${patientName} — SMS not sent`);
+            this.logger.warn(`No emergency contact for ${patientName} — SMS skipped`);
             await this.reminderModel.findByIdAndUpdate(reminderId, { smsJobDone: true });
           }
         } else {
-          // Le patient a soumis — pas besoin de SMS
-          this.logger.log(`Patient ${patientName} submitted after reminder — SMS not needed`);
+          this.logger.log(`Patient ${patientName} submitted — SMS not needed`);
           await this.reminderModel.findByIdAndUpdate(reminderId, { smsJobDone: true });
         }
       } catch (err) {
         this.logger.error(`SMS check error for reminder ${reminderId}: ${err.message}`);
       }
-    }, 1 * 60 * 1000); // 1 minute
-  }
-
-  async sendReminder(reminderId: string) {
-    const reminder = await this.reminderModel
-      .findById(reminderId)
-      .populate('patientId', 'firstName lastName email emergencyContact')
-      .exec();
-
-    if (!reminder) throw new NotFoundException('Reminder not found');
-
-    reminder.status = 'sent';
-    reminder.sentAt = new Date();
-    const saved = await reminder.save();
-
-    // Envoyer email si pas encore envoyé
-    if (!reminder.emailSent) {
-      const patient = reminder.patientId as any;
-      const patientName = `${patient.firstName} ${patient.lastName}`;
-
-      const { missingVitals, missingSymptoms } = await this._getMissingFields(patient._id.toString());
-
-      if (patient.email) {
-        const emailHtml = this.notificationService.buildEmailHtml(
-          patientName,
-          reminder.message,
-          missingVitals,
-          missingSymptoms,
-        );
-
-        const emailSent = await this.notificationService.sendEmail(
-          patient.email,
-          `MediFollow — Daily Health Reminder`,
-          emailHtml,
-        );
-
-        if (emailSent) {
-          await this.reminderModel.findByIdAndUpdate(reminderId, {
-            emailSent: true,
-            emailSentAt: new Date(),
-          });
-        }
-      }
-
-      // Planifier SMS après 1 minute
-      const patientDoc = await this.userModel.findById(patient._id).lean();
-      if (patientDoc) {
-        this._scheduleSmsCheck(
-          reminderId,
-          patient._id.toString(),
-          patientName,
-          patientDoc,
-          missingVitals,
-          missingSymptoms,
-        );
-      }
-    }
-
-    return saved;
+    }, 1 * 60 * 1000);
   }
 
   async cancelReminder(reminderId: string) {
@@ -517,7 +558,10 @@ export class CoordinatorService {
     return { message: 'Reminder deleted' };
   }
 
-  async updateReminder(reminderId: string, body: { type: string; message: string; scheduledAt?: string }) {
+  async updateReminder(
+    reminderId: string,
+    body: { type: string; message: string; scheduledAt?: string },
+  ) {
     const reminder = await this.reminderModel.findById(reminderId).exec();
     if (!reminder) throw new NotFoundException('Reminder not found');
     reminder.type = body.type;

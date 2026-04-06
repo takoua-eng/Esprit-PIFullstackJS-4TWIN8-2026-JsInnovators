@@ -28,6 +28,22 @@ export interface PredictionResponse {
   patients: PatientPrediction[];
 }
 
+export interface BriefingData {
+  situationSummary: string;
+  overallStatus: 'CRITICAL' | 'WARNING' | 'STABLE';
+  priorityPatients: {
+    name: string;
+    reason: string;
+    urgency: 'HIGH' | 'MEDIUM';
+  }[];
+  recommendedActions: {
+    patient: string;
+    action: string;
+    icon: string;
+  }[];
+  positiveNote: string;
+}
+
 @Component({
   selector: 'app-ai-prediction',
   standalone: true,
@@ -44,9 +60,13 @@ export class AiPredictionComponent implements OnInit {
   prediction: PredictionResponse | null = null;
   loading = true;
   loadingAi = false;
-  aiAnalysis = '';
+  briefing: BriefingData | null = null;
   aiError = '';
   selectedPatient: PatientPrediction | null = null;
+
+  todayFormatted = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+  });
 
   ngOnInit(): void {
     this.loadPrediction();
@@ -55,14 +75,11 @@ export class AiPredictionComponent implements OnInit {
   loadPrediction(): void {
     this.loading = true;
     this.http
-      .get<PredictionResponse>(
-        `http://localhost:3000/coordinator/${this.coordinatorId}/prediction`,
-      )
+      .get<PredictionResponse>(`http://localhost:3000/coordinator/${this.coordinatorId}/prediction`)
       .subscribe({
         next: (data) => {
           this.prediction = data;
           this.loading = false;
-          // Lancer l'analyse IA automatiquement
           this.runAiAnalysis();
         },
         error: (err) => {
@@ -75,84 +92,113 @@ export class AiPredictionComponent implements OnInit {
   runAiAnalysis(): void {
     if (!this.prediction) return;
     this.loadingAi = true;
-    this.aiAnalysis = '';
+    this.briefing = null;
     this.aiError = '';
 
-    const highRisk = this.prediction.patients.filter(
-      (p) => p.riskLevel === 'HIGH',
-    );
-    const mediumRisk = this.prediction.patients.filter(
-      (p) => p.riskLevel === 'MEDIUM',
-    );
-    const lowRisk = this.prediction.patients.filter(
-      (p) => p.riskLevel === 'LOW',
-    );
+    const highRisk = this.prediction.patients.filter(p => p.riskLevel === 'HIGH');
+    const mediumRisk = this.prediction.patients.filter(p => p.riskLevel === 'MEDIUM');
+    const lowRisk = this.prediction.patients.filter(p => p.riskLevel === 'LOW');
 
-    const prompt = `You are a medical coordinator assistant. Analyze this patient compliance data from the last ${this.prediction.periodDays} days and provide a concise, actionable morning briefing in English.
+    const prompt = `You are a medical coordinator assistant. Analyze this patient compliance data and return ONLY a valid JSON object (no markdown, no explanation, just raw JSON).
 
-PATIENT DATA:
-${this.prediction.patients
-  .map(
-    (p) => `- ${p.name} (${p.department}): Risk=${p.riskLevel}, Compliance=${p.complianceRate}%, Missing=${p.consecutiveMissingDays} consecutive days, Vitals submitted=${p.totalVitalSubmissions} times, Symptoms submitted=${p.totalSymptomSubmissions} times${p.lastSubmission ? ', Last submission=' + new Date(p.lastSubmission).toLocaleDateString() : ', Never submitted'}`,
-  )
-  .join('\n')}
+PATIENT DATA (last ${this.prediction.periodDays} days):
+${this.prediction.patients.map(p =>
+  `- ${p.name} (${p.department}): Risk=${p.riskLevel}, Compliance=${p.complianceRate}%, Missing=${p.consecutiveMissingDays} consecutive days, Vitals=${p.totalVitalSubmissions} submissions, Symptoms=${p.totalSymptomSubmissions} submissions${p.lastSubmission ? ', Last=' + new Date(p.lastSubmission).toLocaleDateString() : ', Never submitted'}`
+).join('\n')}
 
-HIGH RISK patients (${highRisk.length}): ${highRisk.map((p) => p.name).join(', ') || 'None'}
-MEDIUM RISK patients (${mediumRisk.length}): ${mediumRisk.map((p) => p.name).join(', ') || 'None'}
-LOW RISK patients (${lowRisk.length}): ${lowRisk.map((p) => p.name).join(', ') || 'None'}
+HIGH RISK (${highRisk.length}): ${highRisk.map(p => p.name).join(', ') || 'None'}
+MEDIUM RISK (${mediumRisk.length}): ${mediumRisk.map(p => p.name).join(', ') || 'None'}
+LOW RISK (${lowRisk.length}): ${lowRisk.map(p => p.name).join(', ') || 'None'}
 
-Write a professional morning briefing with:
-1. A summary of today's compliance situation (2-3 sentences)
-2. Top priority patients to contact today (with specific reasons)
-3. Recommended actions for each high-risk patient
-4. A positive note if any patients are doing well
+Return this exact JSON structure:
+{
+  "situationSummary": "2-3 sentence professional summary of today's compliance situation",
+  "overallStatus": "CRITICAL or WARNING or STABLE",
+  "priorityPatients": [
+    { "name": "patient name", "reason": "specific reason why urgent", "urgency": "HIGH or MEDIUM" }
+  ],
+  "recommendedActions": [
+    { "patient": "patient name", "action": "specific action to take", "icon": "phone or mail or alert-triangle or clock" }
+  ],
+  "positiveNote": "one encouraging sentence about what is going well"
+}
 
-Keep it concise, medical-professional tone, and actionable. Use bullet points where appropriate.`;
+Rules:
+- overallStatus is CRITICAL if avgCompliance < 30%, WARNING if < 70%, STABLE otherwise
+- priorityPatients: only patients needing action today, max 4
+- recommendedActions: specific and actionable, max 4
+- positiveNote: always include even if compliance is low, find something positive
+- Return ONLY the JSON, no other text`;
 
-    this.http
-      .post<any>('https://api.anthropic.com/v1/messages', {
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }],
-      })
-      .subscribe({
-        next: (res) => {
-          this.aiAnalysis =
-            res.content?.[0]?.text || 'No analysis generated.';
-          this.loadingAi = false;
-        },
-        error: (err) => {
-          console.error('AI error', err);
-          this.aiError =
-            'AI analysis unavailable. Please check your API configuration.';
-          this.loadingAi = false;
-        },
-      });
+    this.coordinatorService.generatePredictionAI(this.coordinatorId, prompt).subscribe({
+      next: (res) => {
+        if (res.response) {
+          try {
+            // Nettoyer les backticks markdown si présents
+            const clean = res.response
+              .replace(/```json\n?/g, '')
+              .replace(/```\n?/g, '')
+              .trim();
+            this.briefing = JSON.parse(clean);
+          } catch (e) {
+            console.error('JSON parse error:', e);
+            this.aiError = 'Unable to parse AI response.';
+          }
+        } else {
+          this.aiError = 'AI analysis unavailable.';
+        }
+        this.loadingAi = false;
+      },
+      error: () => {
+        this.aiError = 'AI analysis unavailable. Please check your API configuration.';
+        this.loadingAi = false;
+      },
+    });
+  }
+
+  getStatusColor(status: string): string {
+    if (status === 'CRITICAL') return '#dc2626';
+    if (status === 'WARNING') return '#d97706';
+    return '#059669';
+  }
+
+  getStatusBg(status: string): string {
+    if (status === 'CRITICAL') return '#fef2f2';
+    if (status === 'WARNING') return '#fffbeb';
+    return '#f0fdf4';
+  }
+
+  getStatusIcon(status: string): string {
+    if (status === 'CRITICAL') return 'alert-triangle';
+    if (status === 'WARNING') return 'alert-circle';
+    return 'circle-check';
+  }
+
+  getStatusLabel(status: string): string {
+    if (status === 'CRITICAL') return 'CRITICAL — Immediate action required';
+    if (status === 'WARNING') return 'WARNING — Monitor closely';
+    return 'STABLE — Situation under control';
   }
 
   selectPatient(patient: PatientPrediction): void {
-    this.selectedPatient =
-      this.selectedPatient?.patientId === patient.patientId ? null : patient;
+    this.selectedPatient = this.selectedPatient?.patientId === patient.patientId ? null : patient;
   }
 
   sendReminderToPatient(patient: PatientPrediction): void {
-    const message = `Dear ${patient.name.split(' ')[0]}, this is a reminder to please complete your daily health follow-up. You have missed ${patient.consecutiveMissingDays} consecutive day(s). Your compliance rate is ${patient.complianceRate}%. Please submit your vital signs and symptoms report as soon as possible.`;
-
-    this.coordinatorService
-      .createReminder(this.coordinatorId, {
-        patientId: patient.patientId,
-        type: 'follow_up',
-        message,
-        status: 'sent',
-      })
-      .subscribe({
-        next: () => {
-          // Marquer visuellement
-          patient.riskLevel = patient.riskLevel; // trigger change detection
-          alert(`Reminder sent to ${patient.name}`);
-        },
-        error: (err) => console.error('Reminder error', err),
-      });
+    const message = `Dear ${patient.name.split(' ')[0]}, this is a reminder to complete your daily health follow-up. You have missed ${patient.consecutiveMissingDays} consecutive day(s). Compliance rate: ${patient.complianceRate}%. Please submit your vital signs and symptoms report.`;
+    this.coordinatorService.createReminder(this.coordinatorId, {
+      patientId: patient.patientId,
+      type: 'follow_up',
+      message,
+      status: 'scheduled',
+    }).subscribe({
+      next: (reminder) => {
+        this.coordinatorService.sendReminder(reminder._id).subscribe({
+          next: () => alert(`Reminder sent to ${patient.name}`),
+        });
+      },
+      error: (err) => console.error('Reminder error', err),
+    });
   }
 
   getRiskColor(level: string): string {
@@ -175,28 +221,15 @@ Keep it concise, medical-professional tone, and actionable. Use bullet points wh
 
   formatDate(date: string | null): string {
     if (!date) return 'Never';
-    return new Date(date).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+    return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
-  get highRiskCount(): number {
-    return this.prediction?.patients.filter((p) => p.riskLevel === 'HIGH').length || 0;
-  }
-
-  get mediumRiskCount(): number {
-    return this.prediction?.patients.filter((p) => p.riskLevel === 'MEDIUM').length || 0;
-  }
-
-  get lowRiskCount(): number {
-    return this.prediction?.patients.filter((p) => p.riskLevel === 'LOW').length || 0;
-  }
+  get highRiskCount(): number { return this.prediction?.patients.filter(p => p.riskLevel === 'HIGH').length || 0; }
+  get mediumRiskCount(): number { return this.prediction?.patients.filter(p => p.riskLevel === 'MEDIUM').length || 0; }
+  get lowRiskCount(): number { return this.prediction?.patients.filter(p => p.riskLevel === 'LOW').length || 0; }
 
   get avgCompliance(): number {
     if (!this.prediction?.patients.length) return 0;
-    const total = this.prediction.patients.reduce((sum, p) => sum + p.complianceRate, 0);
-    return Math.round(total / this.prediction.patients.length);
+    return Math.round(this.prediction.patients.reduce((sum, p) => sum + p.complianceRate, 0) / this.prediction.patients.length);
   }
 }

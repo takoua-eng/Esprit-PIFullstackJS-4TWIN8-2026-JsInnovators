@@ -13,6 +13,51 @@
         <mat-card-content class="welcome-content">
           <p class="welcome-text">{{ 'WELCOME_COORDINATOR' | translate }}</p>
           <p class="subtitle">{{ 'TRACK_PATIENTS' | translate }}</p>
+          <button mat-flat-button class="summary-btn" (click)="toggleSummary()">
+            <i-tabler name="file-text" class="icon-16"></i-tabler>
+            {{ showSummaryPanel ? 'Hide Summary' : '📋 Daily Summary' }}
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- DAILY SUMMARY PANEL -->
+  <div class="row" *ngIf="showSummaryPanel">
+    <div class="col-lg-12">
+      <mat-card class="summary-card">
+        <mat-card-content>
+          <div class="summary-header">
+            <div class="summary-title-row">
+              <div class="ai-badge-sm">
+                <i-tabler name="sparkles" class="icon-14"></i-tabler>
+                AI
+              </div>
+              <span class="summary-title">Daily Compliance Report</span>
+              <span class="summary-date">{{ todayDate | date:'EEEE, MMMM d, y' }}</span>
+            </div>
+            <div class="summary-actions">
+              <button mat-icon-button (click)="regenerateSummary()" [disabled]="summaryLoading" matTooltip="Regenerate">
+                <i-tabler name="refresh" class="icon-16"></i-tabler>
+              </button>
+              <button mat-icon-button (click)="copySummary()" [disabled]="!summaryText || summaryLoading"
+                [matTooltip]="summaryCopied ? 'Copied!' : 'Copy to clipboard'">
+                <i-tabler [name]="summaryCopied ? 'check' : 'copy'" class="icon-16"></i-tabler>
+              </button>
+            </div>
+          </div>
+
+          <div class="summary-loading" *ngIf="summaryLoading">
+            <div class="ai-dots"><span></span><span></span><span></span></div>
+            <p>Generating summary...</p>
+          </div>
+
+          <div class="summary-text" *ngIf="summaryText && !summaryLoading">{{ summaryText }}</div>
+
+          <div class="summary-copy-confirm" *ngIf="summaryCopied">
+            <i-tabler name="check" class="icon-14"></i-tabler>
+            Copied to clipboard!
+          </div>
         </mat-card-content>
       </mat-card>
     </div>
@@ -22,7 +67,7 @@
   <div class="row m-b-24">
     <div class="col-md-3 m-b-16">
       <mat-card class="stats-card purple-card clickable"
-(click)="navigateTo('/admin/coordinator/patients')"
+        (click)="navigateTo('/admin/coordinator/patients')"
         [matTooltip]="'ASSIGNED_PATIENTS_TOOLTIP' | translate">
         <mat-card-content class="p-16">
           <i-tabler name="users-group" class="kpi-icon d-block m-b-8"></i-tabler>
@@ -32,10 +77,9 @@
         </mat-card-content>
       </mat-card>
     </div>
-
     <div class="col-md-3 m-b-16">
       <mat-card class="stats-card red-card clickable"
-(click)="navigateTo('/admin/coordinator/patients')"
+        (click)="navigateTo('/admin/coordinator/patients')"
         [matTooltip]="'INCOMPLETE_VITALS_TOOLTIP' | translate">
         <mat-card-content class="p-16">
           <i-tabler name="heart-broken" class="kpi-icon d-block m-b-8"></i-tabler>
@@ -45,10 +89,9 @@
         </mat-card-content>
       </mat-card>
     </div>
-
     <div class="col-md-3 m-b-16">
       <mat-card class="stats-card yellow-card clickable"
-(click)="navigateTo('/admin/coordinator/reminders')"
+        (click)="navigateTo('/admin/coordinator/reminders')"
         [matTooltip]="'REMINDERS_SENT_TOOLTIP' | translate">
         <mat-card-content class="p-16">
           <i-tabler name="bell-ringing" class="kpi-icon d-block m-b-8"></i-tabler>
@@ -58,10 +101,9 @@
         </mat-card-content>
       </mat-card>
     </div>
-
     <div class="col-md-3 m-b-16">
       <mat-card class="stats-card blue-card clickable"
-(click)="navigateTo('/admin/coordinator/reminders')"
+        (click)="navigateTo('/admin/coordinator/reminders')"
         [matTooltip]="'PENDING_REMINDERS_TOOLTIP' | translate">
         <mat-card-content class="p-16">
           <i-tabler name="clock" class="kpi-icon d-block m-b-8"></i-tabler>
@@ -83,27 +125,19 @@
               <mat-card-title>{{ 'PATIENTS_BY_DEPT' | translate }}</mat-card-title>
               <mat-card-subtitle>{{ 'PATIENTS_BY_DEPT_SUB' | translate }}</mat-card-subtitle>
             </div>
-            <div class="chart-badge">
-              {{ dashboardData.summary.departmentsCovered }} {{ 'DEPT' | translate }}
-            </div>
+            <div class="chart-badge">{{ dashboardData.summary.departmentsCovered }} {{ 'DEPT' | translate }}</div>
           </div>
           <div *ngIf="!departmentChart" class="chart-loading">{{ 'LOADING_CHART' | translate }}</div>
           <apx-chart *ngIf="departmentChart"
-            [series]="departmentChart.series"
-            [chart]="departmentChart.chart"
-            [colors]="departmentChart.colors"
-            [dataLabels]="departmentChart.dataLabels"
-            [plotOptions]="departmentChart.plotOptions"
-            [xaxis]="departmentChart.xaxis"
-            [yaxis]="departmentChart.yaxis"
-            [legend]="departmentChart.legend"
-            [tooltip]="departmentChart.tooltip"
-            [grid]="departmentChart.grid">
+            [series]="departmentChart.series" [chart]="departmentChart.chart"
+            [colors]="departmentChart.colors" [dataLabels]="departmentChart.dataLabels"
+            [plotOptions]="departmentChart.plotOptions" [xaxis]="departmentChart.xaxis"
+            [yaxis]="departmentChart.yaxis" [legend]="departmentChart.legend"
+            [tooltip]="departmentChart.tooltip" [grid]="departmentChart.grid">
           </apx-chart>
         </mat-card-content>
       </mat-card>
     </div>
-
     <div class="col-lg-5">
       <mat-card class="cardWithShadow chart-card">
         <mat-card-content>
@@ -112,36 +146,19 @@
               <mat-card-title>{{ 'SUBMISSION_OVERVIEW' | translate }}</mat-card-title>
               <mat-card-subtitle>{{ 'SUBMISSION_OVERVIEW_SUB' | translate }}</mat-card-subtitle>
             </div>
-            <div class="chart-badge"
-              [class.green]="complianceRate >= 80"
-              [class.orange]="complianceRate < 80">
-              {{ complianceRate }}%
-            </div>
+            <div class="chart-badge" [class.green]="complianceRate >= 80" [class.orange]="complianceRate < 80">{{ complianceRate }}%</div>
           </div>
           <div class="submission-legend">
-            <div class="sub-legend-item">
-              <span class="sub-dot green"></span>
-              <span>{{ 'FULLY_COMPLIANT_DESC' | translate }}</span>
-            </div>
-            <div class="sub-legend-item">
-              <span class="sub-dot orange"></span>
-              <span>{{ 'PARTIAL_DESC' | translate }}</span>
-            </div>
-            <div class="sub-legend-item">
-              <span class="sub-dot red"></span>
-              <span>{{ 'NO_SUBMISSION_DESC' | translate }}</span>
-            </div>
+            <div class="sub-legend-item"><span class="sub-dot green"></span><span>{{ 'FULLY_COMPLIANT_DESC' | translate }}</span></div>
+            <div class="sub-legend-item"><span class="sub-dot orange"></span><span>{{ 'PARTIAL_DESC' | translate }}</span></div>
+            <div class="sub-legend-item"><span class="sub-dot red"></span><span>{{ 'NO_SUBMISSION_DESC' | translate }}</span></div>
           </div>
           <div *ngIf="!submissionOverviewChart" class="chart-loading">{{ 'LOADING_CHART' | translate }}</div>
           <apx-chart *ngIf="submissionOverviewChart"
-            [series]="submissionOverviewChart.series"
-            [chart]="submissionOverviewChart.chart"
-            [colors]="submissionOverviewChart.colors"
-            [labels]="submissionOverviewChart.labels"
-            [dataLabels]="submissionOverviewChart.dataLabels"
-            [legend]="submissionOverviewChart.legend"
-            [plotOptions]="submissionOverviewChart.plotOptions"
-            [stroke]="submissionOverviewChart.stroke"
+            [series]="submissionOverviewChart.series" [chart]="submissionOverviewChart.chart"
+            [colors]="submissionOverviewChart.colors" [labels]="submissionOverviewChart.labels"
+            [dataLabels]="submissionOverviewChart.dataLabels" [legend]="submissionOverviewChart.legend"
+            [plotOptions]="submissionOverviewChart.plotOptions" [stroke]="submissionOverviewChart.stroke"
             [tooltip]="submissionOverviewChart.tooltip">
           </apx-chart>
         </mat-card-content>
@@ -160,44 +177,28 @@
               <mat-card-subtitle>{{ 'SUBMISSION_STATUS_SUB' | translate }}</mat-card-subtitle>
             </div>
             <button mat-stroked-button color="primary" class="details-btn"
-              (click)="navigateTo('/admin/coordinator/patients')">
-              {{ 'VIEW_ALL' | translate }}
-            </button>
+              (click)="navigateTo('/admin/coordinator/patients')">{{ 'VIEW_ALL' | translate }}</button>
           </div>
           <div class="compliance-rate-bar">
             <div class="rate-label">
               <span>{{ 'FULLY_COMPLIANT_TODAY' | translate }}</span>
-              <span class="rate-value"
-                [class.rate-good]="complianceRate >= 80"
-                [class.rate-warn]="complianceRate < 80">
-                {{ complianceRate }}%
-              </span>
+              <span class="rate-value" [class.rate-good]="complianceRate >= 80" [class.rate-warn]="complianceRate < 80">{{ complianceRate }}%</span>
             </div>
             <div class="rate-track">
-              <div class="rate-fill"
-                [style.width.%]="complianceRate"
-                [class.fill-good]="complianceRate >= 80"
-                [class.fill-warn]="complianceRate < 80">
-              </div>
+              <div class="rate-fill" [style.width.%]="complianceRate" [class.fill-good]="complianceRate >= 80" [class.fill-warn]="complianceRate < 80"></div>
             </div>
           </div>
           <div *ngIf="!complianceChart" class="chart-loading">{{ 'LOADING_CHART' | translate }}</div>
           <apx-chart *ngIf="complianceChart"
-            [series]="complianceChart.series"
-            [chart]="complianceChart.chart"
-            [colors]="complianceChart.colors"
-            [plotOptions]="complianceChart.plotOptions"
-            [dataLabels]="complianceChart.dataLabels"
-            [xaxis]="complianceChart.xaxis"
-            [yaxis]="complianceChart.yaxis"
-            [tooltip]="complianceChart.tooltip"
-            [legend]="complianceChart.legend"
-            [grid]="complianceChart.grid">
+            [series]="complianceChart.series" [chart]="complianceChart.chart"
+            [colors]="complianceChart.colors" [plotOptions]="complianceChart.plotOptions"
+            [dataLabels]="complianceChart.dataLabels" [xaxis]="complianceChart.xaxis"
+            [yaxis]="complianceChart.yaxis" [tooltip]="complianceChart.tooltip"
+            [legend]="complianceChart.legend" [grid]="complianceChart.grid">
           </apx-chart>
         </mat-card-content>
       </mat-card>
     </div>
-
     <div class="col-lg-6">
       <mat-card class="cardWithShadow chart-card">
         <mat-card-content>
@@ -207,26 +208,17 @@
               <mat-card-subtitle>{{ 'MISSING_FIELDS_SUB' | translate }}</mat-card-subtitle>
             </div>
           </div>
-
           <div *ngIf="missingFieldsChart === null && complianceData.length > 0" class="all-good-state">
             <i-tabler name="circle-check" class="all-good-icon"></i-tabler>
             <h4>{{ 'NO_MISSING_FIELDS' | translate }}</h4>
             <p>{{ 'NO_MISSING_FIELDS_DESC' | translate }}</p>
           </div>
-
-          <div *ngIf="!missingFieldsChart && complianceData.length === 0" class="chart-loading">
-            {{ 'LOADING' | translate }}...
-          </div>
-
+          <div *ngIf="!missingFieldsChart && complianceData.length === 0" class="chart-loading">{{ 'LOADING' | translate }}...</div>
           <apx-chart *ngIf="missingFieldsChart"
-            [series]="missingFieldsChart.series"
-            [chart]="missingFieldsChart.chart"
-            [colors]="missingFieldsChart.colors"
-            [dataLabels]="missingFieldsChart.dataLabels"
-            [plotOptions]="missingFieldsChart.plotOptions"
-            [xaxis]="missingFieldsChart.xaxis"
-            [yaxis]="missingFieldsChart.yaxis"
-            [tooltip]="missingFieldsChart.tooltip"
+            [series]="missingFieldsChart.series" [chart]="missingFieldsChart.chart"
+            [colors]="missingFieldsChart.colors" [dataLabels]="missingFieldsChart.dataLabels"
+            [plotOptions]="missingFieldsChart.plotOptions" [xaxis]="missingFieldsChart.xaxis"
+            [yaxis]="missingFieldsChart.yaxis" [tooltip]="missingFieldsChart.tooltip"
             [grid]="missingFieldsChart.grid">
           </apx-chart>
         </mat-card-content>
@@ -244,9 +236,7 @@
               <mat-card-title>{{ 'PATIENTS_NEEDING_ACTION' | translate }}</mat-card-title>
               <mat-card-subtitle>{{ 'PATIENTS_NEEDING_ACTION_SUB' | translate }}</mat-card-subtitle>
             </div>
-            <span class="action-count"
-              [class.count-warn]="patientsNeedingAction.length > 0"
-              [class.count-good]="patientsNeedingAction.length === 0">
+            <span class="action-count" [class.count-warn]="patientsNeedingAction.length > 0" [class.count-good]="patientsNeedingAction.length === 0">
               {{ patientsNeedingAction.length }}
             </span>
           </div>
@@ -260,85 +250,135 @@
           <div class="action-list" *ngIf="patientsNeedingAction.length > 0">
             <div *ngFor="let patient of patientsNeedingAction">
               <div class="action-row"
-  [class.row-partial]="patient.vitalsSubmitted || patient.symptomsSubmitted"
-  [class.row-none]="!patient.vitalsSubmitted && !patient.symptomsSubmitted"
-  [class.row-reminded]="remindedPatientIds.has(patient._id)">
-
-  <div class="action-patient-info">
-    <div class="action-avatar">{{ patient.name.charAt(0) }}</div>
-    <div>
-      <div class="action-name">
-        {{ patient.name }}
-        <!-- Indicateur reminded -->
-        <span class="reminded-badge" *ngIf="remindedPatientIds.has(patient._id)">
-          <i-tabler name="check" class="icon-12"></i-tabler>
-          Reminded
-        </span>
-      </div>
-      <div class="action-dept">{{ patient.department }}</div>
-    </div>
-  </div>
-
-  <div class="missing-detail-tags">
-    <ng-container *ngIf="patient.missingVitalFields.length > 0">
-      <span class="field-group-label">{{ 'VITALS' | translate }}:</span>
-      <span class="missing-field-tag" *ngFor="let f of patient.missingVitalFields">
-        {{ f }}
-      </span>
-    </ng-container>
-    <ng-container *ngIf="patient.missingSymptomFields.length > 0">
-      <span class="field-group-label symptoms-label">{{ 'SYMPTOMS' | translate }}:</span>
-      <span class="missing-field-tag symptom-tag"
-        *ngFor="let f of patient.missingSymptomFields">
-        {{ f }}
-      </span>
-    </ng-container>
-  </div>
-
-  <button mat-flat-button class="reminder-btn"
-    (click)="openReminderFor(patient)"
-    [class.active]="selectedReminderId === patient._id"
-    [class.already-reminded]="remindedPatientIds.has(patient._id)">
-    <i-tabler name="send" class="icon-14"></i-tabler>
-    {{ remindedPatientIds.has(patient._id) ? ('REMIND_AGAIN' | translate) : ('REMIND' | translate) }}
-  </button>
-</div>
+                [class.row-partial]="patient.vitalsSubmitted || patient.symptomsSubmitted"
+                [class.row-none]="!patient.vitalsSubmitted && !patient.symptomsSubmitted"
+                [class.row-reminded]="remindedPatientIds.has(patient._id)">
+                <div class="action-patient-info">
+                  <div class="action-avatar">{{ patient.name.charAt(0) }}</div>
+                  <div>
+                    <div class="action-name">
+                      {{ patient.name }}
+                      <span class="reminded-badge" *ngIf="remindedPatientIds.has(patient._id)">
+                        <i-tabler name="check" class="icon-12"></i-tabler>
+                        Reminded
+                      </span>
+                    </div>
+                    <div class="action-dept">{{ patient.department }}</div>
+                  </div>
+                </div>
+                <div class="missing-detail-tags">
+                  <ng-container *ngIf="patient.missingVitalFields.length > 0">
+                    <span class="field-group-label">{{ 'VITALS' | translate }}:</span>
+                    <span class="missing-field-tag" *ngFor="let f of patient.missingVitalFields">{{ f }}</span>
+                  </ng-container>
+                  <ng-container *ngIf="patient.missingSymptomFields.length > 0">
+                    <span class="field-group-label symptoms-label">{{ 'SYMPTOMS' | translate }}:</span>
+                    <span class="missing-field-tag symptom-tag" *ngFor="let f of patient.missingSymptomFields">{{ f }}</span>
+                  </ng-container>
+                </div>
+                <button mat-flat-button class="reminder-btn"
+                  (click)="openReminderFor(patient)"
+                  [class.active]="selectedReminderId === patient._id"
+                  [class.already-reminded]="remindedPatientIds.has(patient._id)">
+                  <i-tabler name="send" class="icon-14"></i-tabler>
+                  {{ remindedPatientIds.has(patient._id) ? ('REMIND_AGAIN' | translate) : ('REMIND' | translate) }}
+                </button>
+              </div>
 
               <div class="reminder-panel" *ngIf="selectedReminderId === patient._id">
                 <div class="reminder-panel-title">
                   <i-tabler name="message" class="icon-16"></i-tabler>
                   {{ 'CHOOSE_MESSAGE_FOR' | translate }} {{ patient.name }}
                 </div>
-
                 <mat-form-field appearance="outline" class="reminder-message-select">
                   <mat-label>{{ 'REMINDER_MESSAGE' | translate }}</mat-label>
                   <mat-select [(ngModel)]="selectedReminderMessage">
-                    <mat-option *ngFor="let opt of reminderMessageOptions" [value]="opt.value">
-                      {{ opt.label }}
-                    </mat-option>
+                    <mat-option *ngFor="let opt of reminderMessageOptions" [value]="opt.value">{{ opt.label }}</mat-option>
                   </mat-select>
                 </mat-form-field>
-
-                <div class="reminder-preview" *ngIf="selectedReminderMessage">
-                  {{ selectedReminderMessage }}
-                </div>
-
+                <div class="reminder-preview" *ngIf="selectedReminderMessage">{{ selectedReminderMessage }}</div>
                 <div class="reminder-panel-actions">
                   <button mat-flat-button color="primary" (click)="confirmReminder(patient)">
-                    <i-tabler name="send" class="icon-14"></i-tabler>
-                    {{ 'SEND' | translate }}
+                    <i-tabler name="send" class="icon-14"></i-tabler>{{ 'SEND' | translate }}
                   </button>
-                  <button mat-stroked-button (click)="closeReminder()">
-                    {{ 'CANCEL' | translate }}
-                  </button>
+                  <button mat-stroked-button (click)="closeReminder()">{{ 'CANCEL' | translate }}</button>
                 </div>
               </div>
             </div>
           </div>
-
         </mat-card-content>
       </mat-card>
     </div>
+  </div>
+
+</div>
+
+<!-- ── CHATBOT FLOTTANT ──────────────────────────────────────── -->
+
+<button class="chat-fab" (click)="toggleChat()" [class.chat-fab-open]="chatOpen" aria-label="AI Assistant">
+  <i-tabler [name]="chatOpen ? 'x' : 'message-circle'" class="icon-24"></i-tabler>
+  <span class="chat-fab-label" *ngIf="!chatOpen">Ask AI</span>
+</button>
+
+<div class="chat-panel" [class.chat-panel-open]="chatOpen">
+
+  <div class="chat-header">
+    <div class="chat-header-left">
+      <div class="chat-ai-badge">
+        <i-tabler name="brain" class="icon-14"></i-tabler>
+        AI
+      </div>
+      <div>
+        <div class="chat-title">Coordinator Assistant</div>
+        <div class="chat-subtitle">Powered by Claude</div>
+      </div>
+    </div>
+    <div class="chat-header-actions">
+      <button mat-icon-button (click)="clearChat()" matTooltip="Clear">
+        <i-tabler name="trash" class="icon-16"></i-tabler>
+      </button>
+      <button mat-icon-button (click)="toggleChat()">
+        <i-tabler name="x" class="icon-16"></i-tabler>
+      </button>
+    </div>
+  </div>
+
+  <div class="chat-suggestions" *ngIf="chatMessages.length <= 1">
+    <button class="suggestion-chip" (click)="chatInput = 'Who has not submitted their vitals today?'; sendChatMessage()">Who missed vitals?</button>
+    <button class="suggestion-chip" (click)="chatInput = 'Which patient has the most missing fields?'; sendChatMessage()">Most missing fields?</button>
+    <button class="suggestion-chip" (click)="chatInput = 'How many reminders were sent today?'; sendChatMessage()">Reminders today?</button>
+    <button class="suggestion-chip" (click)="chatInput = 'Give me a compliance overview'; sendChatMessage()">Compliance overview</button>
+  </div>
+
+  <div class="chat-messages" #chatMsgsContainer>
+    <div *ngFor="let msg of chatMessages"
+      class="chat-message"
+      [class.chat-message-user]="msg.role === 'user'"
+      [class.chat-message-assistant]="msg.role === 'assistant'">
+      <div class="chat-bubble"
+        [class.bubble-user]="msg.role === 'user'"
+        [class.bubble-assistant]="msg.role === 'assistant'">
+        <div *ngIf="msg.loading" class="bubble-loading">
+          <span></span><span></span><span></span>
+        </div>
+        <span *ngIf="!msg.loading">{{ msg.content }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-input-row">
+    <input class="chat-input"
+      [(ngModel)]="chatInput"
+      (keydown)="onChatKeydown($event)"
+      placeholder="Ask about your patients..."
+      [disabled]="chatLoading"
+      maxlength="200">
+    <button class="chat-send-btn"
+      (click)="sendChatMessage()"
+      [disabled]="!chatInput.trim() || chatLoading"
+      aria-label="Send">
+      <i-tabler name="send" class="icon-18"></i-tabler>
+    </button>
   </div>
 
 </div>
