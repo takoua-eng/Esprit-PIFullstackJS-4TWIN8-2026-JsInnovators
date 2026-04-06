@@ -59,133 +59,143 @@
       </div>
     </div>
 
-    <!-- AI MORNING BRIEFING — REDESIGNED -->
-    <div class="briefing-wrapper">
+    <!-- MORNING BRIEFING CARD -->
+    <mat-card class="ai-briefing-card">
+      <mat-card-content>
 
-      <!-- Urgent alert banner si HIGH RISK > 0 -->
-      <div class="urgent-banner" *ngIf="highRiskCount > 0">
-        <div class="urgent-pulse"></div>
-        <i-tabler name="alert-triangle" class="icon-18"></i-tabler>
-        <strong>URGENT:</strong> {{ highRiskCount }} patient{{ highRiskCount > 1 ? 's require' : ' requires' }} immediate attention today
-      </div>
+        <!-- Briefing header -->
+        <div class="briefing-header">
+          <div class="briefing-title-block">
+            <div class="briefing-title-row">
+              <div class="ai-badge-sm">
+                <i-tabler name="sparkles" class="icon-14"></i-tabler>
+                AI
+              </div>
+              <span class="briefing-title-text">Morning Briefing</span>
+              <span class="briefing-date">{{ todayFormatted }}</span>
+            </div>
+          </div>
+          <button mat-stroked-button (click)="runAiAnalysis()" [disabled]="loadingAi" class="regen-btn">
+            <i-tabler name="refresh" class="icon-14"></i-tabler>
+            Regenerate
+          </button>
+        </div>
 
-      <mat-card class="ai-briefing-card">
-        <mat-card-content>
+        <!-- Loading skeleton -->
+        <div class="briefing-skeleton-wrap" *ngIf="loadingAi">
+          <div class="briefing-skeleton">
+            <div class="skeleton-line w-90"></div>
+            <div class="skeleton-line w-70"></div>
+            <div class="skeleton-line w-80"></div>
+          </div>
+          <div class="skeleton-cards">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+          <div class="ai-loading-label">
+            <div class="ai-dots"><span></span><span></span><span></span></div>
+            <p>AI is analyzing patient data...</p>
+          </div>
+        </div>
 
-          <!-- Header briefing -->
-          <div class="briefing-header">
-            <div class="briefing-title-block">
-              <div class="briefing-title-row">
-                <div class="ai-badge-sm">
-                  <i-tabler name="sparkles" class="icon-14"></i-tabler>
-                  AI
+        <!-- Error -->
+        <div class="ai-error" *ngIf="aiError && !loadingAi">
+          <i-tabler name="alert-circle" class="icon-16"></i-tabler>
+          {{ aiError }}
+        </div>
+
+        <!-- Structured briefing -->
+        <div class="briefing-body" *ngIf="briefing && !loadingAi">
+
+          <!-- Status banner -->
+          <div class="status-banner"
+            [style.background]="getStatusBg(briefing.overallStatus)"
+            [style.border-color]="getStatusColor(briefing.overallStatus)">
+            <div class="status-icon-wrap" [style.background]="getStatusColor(briefing.overallStatus)">
+              <i-tabler [name]="getStatusIcon(briefing.overallStatus)" class="icon-18" style="color:white"></i-tabler>
+            </div>
+            <div class="status-content">
+              <div class="status-label" [style.color]="getStatusColor(briefing.overallStatus)">
+                {{ getStatusLabel(briefing.overallStatus) }}
+              </div>
+              <div class="status-summary">{{ briefing.situationSummary }}</div>
+            </div>
+          </div>
+
+          <!-- Two columns: Priority + Actions -->
+          <div class="briefing-columns">
+
+            <!-- Priority patients -->
+            <div class="briefing-col">
+              <div class="col-header">
+                <div class="col-header-icon priority-icon">
+                  <i-tabler name="flag" class="icon-16"></i-tabler>
                 </div>
-                <span class="briefing-title-text">Morning Briefing</span>
-                <span class="briefing-date">{{ todayFormatted }}</span>
+                <span class="col-header-title">Priority Patients Today</span>
               </div>
-              <p class="briefing-subtitle">Daily patient compliance intelligence report</p>
-            </div>
-            <button mat-stroked-button (click)="runAiAnalysis()" [disabled]="loadingAi" class="regen-btn">
-              <i-tabler name="refresh" class="icon-14"></i-tabler>
-              Regenerate
-            </button>
-          </div>
-
-          <!-- Loading -->
-          <div class="ai-loading" *ngIf="loadingAi">
-            <div class="briefing-skeleton">
-              <div class="skeleton-line w-80"></div>
-              <div class="skeleton-line w-60"></div>
-              <div class="skeleton-line w-90"></div>
-              <div class="skeleton-line w-50"></div>
-            </div>
-            <div class="ai-loading-label">
-              <div class="ai-dots"><span></span><span></span><span></span></div>
-              <p>AI is analyzing patient compliance data...</p>
-            </div>
-          </div>
-
-          <!-- Error -->
-          <div class="ai-error" *ngIf="aiError && !loadingAi">
-            <i-tabler name="alert-circle" class="icon-16"></i-tabler>
-            {{ aiError }}
-          </div>
-
-          <!-- Briefing content — parsé en sections -->
-          <div class="briefing-content" *ngIf="aiAnalysis && !loadingAi">
-
-            <!-- Compliance score bar en haut -->
-            <div class="compliance-overview-bar">
-              <div class="compliance-stat"
-                [class.stat-critical]="avgCompliance < 30"
-                [class.stat-warning]="avgCompliance >= 30 && avgCompliance < 70"
-                [class.stat-good]="avgCompliance >= 70">
-                <span class="compliance-pct">{{ avgCompliance }}%</span>
-                <span class="compliance-lbl">Overall Compliance</span>
+              <div class="priority-list">
+                <div *ngFor="let p of briefing.priorityPatients"
+                  class="priority-item"
+                  [class.priority-high]="p.urgency === 'HIGH'"
+                  [class.priority-medium]="p.urgency === 'MEDIUM'">
+                  <div class="priority-badge" [class.badge-high]="p.urgency === 'HIGH'" [class.badge-medium]="p.urgency === 'MEDIUM'">
+                    {{ p.urgency }}
+                  </div>
+                  <div class="priority-info">
+                    <div class="priority-name">{{ p.name }}</div>
+                    <div class="priority-reason">{{ p.reason }}</div>
+                  </div>
+                  <i-tabler name="chevron-right" class="icon-14 priority-arrow"></i-tabler>
+                </div>
+                <div *ngIf="briefing.priorityPatients.length === 0" class="empty-priority">
+                  <i-tabler name="circle-check" class="icon-20" style="color:#10b981"></i-tabler>
+                  <span>No priority patients today</span>
+                </div>
               </div>
-              <div class="compliance-track-wrap">
-                <div class="compliance-track">
-                  <div class="compliance-fill"
-                    [style.width.%]="avgCompliance"
-                    [class.fill-critical]="avgCompliance < 30"
-                    [class.fill-warning]="avgCompliance >= 30 && avgCompliance < 70"
-                    [class.fill-good]="avgCompliance >= 70">
+            </div>
+
+            <!-- Recommended actions -->
+            <div class="briefing-col">
+              <div class="col-header">
+                <div class="col-header-icon actions-icon">
+                  <i-tabler name="list-check" class="icon-16"></i-tabler>
+                </div>
+                <span class="col-header-title">Recommended Actions</span>
+              </div>
+              <div class="actions-list">
+                <div *ngFor="let a of briefing.recommendedActions; let i = index"
+                  class="action-item">
+                  <div class="action-number">{{ i + 1 }}</div>
+                  <div class="action-info">
+                    <div class="action-patient">
+                      <i-tabler [name]="a.icon" class="icon-14"></i-tabler>
+                      {{ a.patient }}
+                    </div>
+                    <div class="action-desc">{{ a.action }}</div>
                   </div>
                 </div>
-                <div class="compliance-thresholds">
-                  <span>0%</span><span>30%</span><span>70%</span><span>100%</span>
+                <div *ngIf="briefing.recommendedActions.length === 0" class="empty-priority">
+                  <i-tabler name="circle-check" class="icon-20" style="color:#10b981"></i-tabler>
+                  <span>No actions required</span>
                 </div>
-              </div>
-              <div class="compliance-status-badge"
-                [class.badge-critical]="avgCompliance < 30"
-                [class.badge-warning]="avgCompliance >= 30 && avgCompliance < 70"
-                [class.badge-good]="avgCompliance >= 70">
-                <i-tabler [name]="avgCompliance >= 70 ? 'circle-check' : avgCompliance >= 30 ? 'alert-circle' : 'alert-triangle'" class="icon-14"></i-tabler>
-                {{ avgCompliance >= 70 ? 'ACCEPTABLE' : avgCompliance >= 30 ? 'MODERATE' : 'CRITICAL' }}
-              </div>
-            </div>
-
-            <!-- Texte IA dans un bloc stylisé -->
-            <div class="analysis-block">
-              <div class="analysis-icon-col">
-                <div class="analysis-icon-wrap">
-                  <i-tabler name="robot" class="icon-20"></i-tabler>
-                </div>
-                <div class="analysis-timeline-line"></div>
-              </div>
-              <div class="analysis-text-col">
-                <pre class="analysis-text">{{ aiAnalysis }}</pre>
-              </div>
-            </div>
-
-            <!-- Résumé rapide en bas -->
-            <div class="briefing-quick-stats">
-              <div class="quick-stat high">
-                <i-tabler name="alert-triangle" class="icon-16"></i-tabler>
-                <span class="qs-number">{{ highRiskCount }}</span>
-                <span class="qs-label">High Risk</span>
-              </div>
-              <div class="quick-stat medium">
-                <i-tabler name="alert-circle" class="icon-16"></i-tabler>
-                <span class="qs-number">{{ mediumRiskCount }}</span>
-                <span class="qs-label">Medium Risk</span>
-              </div>
-              <div class="quick-stat low">
-                <i-tabler name="circle-check" class="icon-16"></i-tabler>
-                <span class="qs-number">{{ lowRiskCount }}</span>
-                <span class="qs-label">Low Risk</span>
-              </div>
-              <div class="quick-stat total">
-                <i-tabler name="users" class="icon-16"></i-tabler>
-                <span class="qs-number">{{ prediction.patients.length }}</span>
-                <span class="qs-label">Total Patients</span>
               </div>
             </div>
 
           </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
+
+          <!-- Positive note -->
+          <div class="positive-note" *ngIf="briefing.positiveNote">
+            <div class="positive-icon">
+              <i-tabler name="mood-smile" class="icon-18"></i-tabler>
+            </div>
+            <div class="positive-text">{{ briefing.positiveNote }}</div>
+          </div>
+
+        </div>
+
+      </mat-card-content>
+    </mat-card>
 
     <!-- PATIENT RISK TABLE -->
     <mat-card class="patients-card cardWithShadow">
@@ -198,8 +208,7 @@
         </div>
 
         <div class="patients-list">
-          <div
-            *ngFor="let patient of prediction.patients"
+          <div *ngFor="let patient of prediction.patients"
             class="patient-risk-row"
             [class.selected]="selectedPatient?.patientId === patient.patientId"
             [style.border-left-color]="getRiskColor(patient.riskLevel)"
@@ -259,7 +268,6 @@
               <i-tabler name="send" class="icon-14"></i-tabler>
               Remind
             </button>
-
           </div>
         </div>
 
@@ -281,21 +289,21 @@
               <span class="detail-value">{{ selectedPatient.email }}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">14-day compliance rate</span>
+              <span class="detail-label">14-day compliance</span>
               <span class="detail-value">{{ selectedPatient.complianceRate }}%</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Consecutive missing days</span>
+              <span class="detail-label">Consecutive missing</span>
               <span class="detail-value" [style.color]="getRiskColor(selectedPatient.riskLevel)">
                 {{ selectedPatient.consecutiveMissingDays }} day(s)
               </span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Vital submissions (14 days)</span>
+              <span class="detail-label">Vital submissions</span>
               <span class="detail-value">{{ selectedPatient.totalVitalSubmissions }}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Symptom submissions (14 days)</span>
+              <span class="detail-label">Symptom submissions</span>
               <span class="detail-value">{{ selectedPatient.totalSymptomSubmissions }}</span>
             </div>
             <div class="detail-item">
