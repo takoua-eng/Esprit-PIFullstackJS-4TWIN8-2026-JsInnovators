@@ -14,11 +14,20 @@ export class QuestionnaireResponse {
   questionnaireInstanceId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  patientId: Types.ObjectId;
+  patientId: Types.ObjectId;          // The patient who submitted the response
 
-  @Prop({ type: [AnswerItemSchema], required: true })
-  answers: AnswerItem[];
+  @Prop({ type: Object, required: true })
+  answers: Record<string, any>;
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  doctorId: Types.ObjectId;           // The doctor who assigned/sent the questionnaire
+
+  // Optional: track if the doctor has reviewed the response
+  @Prop({ default: false })
+  reviewedByDoctor: boolean;
+
+  // Optional: doctor's notes after reviewing
+  @Prop()
+  doctorNotes?: string;
 }
 
-export const QuestionnaireResponseSchema =
-  SchemaFactory.createForClass(QuestionnaireResponse);
+export const QuestionnaireResponseSchema = SchemaFactory.createForClass(QuestionnaireResponse);
