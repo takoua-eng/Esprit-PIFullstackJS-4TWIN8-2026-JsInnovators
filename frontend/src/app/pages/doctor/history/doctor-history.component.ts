@@ -22,7 +22,7 @@ import { ReviewQuestionnaireDialog } from '../review-questionnaire-dialog/review
 type HistoryRow = {
   when: string;
   patientName: string;
-  source: 'vital' | 'symptom';
+  source: 'vital' | 'symptom' | 'questionnaire';
   summary: string;
 };
 
@@ -59,6 +59,7 @@ export class DoctorHistoryComponent implements OnInit {
   symptoms: SymptomDto[] = [];
   alerts: AlertDto[] = [];
   unreviewedResponses: any[] = [];
+  allResponses: any[] = [];
 
   displayedColumns: string[] = ['when', 'patient', 'source', 'summary'];
 
@@ -130,10 +131,12 @@ export class DoctorHistoryComponent implements OnInit {
     if (pid) {
       this.questionnaireApi.getResponsesByPatient(pid).subscribe({
         next: (rows) => {
+          this.allResponses = rows;
           this.unreviewedResponses = rows.filter((r: any) => !r.reviewedByDoctor);
           this.loading = false;
         },
         error: () => {
+          this.allResponses = [];
           this.unreviewedResponses = [];
           this.loading = false;
         }
@@ -181,94 +184,24 @@ export class DoctorHistoryComponent implements OnInit {
       summary: this.symptomSummary(s),
     }));
 
-    return [...vitalRows, ...symptomRows].sort(
+    // Find patient name for questionnaires
+    const patientName = this.patients.find(p => p._id === this.selectedPatientId);
+    const pName = patientName ? `${patientName.firstName} ${patientName.lastName}` : 'Patient';
+
+    const questionnaireRows: HistoryRow[] = this.allResponses
+      .filter(r => r.reviewedByDoctor)
+      .map(r => ({
+        when: r.updatedAt || r.createdAt, // Preferably reviewed date
+        patientName: pName,
+        source: 'questionnaire',
+        summary: r.doctorNotes || 'No notes provided',
+      }));
+
+    return [...vitalRows, ...symptomRows, ...questionnaireRows].sort(
       (a, b) => new Date(b.when).getTime() - new Date(a.when).getTime(),
     );
   }
 
-  get avgTemperature(): string {
-    const vals = this.vitals
-      .map((x) => x.temperature)
-      .filter((x): x is number => typeof x === 'number');
-    if (!vals.length) return '—';
-    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    return avg.toFixed(1);
-  }
-
-  get avgHeartRate(): string {
-    const vals = this.vitals
-      .map((x) => x.heartRate)
-      .filter((x): x is number => typeof x === 'number');
-    if (!vals.length) return '—';
-    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    return Math.round(avg).toString();
-  }
-
-  get latestPain(): string {
-    const vals = this.symptoms
-      .map((x) => x.painLevel)
-      .filter((x): x is number => typeof x === 'number');
-    if (!vals.length) return '—';
-    return vals[0].toString();
-  }
-
-  get bpOutOfRangeCount(): number {
-    return this.vitals.filter((v) => this.isBloodPressureOutOfRange(v.bloodPressure))
-      .length;
-  }
-
-  get temperatureTrend(): TrendDirection {
-    return this.computeTrend(
-      this.vitals
-        .map((x) => x.temperature)
-        .filter((x): x is number => typeof x === 'number'),
-    );
-  }
-
-  get heartRateTrend(): TrendDirection {
-    return this.computeTrend(
-      this.vitals
-        .map((x) => x.heartRate)
-        .filter((x): x is number => typeof x === 'number'),
-    );
-  }
-
-  get painTrend(): TrendDirection {
-    return this.computeTrend(
-      this.symptoms
-        .map((x) => x.painLevel)
-        .filter((x): x is number => typeof x === 'number'),
-    );
-  }
-
-  get trendsLast7Days(): DayTrend[] {
-    const now = new Date();
-    const days = [...Array(7).keys()].map((i) => {
-      const d = new Date(now);
-      d.setDate(now.getDate() - (6 - i));
-      const key = d.toISOString().slice(0, 10);
-      return { date: d, key };
-    });
-
-    const counts = new Map<string, number>();
-    for (const d of days) counts.set(d.key, 0);
-
-    for (const v of this.vitals) {
-      const key = new Date(v.recordedAt).toISOString().slice(0, 10);
-      if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
-    for (const s of this.symptoms) {
-      const key = new Date(s.reportedAt).toISOString().slice(0, 10);
-      if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
-
-    const max = Math.max(...Array.from(counts.values()), 1);
-    return days.map((d) => ({
-      label: d.date.toLocaleDateString(undefined, { weekday: 'short' }),
-      value: counts.get(d.key) ?? 0,
-      max,
-    }));
-  }
 
   /** Urgent instructions sent by this physician to the selected patient (newest first). */
   get alertsForSelectedPatient(): AlertDto[] {
@@ -285,22 +218,6 @@ export class DoctorHistoryComponent implements OnInit {
 
   get pendingValidationSymptoms(): SymptomDto[] {
     return this.symptoms.filter((s) => !s.verifiedAt);
-  }
-
-  trendIcon(direction: TrendDirection): string {
-    if (direction === 'up') return 'trending-up';
-    if (direction === 'down') return 'trending-down';
-    return 'minus';
-  }
-
-  trendClass(direction: TrendDirection): string {
-    if (direction === 'up') return 'trend-up';
-    if (direction === 'down') return 'trend-down';
-    return 'trend-flat';
-  }
-
-  barWidth(day: DayTrend): string {
-    return `${Math.max(8, Math.round((day.value / day.max) * 100))}%`;
   }
 
   validateVital(v: VitalDto): void {
