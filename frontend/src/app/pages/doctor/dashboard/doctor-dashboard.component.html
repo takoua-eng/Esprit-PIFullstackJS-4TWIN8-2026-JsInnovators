@@ -4,86 +4,269 @@
       <h1 class="f-w-600 m-b-4">{{ 'DOCTOR_DASHBOARD_TITLE' | translate }}</h1>
       <p class="f-s-14 text-muted m-b-0">{{ 'DOCTOR_DASHBOARD_SUBTITLE' | translate }}</p>
     </div>
-    <a mat-flat-button color="primary" routerLink="/dashboard/doctor/history">
-      {{ 'DOCTOR_HISTORY_CTA' | translate }}
-    </a>
+    <div class="d-flex flex-wrap gap-2">
+      <a mat-stroked-button color="primary" routerLink="/dashboard/doctor/alerts">
+        {{ 'DOCTOR_ALERTS_NAV' | translate }}
+      </a>
+      <a mat-flat-button color="primary" routerLink="/dashboard/doctor/history">
+        {{ 'DOCTOR_HISTORY_CTA' | translate }}
+      </a>
+    </div>
   </div>
 </div>
 
-<div class="row m-b-24">
-  <div class="col-md-6 m-b-16">
-    <mat-card class="cardWithShadow doctor-kpi doctor-kpi--patients">
-      <mat-card-content class="p-20">
-        <i-tabler name="users-group" class="icon-24 d-block m-b-8"></i-tabler>
-        <div class="f-w-700 f-s-28 m-b-4">{{ assignedPatients }}</div>
-        <div class="f-s-14 f-w-600">{{ 'DOCTOR_KPI_ASSIGNED_PATIENTS' | translate }}</div>
-      </mat-card-content>
-    </mat-card>
+@if (noDoctorSession) {
+  <mat-card class="cardWithShadow m-b-24">
+    <mat-card-content class="p-20">
+      <p class="m-b-0 text-muted">{{ 'DOCTOR_ALERTS_NO_PHYSICIAN' | translate }}</p>
+    </mat-card-content>
+  </mat-card>
+}
+
+@if (loadError) {
+  <mat-card class="cardWithShadow m-b-24">
+    <mat-card-content class="p-20">
+      <p class="m-b-0 text-warn">{{ 'DOCTOR_DASH_LOAD_ERROR' | translate }}</p>
+    </mat-card-content>
+  </mat-card>
+}
+
+@if (loading) {
+  <div class="d-flex align-items-center gap-3 m-b-24">
+    <mat-spinner diameter="36"></mat-spinner>
+    <span class="text-muted">{{ 'DOCTOR_DASH_LOADING' | translate }}</span>
+  </div>
+}
+
+@if (!loading && !loadError && !noDoctorSession) {
+  <p class="f-s-13 text-muted m-b-16">{{ 'DOCTOR_DASH_VALIDATION_NOTE' | translate }}</p>
+
+  @if (showingAllPatientsFallback) {
+    <p class="f-s-13 text-muted m-b-16">{{ 'DOCTOR_ASSIGNED_HINT_ALL' | translate }}</p>
+  }
+
+  <div class="row m-b-24">
+    <div class="col-md-4 m-b-16">
+      <mat-card class="cardWithShadow doctor-kpi doctor-kpi--patients">
+        <mat-card-content class="p-20">
+          <i-tabler name="users-group" class="icon-24 d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">{{ assignedPatients }}</div>
+          <div class="f-s-14 f-w-600">{{ 'DOCTOR_KPI_ASSIGNED_PATIENTS' | translate }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-md-4 m-b-16">
+      <mat-card
+        class="cardWithShadow doctor-kpi doctor-kpi--alerts doctor-kpi--clickable"
+        routerLink="/dashboard/doctor/alerts"
+        tabindex="0"
+        role="link"
+        [attr.aria-label]="'DOCTOR_KPI_ACTIVE_ALERTS' | translate"
+      >
+        <mat-card-content class="p-20">
+          <i-tabler name="bell-ringing" class="icon-24 d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">
+            @if (activeAlerts === null) {
+              <span class="f-s-16">—</span>
+            } @else {
+              {{ activeAlerts }}
+            }
+          </div>
+          <div class="f-s-14 f-w-600">{{ 'DOCTOR_KPI_ACTIVE_ALERTS' | translate }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-md-4 m-b-16">
+      <mat-card class="cardWithShadow doctor-kpi doctor-kpi--followups">
+        <mat-card-content class="p-20">
+          <i-tabler name="clipboard-check" class="icon-24 d-block m-b-8"></i-tabler>
+          <div class="f-w-700 f-s-28 m-b-4">
+            @if (questionnaireCompliancePct === null) {
+              <span class="f-s-16">—</span>
+            } @else {
+              {{ questionnaireCompliancePct }}%
+            }
+          </div>
+          <div class="f-s-14 f-w-600">{{ 'DOCTOR_KPI_QUESTIONNAIRE_TODAY' | translate }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
   </div>
 
-  <div class="col-md-6 m-b-16">
-    <mat-card
-      class="cardWithShadow doctor-kpi doctor-kpi--alerts doctor-kpi--clickable"
-      routerLink="/dashboard/doctor/alerts"
-      tabindex="0"
-      role="link"
-      [attr.aria-label]="'DOCTOR_KPI_ACTIVE_ALERTS' | translate"
-    >
-      <mat-card-content class="p-20">
-        <i-tabler name="bell-ringing" class="icon-24 d-block m-b-8"></i-tabler>
-        <div class="f-w-700 f-s-28 m-b-4">
-          @if (activeAlerts === null) {
-            <span class="f-s-16">—</span>
+  <div class="row m-b-24">
+    <div class="col-12">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-24">
+          <mat-card-title class="f-w-600 m-b-4">{{ 'DOCTOR_CHART_TITLE' | translate }}</mat-card-title>
+          <mat-card-subtitle class="f-s-13 text-muted m-b-16">
+            {{ 'DOCTOR_CHART_HINT' | translate }}
+          </mat-card-subtitle>
+
+          <div class="doctor-filters m-b-20 d-flex flex-wrap align-items-center gap-3">
+            <mat-form-field appearance="outline" class="doctor-filter-field">
+              <mat-label>{{ 'DOCTOR_FILTER_PATIENT' | translate }}</mat-label>
+              <mat-select
+                [(ngModel)]="selectedPatientId"
+                (selectionChange)="onChartFiltersChange()"
+              >
+                @for (p of patients; track p.patientId) {
+                  <mat-option [value]="p.patientId">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-button-toggle-group
+              [(ngModel)]="rangeDays"
+              (change)="onChartFiltersChange()"
+            >
+              <mat-button-toggle [value]="7">{{ 'DOCTOR_RANGE_7' | translate }}</mat-button-toggle>
+              <mat-button-toggle [value]="30">{{ 'DOCTOR_RANGE_30' | translate }}</mat-button-toggle>
+              <mat-button-toggle [value]="90">{{ 'DOCTOR_RANGE_90' | translate }}</mat-button-toggle>
+            </mat-button-toggle-group>
+
+            <mat-form-field appearance="outline" class="doctor-filter-field">
+              <mat-label>{{ 'DOCTOR_FILTER_PARAMETER' | translate }}</mat-label>
+              <mat-select
+                [(ngModel)]="selectedParameter"
+                (selectionChange)="onChartFiltersChange()"
+              >
+                <mat-option value="heartRate">{{ 'DOCTOR_PARAM_HR' | translate }}</mat-option>
+                <mat-option value="temperature">{{ 'DOCTOR_PARAM_TEMP' | translate }}</mat-option>
+                <mat-option value="weight">{{ 'DOCTOR_PARAM_WEIGHT' | translate }}</mat-option>
+                <mat-option value="bloodPressure">{{ 'DOCTOR_PARAM_BP' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          @if (!selectedPatientId) {
+            <p class="text-muted m-b-0">{{ 'DOCTOR_CHART_SELECT_PATIENT' | translate }}</p>
+          } @else if (!vitalChartOptions) {
+            <p class="text-muted m-b-0">{{ 'DOCTOR_CHART_NO_DATA' | translate }}</p>
           } @else {
-            {{ activeAlerts }}
+            <apx-chart
+              [series]="vitalChartOptions.series"
+              [chart]="vitalChartOptions.chart"
+              [xaxis]="vitalChartOptions.xaxis"
+              [yaxis]="vitalChartOptions.yaxis"
+              [colors]="vitalChartOptions.colors"
+              [stroke]="vitalChartOptions.stroke"
+              [dataLabels]="vitalChartOptions.dataLabels"
+              [markers]="vitalChartOptions.markers"
+              [legend]="vitalChartOptions.legend"
+              [grid]="vitalChartOptions.grid"
+            ></apx-chart>
           }
-        </div>
-        <div class="f-s-14 f-w-600">{{ 'DOCTOR_KPI_ACTIVE_ALERTS' | translate }}</div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-</div>
 
-<div class="row">
-  <div class="col-12">
-    <mat-card class="cardWithShadow">
-      <mat-card-content class="p-24">
-        <mat-card-title class="f-w-600 m-b-4">{{ 'DOCTOR_MONITORING_TABLE_TITLE' | translate }}</mat-card-title>
-        <mat-card-subtitle class="f-s-13 text-muted m-b-16">
-          {{ 'DOCTOR_MONITORING_TABLE_HINT' | translate }}
-        </mat-card-subtitle>
-
-        <div class="table-responsive">
-          <table mat-table [dataSource]="patients" class="w-100">
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>{{ 'NAME' | translate }}</th>
-              <td mat-cell *matCellDef="let row">{{ row.name }}</td>
-            </ng-container>
-            <ng-container matColumnDef="service">
-              <th mat-header-cell *matHeaderCellDef>{{ 'SERVICE_UNIT' | translate }}</th>
-              <td mat-cell *matCellDef="let row">{{ row.service }}</td>
-            </ng-container>
-            <ng-container matColumnDef="lastReading">
-              <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_COL_LAST_READING' | translate }}</th>
-              <td mat-cell *matCellDef="let row">{{ row.lastReading }}</td>
-            </ng-container>
-            <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef>{{ 'STATUS' | translate }}</th>
-              <td mat-cell *matCellDef="let row">
-                <span
-                  class="status-pill"
-                  [class.status-pill--stable]="row.status === 'Stable'"
-                  [class.status-pill--watch]="row.status === 'Watch'"
-                >
-                  {{ row.status === 'Stable' ? ('NURSE_STATUS_STABLE' | translate) : ('NURSE_STATUS_WATCH' | translate) }}
-                </span>
-              </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-          </table>
-        </div>
-      </mat-card-content>
-    </mat-card>
+          @if (trendInsight) {
+            <div class="m-t-16 p-16 trend-box">
+              <div class="f-w-600 m-b-4 f-s-13">{{ 'DOCTOR_TREND_TITLE' | translate }}</div>
+              <p class="m-b-0 f-s-14">{{ trendInsight }}</p>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
   </div>
-</div>
+
+  @if (recentAlerts.length > 0) {
+    <div class="row m-b-24">
+      <div class="col-12">
+        <mat-card class="cardWithShadow">
+          <mat-card-content class="p-24">
+            <mat-card-title class="f-w-600 m-b-12">{{ 'DOCTOR_RECENT_ALERTS_TITLE' | translate }}</mat-card-title>
+            <mat-list>
+              @for (a of recentAlerts; track a._id) {
+                <mat-list-item class="recent-alert-item">
+                  <span matListItemTitle>{{ a.patientName }}</span>
+                  <span matListItemLine class="f-s-13">{{ a.message }}</span>
+                  <span matListItemMeta class="f-s-12 text-muted">{{ a.createdAt | date: 'short' }}</span>
+                </mat-list-item>
+              }
+            </mat-list>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  }
+
+  <div class="row">
+    <div class="col-12">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-24">
+          <mat-card-title class="f-w-600 m-b-4">{{ 'DOCTOR_MONITORING_TABLE_TITLE' | translate }}</mat-card-title>
+          <mat-card-subtitle class="f-s-13 text-muted m-b-16">
+            {{ 'DOCTOR_MONITORING_TABLE_HINT' | translate }}
+          </mat-card-subtitle>
+
+          <div class="table-responsive">
+            <table mat-table [dataSource]="patients" class="w-100">
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>{{ 'NAME' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+              </ng-container>
+              <ng-container matColumnDef="service">
+                <th mat-header-cell *matHeaderCellDef>{{ 'SERVICE_UNIT' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.service }}</td>
+              </ng-container>
+              <ng-container matColumnDef="lastReading">
+                <th mat-header-cell *matHeaderCellDef>{{ 'NURSE_COL_LAST_READING' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.lastReading }}</td>
+              </ng-container>
+              <ng-container matColumnDef="questionnaire">
+                <th mat-header-cell *matHeaderCellDef>{{ 'DOCTOR_COL_Q_TODAY' | translate }}</th>
+                <td mat-cell *matCellDef="let row">
+                  @if (row.questionnaireToday) {
+                    <i-tabler name="circle-check" class="icon-20 text-success"></i-tabler>
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>{{ 'STATUS' | translate }}</th>
+                <td mat-cell *matCellDef="let row">
+                  <span
+                    class="status-pill"
+                    [class.status-pill--stable]="row.status === 'Stable'"
+                    [class.status-pill--watch]="row.status === 'Watch'"
+                  >
+                    {{
+                      row.status === 'Stable'
+                        ? ('NURSE_STATUS_STABLE' | translate)
+                        : ('NURSE_STATUS_WATCH' | translate)
+                    }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>{{ 'ACTIONS' | translate }}</th>
+                <td mat-cell *matCellDef="let row">
+                  <div class="d-flex gap-2">
+                    <button mat-icon-button color="primary" 
+                            [matTooltip]="'SEND_QUESTIONNAIRE' | translate"
+                            (click)="openSendQuestionnaireDialog(row)">
+                      <i-tabler name="send" class="icon-18"></i-tabler>
+                    </button>
+                    <button mat-icon-button color="accent" 
+                            [matTooltip]="'VIEW_RESPONSES' | translate"
+                            (click)="viewResponses(row)">
+                      <i-tabler name="history" class="icon-18"></i-tabler>
+                      <span *ngIf="row.unreviewedResponses > 0" class="badge-dot"></span>
+                    </button>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+}

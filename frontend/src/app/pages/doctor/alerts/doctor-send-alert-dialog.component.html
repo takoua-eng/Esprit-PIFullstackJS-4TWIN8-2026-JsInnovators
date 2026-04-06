@@ -1,19 +1,42 @@
 <h2 mat-dialog-title>{{ 'DOCTOR_ALERT_SEND_TITLE' | translate }}</h2>
 <mat-dialog-content>
-  <p class="f-s-14 text-muted m-b-8">{{ data.patientName }}</p>
+  <div class="sev-band" [ngClass]="severityBandClass()">
+    <span class="sev-band-label">{{ severityBandLabel() }}</span>
+    <span class="sev-band-preset">{{ data.defaultSeverityLabel }}</span>
+  </div>
+
+  <p class="f-s-14 text-muted m-b-8 m-t-12">{{ data.patientName }}</p>
   <p class="f-s-13 m-b-12">{{ data.sourceLabel }}</p>
-  <p class="f-s-12 text-muted m-b-12">
-    {{ 'DOCTOR_ALERT_SEVERITY_PRESET' | translate }}:
-    <strong>{{ data.defaultSeverityLabel }}</strong>
-  </p>
+
+  @if (loadingSuggestion) {
+    <div class="d-flex align-items-center gap-2 m-b-12">
+      <mat-progress-spinner diameter="28" mode="indeterminate"></mat-progress-spinner>
+      <span class="f-s-13 text-muted">{{ 'DOCTOR_ALERT_AI_LOADING' | translate }}</span>
+    </div>
+  } @else if (suggestionSource) {
+    <p class="f-s-11 text-muted m-b-8 m-t-0">{{ suggestionSourceLabel() }}</p>
+  }
+
   <mat-form-field appearance="outline" class="w-100">
     <mat-label>{{ 'DOCTOR_ALERT_MESSAGE_LABEL' | translate }}</mat-label>
-    <textarea matInput rows="5" [(ngModel)]="message" name="alertMsg"></textarea>
+    <textarea
+      matInput
+      rows="6"
+      [(ngModel)]="message"
+      name="alertMsg"
+      [disabled]="loadingSuggestion"
+    ></textarea>
   </mat-form-field>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button type="button" (click)="cancel()">{{ 'DOCTOR_ALERT_DIALOG_CANCEL' | translate }}</button>
-  <button mat-flat-button color="primary" type="button" (click)="send()" [disabled]="!message.trim()">
+  <button
+    mat-flat-button
+    color="primary"
+    type="button"
+    (click)="send()"
+    [disabled]="!message.trim() || loadingSuggestion"
+  >
     {{ 'DOCTOR_ALERT_SEND' | translate }}
   </button>
 </mat-dialog-actions>

@@ -80,6 +80,30 @@
     font-size: 0.8rem;
   }
 
+    .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    &.active {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    &.inactive {
+      background: #ffebee;
+      color: #c62828;
+    }
+  }
+
   // Actions
   .actions {
     display: flex;
@@ -87,6 +111,7 @@
     justify-content: center;
     gap: 4px;
   }
+  
 
   // Table Styling
   table {
@@ -111,6 +136,7 @@
     background: #f8f9fa;
     cursor: pointer;
   }
+  
 }
 
 // Paginator

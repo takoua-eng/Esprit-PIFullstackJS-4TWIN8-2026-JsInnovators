@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { CoreService } from './services/core.service';
 import { pruneLocalStorageToWhitelist } from './core/app-storage';
+import { PatientVideoCallNotifierService } from './core/patient-video-call-notifier.service';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ export class AppComponent {
   constructor(
     private translate: TranslateService,
     private core: CoreService,
+    _patientVideoCallNotifier: PatientVideoCallNotifierService,
   ) {
     pruneLocalStorageToWhitelist();
     this.core.initUserRole();

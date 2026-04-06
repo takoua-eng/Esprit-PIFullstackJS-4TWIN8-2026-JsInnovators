@@ -19,30 +19,57 @@ export class CoreService {
   }
 
   userRole = signal<string>('Guest');
+  currentUser = signal<any>(null);
 
   isSuperAdmin = computed(() => this.userRole() === 'SuperAdmin');
 
   initUserRole() {
-    const raw = localStorage.getItem('user_role');
-    this.userRole.set(raw ? this.formatDisplayRole(raw) : 'Guest');
+    const rawRole = localStorage.getItem('user_role');
+    this.userRole.set(rawRole ? this.formatDisplayRole(rawRole) : 'Guest');
+
+    const rawUser = localStorage.getItem('medi_follow_user_data');
+    if (rawUser) {
+      try {
+        this.currentUser.set(JSON.parse(rawUser));
+      } catch (e) {
+        console.error('Failed to parse user data from localStorage', e);
+      }
+    }
   }
 
-  /** Sync role after login (backend role name, e.g. `patient`, `admin`). */
-  setRoleFromLogin(roleName: string) {
-    const display = roleName
-      ? this.formatDisplayRole(roleName)
-      : 'Guest';
-    localStorage.setItem('user_role', roleName || '');
+  /** Sync role & user after login. */
+  setUserFromLogin(user: any) {
+    if (!user) return;
+    
+    localStorage.setItem('medi_follow_user_data', JSON.stringify(user));
+    this.currentUser.set(user);
+
+    // ✅ Safely extract role name whether it's a string or a populated object
+    const roleObj = user.role;
+    const roleName: string = 
+      typeof roleObj === 'string' ? roleObj :
+      (roleObj && typeof roleObj === 'object' && 'name' in roleObj) ? String(roleObj.name) : 
+      '';
+
+    const display = this.formatDisplayRole(roleName);
+    localStorage.setItem('user_role', roleName);
     this.userRole.set(display);
   }
 
-  clearRole() {
+  clearSession() {
     localStorage.removeItem('user_role');
+    localStorage.removeItem('medi_follow_user_data');
+    localStorage.removeItem('accessToken');
     this.userRole.set('Guest');
+    this.currentUser.set(null);
   }
 
-  private formatDisplayRole(r: string): string {
-    const t = r.trim();
+  clearRole() {
+    this.clearSession();
+  }
+
+  private formatDisplayRole(r: string | any): string {
+    const t = typeof r === 'string' ? r.trim() : '';
     if (!t) return 'Guest';
     return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
   }

@@ -1,42 +1,117 @@
+<div
+  class="row m-b-24 admin-dashboard-stats-loading"
+  *ngIf="statsLoading"
+  aria-busy="true"
+  aria-live="polite"
+>
+  <div class="col-12 d-flex flex-column align-items-center justify-content-center py-5">
+    <mat-spinner diameter="48" aria-hidden="true"></mat-spinner>
+    <span class="m-t-16 text-muted f-s-14">Chargement des statistiques…</span>
+  </div>
+</div>
+
+<div class="row m-b-24" *ngIf="statsError" role="alert">
+  <div class="col-12">
+    <mat-card class="cardWithShadow admin-dashboard-stats-error">
+      <mat-card-content class="p-16 d-flex align-items-start">
+        <mat-icon color="warn" class="flex-shrink-0 m-r-12">error_outline</mat-icon>
+        <div>
+          <div class="f-w-600 m-b-4">Statistiques indisponibles</div>
+          <p class="m-0 f-s-14 text-muted">{{ statsError }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
 <!-- Top KPI cards -->
-<div class="row m-b-24">
-  <div class="col-md-3 m-b-16">
-    <mat-card class="cardWithShadow" style="background-color: #6c5ce7; color: #fff; border-radius: 18px;">
+<div
+  class="row m-b-24"
+  *ngIf="!statsLoading && stats"
+  [class.kpi-row--flash]="kpiStatsFlash"
+>
+  <div class="col-12 col-sm-6 col-md-4 col-lg m-b-16">
+    <mat-card class="cardWithShadow kpi-card">
       <mat-card-content class="p-16">
-        <i-tabler name="users-group" class="icon-24 d-block m-b-8"></i-tabler>
-        <div class="f-w-700 f-s-22 m-b-4">4</div>
-        <div class="f-s-14 f-w-600 m-b-2">{{ 'PATIENTS_CARD' | translate }}</div>
-        <div class="f-s-12" style="opacity: 0.85;">{{ 'REGISTERED_PATIENTS' | translate }}</div>
+        <i-tabler name="users-group" class="icon-24 d-block m-b-8 kpi-card__icon"></i-tabler>
+        <h3 class="kpi-card__title">Patients</h3>
+        <p class="m-0 d-flex align-items-baseline flex-wrap">
+          <span class="kpi-value kpi-value--patients">{{ stats?.totalPatients }}</span>
+          <span class="kpi-value-suffix">Patients</span>
+        </p>
+        <div class="kpi-trends">
+          <span class="kpi-trend kpi-trend--up">+5 this week</span>
+          <span class="kpi-trend kpi-trend--down">-2 this month</span>
+        </div>
+        <div class="kpi-card__footer">{{ 'REGISTERED_PATIENTS' | translate }}</div>
       </mat-card-content>
     </mat-card>
   </div>
-  <div class="col-md-3 m-b-16">
-    <mat-card class="cardWithShadow" style="background-color: #0984e3; color: #fff; border-radius: 18px;">
+  <div class="col-12 col-sm-6 col-md-4 col-lg m-b-16">
+    <mat-card class="cardWithShadow kpi-card">
       <mat-card-content class="p-16">
-        <i-tabler name="stethoscope" class="icon-24 d-block m-b-8"></i-tabler>
-        <div class="f-w-700 f-s-22 m-b-4">3</div>
-        <div class="f-s-14 f-w-600 m-b-2">{{ 'DOCTORS_CARD' | translate }}</div>
-        <div class="f-s-12" style="opacity: 0.85;">{{ 'SPECIALIST_DOCTORS' | translate }}</div>
+        <i-tabler name="stethoscope" class="icon-24 d-block m-b-8 kpi-card__icon"></i-tabler>
+        <h3 class="kpi-card__title">Doctors</h3>
+        <p class="m-0 d-flex align-items-baseline flex-wrap">
+          <span class="kpi-value kpi-value--doctors">{{ stats?.totalPhysicians }}</span>
+          <span class="kpi-value-suffix">Doctors</span>
+        </p>
+        <div class="kpi-trends">
+          <span class="kpi-trend kpi-trend--up">+5 this week</span>
+          <span class="kpi-trend kpi-trend--down">-2 this month</span>
+        </div>
+        <div class="kpi-card__footer">{{ 'SPECIALIST_DOCTORS' | translate }}</div>
       </mat-card-content>
     </mat-card>
   </div>
-  <div class="col-md-3 m-b-16">
-    <mat-card class="cardWithShadow" style="background-color: #fdcb6e; color: #fff; border-radius: 18px;">
+  <div class="col-12 col-sm-6 col-md-4 col-lg m-b-16">
+    <mat-card class="cardWithShadow kpi-card">
       <mat-card-content class="p-16">
-        <i-tabler name="nurse" class="icon-24 d-block m-b-8"></i-tabler>
-        <div class="f-w-700 f-s-22 m-b-4">2</div>
-        <div class="f-s-14 f-w-600 m-b-2">{{ 'NURSES_CARD' | translate }}</div>
-        <div class="f-s-12" style="opacity: 0.9;">{{ 'NURSING_STAFF' | translate }}</div>
+        <i-tabler name="nurse" class="icon-24 d-block m-b-8 kpi-card__icon"></i-tabler>
+        <h3 class="kpi-card__title">Nurses</h3>
+        <p class="m-0 d-flex align-items-baseline flex-wrap">
+          <span class="kpi-value kpi-value--nurses">{{ stats?.totalNurses }}</span>
+          <span class="kpi-value-suffix">Nurses</span>
+        </p>
+        <div class="kpi-trends">
+          <span class="kpi-trend kpi-trend--up">+5 this week</span>
+          <span class="kpi-trend kpi-trend--down">-2 this month</span>
+        </div>
+        <div class="kpi-card__footer">{{ 'NURSING_STAFF' | translate }}</div>
       </mat-card-content>
     </mat-card>
   </div>
-  <div class="col-md-3 m-b-16">
-    <mat-card class="cardWithShadow" style="background-color: #e17055; color: #fff; border-radius: 18px;">
+  <div class="col-12 col-sm-6 col-md-4 col-lg m-b-16">
+    <mat-card class="cardWithShadow kpi-card">
       <mat-card-content class="p-16">
-        <i-tabler name="shield-lock" class="icon-24 d-block m-b-8"></i-tabler>
-        <div class="f-w-700 f-s-22 m-b-4">5</div>
-        <div class="f-s-14 f-w-600 m-b-2">{{ 'OTHER_USERS_CARD' | translate }}</div>
-        <div class="f-s-12" style="opacity: 0.9;">{{ 'OTHER_USERS_DESC' | translate }}</div>
+        <i-tabler name="users" class="icon-24 d-block m-b-8 kpi-card__icon"></i-tabler>
+        <h3 class="kpi-card__title">Coordinators</h3>
+        <p class="m-0 d-flex align-items-baseline flex-wrap">
+          <span class="kpi-value kpi-value--coordinators">{{ stats?.totalCoordinators }}</span>
+          <span class="kpi-value-suffix">Coordinators</span>
+        </p>
+        <div class="kpi-trends">
+          <span class="kpi-trend kpi-trend--up">+5 this week</span>
+          <span class="kpi-trend kpi-trend--down">-2 this month</span>
+        </div>
+        <div class="kpi-card__footer">{{ 'COORDINATORS' | translate }}</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="col-12 col-sm-6 col-md-4 col-lg m-b-16">
+    <mat-card class="cardWithShadow kpi-card">
+      <mat-card-content class="p-16">
+        <i-tabler name="shield-check" class="icon-24 d-block m-b-8 kpi-card__icon"></i-tabler>
+        <h3 class="kpi-card__title">Auditors</h3>
+        <p class="m-0 d-flex align-items-baseline flex-wrap">
+          <span class="kpi-value kpi-value--auditors">{{ stats?.totalAuditors }}</span>
+          <span class="kpi-value-suffix">Auditors</span>
+        </p>
+        <div class="kpi-trends">
+          <span class="kpi-trend kpi-trend--up">+5 this week</span>
+          <span class="kpi-trend kpi-trend--down">-2 this month</span>
+        </div>
+        <div class="kpi-card__footer">{{ 'AUDITORS' | translate }}</div>
       </mat-card-content>
     </mat-card>
   </div>
@@ -51,13 +126,15 @@
           <div>
             <mat-card-title>{{ 'TRAFFIC' | translate }}</mat-card-title>
             <mat-card-subtitle class="f-s-13 text-muted">
-              {{ 'JAN_TO_DEC_2023' | translate }}
+              {{ trafficPeriodLabel }}
             </mat-card-subtitle>
           </div>
           <div class="btn-group">
             <button
               mat-stroked-button
               class="m-r-4"
+              type="button"
+              [disabled]="trafficLoading"
               [ngClass]="{'bg-primary text-white': viewMode === 'day'}"
               (click)="viewMode = 'day'"
             >
@@ -66,6 +143,8 @@
             <button
               mat-stroked-button
               class="m-r-4"
+              type="button"
+              [disabled]="trafficLoading"
               [ngClass]="{'bg-primary text-white': viewMode === 'month'}"
               (click)="viewMode = 'month'"
             >
@@ -73,6 +152,8 @@
             </button>
             <button
               mat-stroked-button
+              type="button"
+              [disabled]="trafficLoading"
               [ngClass]="{'bg-primary text-white': viewMode === 'year'}"
               (click)="viewMode = 'year'"
             >
@@ -81,33 +162,91 @@
           </div>
         </div>
 
-        <div class="m-t-16">
-          <app-profit-expenses [mode]="viewMode"></app-profit-expenses>
+        <div
+          *ngIf="trafficError"
+          class="traffic-inline-error m-t-12 p-12 d-flex align-items-start"
+          role="status"
+        >
+          <mat-icon class="traffic-inline-error__icon flex-shrink-0 m-r-12" color="warn"
+            >warning_amber</mat-icon
+          >
+          <span class="f-s-13">{{ trafficError }}</span>
         </div>
 
-        <!-- Metrics row adapted to MediFollow terminology -->
-        <div class="row m-t-16">
+        <div class="traffic-chart-wrap m-t-16 position-relative">
+          <div
+            class="traffic-chart-overlay"
+            *ngIf="trafficLoading"
+            aria-busy="true"
+            aria-live="polite"
+          >
+            <mat-spinner diameter="40" aria-hidden="true"></mat-spinner>
+            <span class="f-s-13 text-muted m-t-8">Chargement du traffic…</span>
+          </div>
+          <app-profit-expenses
+            [mode]="viewMode"
+            [chartData]="trafficStats?.chartData ?? null"
+          ></app-profit-expenses>
+        </div>
+
+        <!-- Metrics row — liées à trafficStats ; % = (valeur / total) * 100 -->
+        <div
+          class="row m-t-16"
+          [class.traffic-metrics--flash]="trafficMetricsFlash"
+        >
           <div class="col-md-2 m-b-8">
             <div class="f-s-12 text-muted">{{ 'VISITS' | translate }}</div>
-            <div class="f-w-600 f-s-14">29,703 {{ 'SESSIONS' | translate }} (40%)</div>
+            <div class="f-w-600 f-s-14">
+              <ng-container *ngIf="trafficStats; else trafficMetricDash">
+                {{ trafficStats.visits | number }}
+                {{ 'SESSIONS' | translate }}
+                ({{ trafficShare(trafficStats.visits) | number: '1.0-1' }}%)
+              </ng-container>
+            </div>
           </div>
           <div class="col-md-2 m-b-8">
             <div class="f-s-12 text-muted">{{ 'UNIQUE_USERS' | translate }}</div>
-            <div class="f-w-600 f-s-14">24,093 {{ 'USERS' | translate }} (20%)</div>
+            <div class="f-w-600 f-s-14">
+              <ng-container *ngIf="trafficStats; else trafficMetricDash">
+                {{ trafficStats.uniqueUsers | number }}
+                {{ 'USERS' | translate }}
+                ({{ trafficShare(trafficStats.uniqueUsers) | number: '1.0-1' }}%)
+              </ng-container>
+            </div>
           </div>
           <div class="col-md-2 m-b-8">
             <div class="f-s-12 text-muted">{{ 'PAGE_VIEWS' | translate }}</div>
-            <div class="f-w-600 f-s-14">78,706 {{ 'VIEWS' | translate }} (60%)</div>
+            <div class="f-w-600 f-s-14">
+              <ng-container *ngIf="trafficStats; else trafficMetricDash">
+                {{ trafficStats.pageViews | number }}
+                {{ 'VIEWS' | translate }}
+                ({{ trafficShare(trafficStats.pageViews) | number: '1.0-1' }}%)
+              </ng-container>
+            </div>
           </div>
           <div class="col-md-2 m-b-8">
             <div class="f-s-12 text-muted">{{ 'NEW_PATIENTS' | translate }}</div>
-            <div class="f-w-600 f-s-14">22,123 {{ 'PATIENTS' | translate }} (80%)</div>
+            <div class="f-w-600 f-s-14">
+              <ng-container *ngIf="trafficStats; else trafficMetricDash">
+                {{ trafficStats.newPatients | number }}
+                {{ 'PATIENTS' | translate }}
+                ({{ trafficShare(trafficStats.newPatients) | number: '1.0-1' }}%)
+              </ng-container>
+            </div>
           </div>
           <div class="col-md-2 m-b-8">
             <div class="f-s-12 text-muted">{{ 'FOLLOWUP_RATE' | translate }}</div>
-            <div class="f-w-600 f-s-14">{{ 'AVERAGE_RATE' | translate }} (40.15%)</div>
+            <div class="f-w-600 f-s-14">
+              <ng-container *ngIf="trafficStats; else trafficMetricDash">
+                {{ 'AVERAGE_RATE' | translate }}
+                {{ trafficStats.followUpRate | number: '1.0-2' }}%
+              </ng-container>
+            </div>
           </div>
         </div>
+        <ng-template #trafficMetricDash>
+          <span class="text-muted">—</span>
+        </ng-template>
       </mat-card-content>
     </mat-card>
   </div>

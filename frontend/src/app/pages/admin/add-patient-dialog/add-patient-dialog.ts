@@ -1,231 +1,283 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
 
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+// 🎨 Angular Material Imports
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { HttpClient } from '@angular/common/http';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatOptionModule } from '@angular/material/core';
+import { MatError, MatHint } from '@angular/material/form-field';
 
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Inject } from '@angular/core';
-import { I } from '@angular/cdk/keycodes';
-export interface PatientData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  dateOfBirth: Date;
-  gender: string;
-  address: string;
-  emergencyContact: string;
-  medicalRecordNumber: string;
-  insuranceProvider?: string;
-  insuranceNumber?: string;
-  serviceId: string;
-  doctorId: string;
-  nurseId: string;
-  coordinatorId: string;
-}
 @Component({
-  selector: 'app-add-patient-dialog',
+  selector: 'app-super-add-patient-dialog',
   standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule,
     MatSelectModule,
-    MatIconModule,
+    MatOptionModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatButtonModule,
+    MatIconModule,
+    MatError,
+    MatHint,
   ],
   templateUrl: './add-patient-dialog.html',
-  styleUrls: ['./add-patient-dialog.scss']
+  styleUrls: ['./add-patient-dialog.scss'],
 })
 export class AddPatientDialog implements OnInit {
-
   patientForm: FormGroup;
+  photoPreview: string | null = null;
+  selectedFile: File | null = null;
+  isSubmitted = false;
 
-  selectedFile!: File;
-  imagePreview: string | ArrayBuffer | null = null;
-
-  today = new Date();
-
-  services = [
-    { _id: '1', name: 'Cardiology' },
-    { _id: '2', name: 'Neurology' }
-  ];
-
-  doctors = [
-    { _id: '1', firstName: 'Dr John', lastName: 'Smith' },
-    { _id: '2', firstName: 'Dr Sarah', lastName: 'Brown' }
-  ];
-
-  nurses = [
-    { _id: '1', firstName: 'Anna', lastName: 'Lee' },
-    { _id: '2', firstName: 'Maria', lastName: 'White' }
-  ];
-
-  coordinators = [
-    { _id: '1', firstName: 'James', lastName: 'Walker' },
-    { _id: '2', firstName: 'Emma', lastName: 'Scott' }
-  ];
-
-  genderOptions = [
-    { value: 'male', label: 'Male' },
-    { value: 'female', label: 'Female' },
-    { value: 'other', label: 'Other' }
-  ];
+  // ✅ AJOUT: Propriété 'today' pour le datepicker
+  today: Date = new Date();
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<AddPatientDialog>,
-    private http: HttpClient,
-    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-
     this.patientForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      firstName: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(2),
+          Validators.maxLength(50),
+          Validators.pattern(/^[a-zA-Z\u0600-\u06FF\s]+$/),
+        ],
+      ],
+      lastName: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(2),
+          Validators.maxLength(50),
+          Validators.pattern(/^[a-zA-Z\u0600-\u06FF\s]+$/),
+        ],
+      ],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s]{8,15}$/)]],
-      dateOfBirth: [null, Validators.required], // ✅ FIX IMPORTANT
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.pattern(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+          ),
+        ],
+      ],
+      phone: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^(\+216|00216|0)?[2-9]\d{7}$/),
+        ],
+      ],
+      nationalId: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
+      address: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(10),
+          Validators.maxLength(200),
+        ],
+      ],
+      dateOfBirth: [null, [Validators.required, this.minAgeValidator(18)]],
+      age: [{ value: '', disabled: true }],
       gender: ['', Validators.required],
-      address: ['', Validators.required],
-      emergencyContact: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s]{8,15}$/)]],
-      medicalRecordNumber: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-
-
-      // valeurs par défaut pour éviter blocage
-      serviceId: ['1'],
-      doctorId: ['1'],
-      nurseId: ['1'],
-      coordinatorId: ['1']
+      maritalStatus: ['', Validators.required],
+      medicalRecordNumber: [{ value: this.generateMRN(), disabled: true }],
+      emergencyContact: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^(\+216|00216|0)?[2-9]\d{7}$/),
+        ],
+      ],
+      insuranceProvider: [''],
+      insuranceNumber: [''],
     });
   }
 
-  isFormValid(): boolean {
-    return this.patientForm.valid;
+  ngOnInit(): void {
+    this.patientForm.get('dateOfBirth')?.valueChanges.subscribe((date) => {
+      if (date) {
+        const age = this.calculateAge(date);
+        this.patientForm.patchValue({ age }, { emitEvent: false });
+      }
+    });
   }
 
-ngOnInit() {
+  // 🎯 Custom Validator: Âge minimum
+  minAgeValidator(minAge: number) {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return { required: true };
+      const birthDate = new Date(control.value);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+      return age < minAge
+        ? { minAge: { required: minAge, actual: age } }
+        : null;
+    };
+  }
 
-  // DEBUG (tu peux garder)
-  this.patientForm.statusChanges.subscribe(status => {
-    console.log("STATUS:", status);
-    console.log("FORM:", this.patientForm.value);
-  });
+  // 📸 Gestion photo
+  removePhoto(): void {
+    this.photoPreview = null;
+    this.selectedFile = null;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    if (input) input.value = '';
+  }
 
-  // 🔥 MODE EDIT
-  if (this.data) {
-
-    console.log("EDIT MODE DATA:", this.data);
-
-    this.patientForm.patchValue({
-      firstName: this.data.firstName,
-      lastName: this.data.lastName,
-      email: this.data.email,
-      phone: this.data.phone,
-      dateOfBirth: this.data.dateOfBirth,
-      gender: this.data.gender,
-      address: this.data.address,
-      emergencyContact: this.data.emergencyContact,
-      medicalRecordNumber: this.data.medicalRecordNumber,
-      serviceId: this.data.serviceId,
-      doctorId: this.data.doctorId,
-      nurseId: this.data.nurseId,
-      coordinatorId: this.data.coordinatorId
-    });
-
-    // 🔒 désactiver password en mode edit
-    this.patientForm.get('password')?.clearValidators();
-    this.patientForm.get('password')?.updateValueAndValidity();
-
-    // 🖼 image preview
-    if (this.data.photo) {
-      this.imagePreview = this.data.photo;
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.[0]) {
+      const file = input.files[0];
+      if (!file.type.startsWith('image/')) {
+        alert('Veuillez sélectionner une image valide');
+        input.value = '';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image trop volumineuse (max 5MB)');
+        input.value = '';
+        return;
+      }
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.photoPreview = reader.result as string;
+      };
+      reader.readAsDataURL(file);
     }
   }
-}
 
-
-
-
-   onSubmit() {
-
-  if (this.patientForm.invalid) return;
-
-  const formData = new FormData();
-
-  Object.keys(this.patientForm.value).forEach(key => {
-    formData.append(key, this.patientForm.value[key]);
-  });
-
-  if (this.selectedFile) {
-    formData.append('photo', this.selectedFile);
+  // 🔢 Génération MRN unique
+  private generateMRN(): string {
+    const prefix = 'MRN';
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0');
+    return `${prefix}-${timestamp}-${random}`;
   }
 
-  // 🔥 MODE EDIT
-  if (this.data) {
-    this.http.patch(`http://localhost:3000/users/${this.data._id}`, formData)
-      .subscribe({
-        next: () => {
-          this.dialogRef.close(true);
-        },
-        error: (err) => console.error(err)
+  // 🎂 Calcul âge
+  private calculateAge(birthDate: Date): number {
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+    return age;
+  }
+
+  // 📝 Messages d'erreur personnalisés
+  getErrorMessage(fieldName: string): string {
+    const control = this.patientForm.get(fieldName);
+    if (!control?.errors) return '';
+
+    const errors: Record<string, string> = {
+      required: 'Ce champ est obligatoire',
+      email: 'Adresse email invalide',
+      minlength: `Minimum ${control.errors['minlength'].requiredLength} caractères`,
+      maxlength: `Maximum ${control.errors['maxlength']?.requiredLength || 50} caractères`,
+      pattern: this.getPatternMessage(fieldName),
+      minAge: `Âge minimum requis: ${control.errors['minAge']?.required} ans`,
+    };
+
+    for (const key of Object.keys(control.errors)) {
+      if (errors[key]) return errors[key];
+    }
+    return 'Champ invalide';
+  }
+
+  private getPatternMessage(field: string): string {
+    const messages: Record<string, string> = {
+      firstName: 'Uniquement des lettres (a-z, A-Z)',
+      lastName: 'Uniquement des lettres (a-z, A-Z)',
+      phone: 'Format: 22123456 ou +21622123456',
+      nationalId: '8 chiffres requis (ex: 12345678)',
+      password: 'Min 8 car. avec maj, min, chiffre et symbole',
+      emergencyContact: 'Format téléphone invalide',
+    };
+    return messages[field] || 'Format invalide';
+  }
+
+  // ✅ CORRECTION: Retourne boolean strict (pas undefined)
+  isValidField(field: string): boolean {
+    const control = this.patientForm.get(field);
+    return (
+      control?.valid === true && (control?.touched === true || this.isSubmitted)
+    );
+  }
+
+  // ✅ CORRECTION: Retourne boolean strict (pas undefined)
+  hasError(field: string): boolean {
+    const control = this.patientForm.get(field);
+    return (
+      control?.invalid === true &&
+      (control?.touched === true || this.isSubmitted)
+    );
+  }
+
+  onSubmit(): void {
+    this.isSubmitted = true;
+
+    Object.keys(this.patientForm.controls).forEach((key) => {
+      this.patientForm.get(key)?.markAsTouched();
+    });
+
+    if (this.patientForm.valid) {
+      const formData = new FormData();
+
+      const values = this.patientForm.getRawValue();
+
+      // 🔥 envoyer tous les champs
+      Object.keys(values).forEach((key) => {
+        let value = values[key];
+
+        if (key === 'dateOfBirth' && value) {
+          value = new Date(value).toISOString();
+        }
+
+        formData.append(key, value);
       });
+
+      // 🔥 IMPORTANT: envoyer le fichier avec le nom "file"
+      if (this.selectedFile) {
+        formData.append('file', this.selectedFile);
+      }
+
+      // 🔥 TEST
+      console.log('FORM DATA READY');
+
+      this.dialogRef.close(formData); // 👈 envoyer au parent
+    }
   }
 
-  // 🟢 MODE ADD
-  else {
-    this.http.post('http://localhost:3000/users/patient', formData)
-      .subscribe({
-        next: () => {
-          this.dialogRef.close(true);
-        },
-        error: (err) => console.error(err)
-      });
-  }
-}
-  
   onCancel(): void {
     this.dialogRef.close();
   }
-
-  getErrorMessage(fieldName: string): string {
-    const control = this.patientForm.get(fieldName);
-    if (!control) return '';
-
-    if (control.hasError('required')) return 'Required';
-    if (control.hasError('email')) return 'Invalid email';
-    if (control.hasError('pattern')) return 'Invalid format';
-    if (control.hasError('minlength')) return 'Too short';
-
-    return '';
-  }
-
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    this.selectedFile = file;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imagePreview = reader.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
-
-
 }

@@ -6,14 +6,16 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { UsersService } from './users.service';
-
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 // DTOs
 import { CreatePatientDto } from './dto/CreatePatientDto ';
 import { CreateDoctorDto } from './dto/CreateDoctorDto ';
@@ -40,7 +42,7 @@ const multerConfig = {
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   // =========================
   // 🔴 PATIENT (with photo)
@@ -132,10 +134,7 @@ export class UsersController {
     return this.usersService.getNurses();
   }
 
-  @Get('coordinators')
-  getCoordinators() {
-    return this.usersService.getCoordinators();
-  }
+
 
   @Get('admins')
   getAdmins() {
@@ -175,11 +174,81 @@ export class UsersController {
     return this.usersService.updateNurseDossier(patientId, dto);
   }
 
+
+  // users.controller.ts
+  @Get('doctors/:id')
+  getDoctorById(@Param('id') id: string) {
+    return this.usersService.getDoctor(id); // méthode spécifique à créer dans UsersService
+  }
+
+  // ✅ OK ordre correct
+
+  @Get('coordinators')
+  getCoordinators() {
+    return this.usersService.getCoordinators();
+  }
+
+  @Get('coordinators/:id')
+  getCoordinatorById(@Param('id') id: string) {
+    return this.usersService.getCoordinator(id);
+  }
+
+
+  //get profile
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getProfile(@Req() req) {
+    const userId = req.user.userId;
+    return this.usersService.getUser(userId);
+  }
+  // ⚠️ TOUJOURS À LA FIN
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.getUser(id);
   }
 
+  @UseInterceptors(FileInterceptor('file', multerConfig))
+  @Put('doctors/:id')
+  updateDoctor(
+    @Param('id') id: string,
+    @Body() dto: any,
+    @UploadedFile() file?: Express.Multer.File
+  ) {
+    return this.usersService.updateDoctor(id, dto, file);
+  }
+
+  // Update Coordinator with optional photo
+  @UseInterceptors(FileInterceptor('file', multerConfig))
+  @Put('coordinators/:id')
+  updateCoordinator(
+    @Param('id') id: string,
+    @Body() dto: any,
+    @UploadedFile() file?: Express.Multer.File
+  ) {
+    return this.usersService.updateCoordinator(id, dto, file);
+  }
+
+  // Archiving endpoints
+  @Put('coordinators/:id/archive')
+  archiveCoordinator(@Param('id') id: string) {
+    return this.usersService.archiveCoordinator(id);
+  }
+  // Activate / Deactivate
+  @Put('coordinators/:id/activate')
+  activateCoordinator(@Param('id') id: string) {
+    return this.usersService.activateCoordinator(id);
+  }
+
+  @Put('coordinators/:id/deactivate')
+  deactivateCoordinator(@Param('id') id: string) {
+    return this.usersService.deactivateCoordinator(id);
+  }
+
+
+  @Put('doctors/:id/archive')
+  archiveDoctor(@Param('id') id: string) {
+    return this.usersService.archiveDoctor(id);
+  }
   @Put(':id')
   update(@Param('id') id: string, @Body() dto: any) {
     return this.usersService.updateUser(id, dto);
@@ -205,4 +274,20 @@ export class UsersController {
   deactivate(@Param('id') id: string) {
     return this.usersService.deactivateUser(id);
   }
+
+  //verification de l'email
+  @Get('check-email/:email')
+  checkEmail(@Param('email') email: string) {
+    return this.usersService.emailExists(email); // à créer dans UsersService
+  }
+
+
+  // Check email for Coordinator
+  @Get('coordinators/check-email/:email')
+  checkCoordinatorEmail(@Param('email') email: string) {
+    return this.usersService.coordinatorEmailExists(email);
+  }
+
+
+
 }

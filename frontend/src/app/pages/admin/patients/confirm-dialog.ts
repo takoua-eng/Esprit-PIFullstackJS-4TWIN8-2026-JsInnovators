@@ -3,7 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
-  selector: 'confirm-dialog',
+  selector: 'admin-confirm-dialog',
   standalone: true,
   imports: [MatDialogModule, MatButtonModule],
   template: `

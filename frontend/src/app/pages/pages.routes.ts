@@ -2,6 +2,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../core/auth.guard';
 import { roleGuard } from '../core/role.guard';
+//import { staffAdminGuard } from '../core/staff-admin.guard';
 
 // Admin Components
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
@@ -45,6 +46,7 @@ import { DoctorDashboardComponent } from './doctor/dashboard/doctor-dashboard.co
 import { DoctorAlertsComponent } from './doctor/alerts/doctor-alerts.component';
 import { DoctorHistoryComponent } from './doctor/history/doctor-history.component';
 import { DoctorPrescriptionsComponent } from './doctor/prescriptions/doctor-prescriptions.component';
+import { AiPredictionComponent } from './coordinator/ai-prediction/ai-prediction.component';
 
 /** Roles allowed to use the sub-admin `/dashboard/admin/...` area (not patients, not coordinators). */
 const staffAdminGuard = [
@@ -53,51 +55,58 @@ const staffAdminGuard = [
 ];
 
 // ✅ ADMIN ROUTES
+// ✅ ADMIN ROUTES — préfixe URL : `/dashboard/admin/...`
 export const AdminRoutes: Routes = [
   {
-    path: 'admin',
+    path: '',
     component: AdminDashboardComponent,
-    data: { title: 'Admin Dashboard' },
     canActivate: staffAdminGuard,
+    pathMatch: 'full',
   },
   {
-    path: 'admin/patients',
+    path: 'patients',
     component: Patients,
-    data: { title: 'Patients', role: 'Patient' },
     canActivate: staffAdminGuard,
   },
   {
-    path: 'admin/physicians',
+    path: 'physicians',
     component: MedecinsComponent,
-    data: { title: 'Physicians', role: 'Physician' },
     canActivate: staffAdminGuard,
   },
   {
-    path: 'admin/nurses',
+    path: 'nurses',
     component: NursesComponent,
-    data: { title: 'Nurses', role: 'Nurse' },
     canActivate: staffAdminGuard,
   },
   {
-    path: 'admin/coordinators',
+    path: 'coordinators',
     component: CoordinateursComponent,
-    data: { title: 'Coordinators', role: 'Coordinator' },
     canActivate: staffAdminGuard,
   },
   {
-    path: 'admin/auditors',
+    path: 'auditors',
     component: AuditorsComponent,
-    data: { title: 'Auditors', role: 'Auditor' },
     canActivate: staffAdminGuard,
   },
+
+  // ✅ redirect SANS guard
+  {
+    path: 'template-builder',
+    redirectTo: 'templates/create',
+    pathMatch: 'full',
+  },
+  {
+    path: 'questionnaire-templates',
+    redirectTo: 'templates',
+    pathMatch: 'full',
+  },
+
   {
     path: 'profile',
     component: AdminProfileComponent,
-    data: { title: 'Profile' },
     canActivate: staffAdminGuard,
   },
 ];
-
 // ✅ COORDINATOR ROUTES — loaded only from `/admin/coordinator` (see `app.routes.ts`)
 export const CoordinatorRoutes: Routes = [
   {
@@ -115,6 +124,8 @@ export const CoordinatorRoutes: Routes = [
     component: RemindersComponent,
     data: { title: 'Reminders' },
   },
+
+  { path: 'prediction', component: AiPredictionComponent, data: { title: 'AI Prediction' } },
 ];
 
 const nurseOnlyGuard = [authGuard, roleGuard(['nurse'])];
@@ -188,6 +199,7 @@ export const SuperAdminRoutes: Routes = [
     path: '',
     component: SuperAdminDashboardComponent,
     canActivate: superAdminOnlyGuard,
+    pathMatch: 'full',
   },
   {
     path: 'dashboard',
@@ -235,9 +247,9 @@ export const PatientRoutes: Routes = [
 
 /** `/dashboard` lazy chunk: sub-admin, nurse/doctor portals, super-admin shell, patient portal — not coordinator (use `/admin/coordinator`). */
 export const PagesRoutes: Routes = [
-  ...AdminRoutes,
+  ...PatientRoutes,
   ...NurseRoutes,
   ...DoctorRoutes,
+  ...AdminRoutes,
   ...SuperAdminRoutes,
-  ...PatientRoutes,
 ];

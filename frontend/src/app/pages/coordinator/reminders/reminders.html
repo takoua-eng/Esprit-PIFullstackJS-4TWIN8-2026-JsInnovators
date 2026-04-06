@@ -1,5 +1,6 @@
 <div class="reminders-container">
 
+  <!-- HEADER -->
   <mat-card class="welcome-card">
     <mat-card-header>
       <mat-card-title class="page-title">
@@ -12,6 +13,7 @@
     </mat-card-content>
   </mat-card>
 
+  <!-- ACTION BAR -->
   <div class="action-bar">
     <button mat-flat-button color="primary" (click)="toggleForm()">
       <i-tabler name="{{ showForm ? 'x' : 'plus' }}" class="icon-16"></i-tabler>
@@ -19,9 +21,12 @@
     </button>
   </div>
 
+  <!-- CREATE / EDIT FORM -->
   <mat-card class="form-card" *ngIf="showForm">
     <mat-card-content>
-      <h3 class="form-title">{{ 'CREATE_REMINDER' | translate }}</h3>
+      <h3 class="form-title">
+        {{ (editingReminder ? 'EDIT_REMINDER' : 'CREATE_REMINDER') | translate }}
+      </h3>
 
       <form [formGroup]="reminderForm" (ngSubmit)="submitReminder()">
         <div class="form-row">
@@ -29,7 +34,8 @@
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>{{ 'PATIENT' | translate }}</mat-label>
             <mat-select formControlName="patientId"
-              (selectionChange)="onPatientChange($event.value)">
+              (selectionChange)="onPatientChange($event.value)"
+              [disabled]="!!editingReminder">
               <mat-option *ngFor="let p of patients" [value]="p._id">
                 {{ p.name }} — {{ p.department }}
               </mat-option>
@@ -82,7 +88,8 @@
 
         <div class="form-actions">
           <button mat-flat-button color="primary" type="submit">
-            {{ 'SEND_REMINDER' | translate }}
+            <i-tabler name="device-floppy" class="icon-16"></i-tabler>
+            {{ (editingReminder ? 'SAVE_CHANGES' : 'SEND_REMINDER') | translate }}
           </button>
           <button mat-stroked-button type="button" (click)="toggleForm()">
             {{ 'CANCEL' | translate }}
@@ -92,23 +99,64 @@
     </mat-card-content>
   </mat-card>
 
+  <!-- TABLE CARD -->
   <mat-card class="cardWithShadow table-card">
     <mat-card-content>
-      <mat-card-title>{{ 'ALL_REMINDERS' | translate }}</mat-card-title>
-      <mat-card-subtitle>{{ 'ALL_REMINDERS_DESC' | translate }}</mat-card-subtitle>
 
+      <div class="table-header">
+        <div>
+          <mat-card-title>{{ 'ALL_REMINDERS' | translate }}</mat-card-title>
+          <mat-card-subtitle>{{ 'ALL_REMINDERS_DESC' | translate }}</mat-card-subtitle>
+        </div>
+
+        <!-- BARRE DE RECHERCHE -->
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>{{ 'SEARCH_PATIENT' | translate }}</mat-label>
+          <input matInput [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
+            placeholder="ex: Nada..." />
+          <i-tabler matSuffix name="search" class="icon-18"></i-tabler>
+        </mat-form-field>
+      </div>
+
+      <!-- NAVIGATION PAR JOUR -->
+      <div class="day-nav" *ngIf="allDays.length > 0">
+        <button mat-icon-button (click)="prevDay()" [disabled]="currentDayIndex >= allDays.length - 1">
+          <i-tabler name="chevron-left"></i-tabler>
+        </button>
+        <span class="day-label">
+          <i-tabler name="calendar" class="icon-16"></i-tabler>
+          {{ currentDay ? formatDay(currentDay) : '—' }}
+        </span>
+        <button mat-icon-button (click)="nextDay()" [disabled]="currentDayIndex <= 0">
+          <i-tabler name="chevron-right"></i-tabler>
+        </button>
+        <span class="day-count">
+          {{ filteredReminders.length }} reminder{{ filteredReminders.length !== 1 ? 's' : '' }}
+        </span>
+      </div>
+
+      <!-- EMPTY STATE -->
       <div *ngIf="reminders.length === 0" class="empty-state">
         <i-tabler name="bell-off" class="empty-icon"></i-tabler>
         <h4>{{ 'NO_REMINDERS_YET' | translate }}</h4>
         <p>{{ 'CREATE_FIRST_REMINDER' | translate }}</p>
       </div>
 
-      <div class="table-responsive" *ngIf="reminders.length > 0">
-        <table mat-table [dataSource]="reminders" class="w-100">
+      <div *ngIf="reminders.length > 0 && filteredReminders.length === 0" class="empty-state">
+        <i-tabler name="search" class="empty-icon"></i-tabler>
+        <h4>No results</h4>
+        <p>No reminders match your search for this day.</p>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-responsive" *ngIf="paginatedReminders.length > 0">
+        <table mat-table [dataSource]="paginatedReminders" class="w-100">
 
           <ng-container matColumnDef="patient">
             <th mat-header-cell *matHeaderCellDef>{{ 'PATIENT' | translate }}</th>
-            <td mat-cell *matCellDef="let row">{{ getPatientName(row.patientId) }}</td>
+            <td mat-cell *matCellDef="let row">
+              <strong>{{ getPatientName(row.patientId) }}</strong>
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="type">
@@ -120,7 +168,9 @@
 
           <ng-container matColumnDef="message">
             <th mat-header-cell *matHeaderCellDef>{{ 'MESSAGE' | translate }}</th>
-            <td mat-cell *matCellDef="let row">{{ row.message }}</td>
+            <td mat-cell *matCellDef="let row" class="message-cell">
+              {{ row.message }}
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="status">
@@ -142,30 +192,69 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="text-end">{{ 'ACTIONS' | translate }}</th>
             <td mat-cell *matCellDef="let row" class="text-end">
+
+              <!-- Edit -->
+              <button mat-icon-button
+                [matTooltip]="'EDIT' | translate"
+                [disabled]="row.status === 'sent' || row.status === 'cancelled'"
+                (click)="startEdit(row)">
+                <i-tabler name="edit"></i-tabler>
+              </button>
+
+              <!-- Mark sent -->
               <button mat-icon-button color="primary"
                 [matTooltip]="'MARK_SENT' | translate"
                 [disabled]="row.status !== 'scheduled'"
                 (click)="sendReminder(row)">
                 <i-tabler name="send"></i-tabler>
               </button>
+
+              <!-- Cancel -->
               <button mat-icon-button color="warn"
                 [matTooltip]="'CANCEL' | translate"
                 [disabled]="row.status !== 'scheduled'"
                 (click)="cancelReminder(row)">
                 <i-tabler name="ban"></i-tabler>
               </button>
+
+              <!-- Delete -->
               <button mat-icon-button color="warn"
                 [matTooltip]="'DELETE' | translate"
                 (click)="deleteReminder(row)">
                 <i-tabler name="trash"></i-tabler>
               </button>
+
             </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            [class.row-sent]="row.status === 'sent'"
+            [class.row-cancelled]="row.status === 'cancelled'">
+          </tr>
         </table>
       </div>
+
+      <!-- PAGINATION PAR PAGE dans le jour -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button mat-icon-button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">
+          <i-tabler name="chevron-left"></i-tabler>
+        </button>
+        <button
+          *ngFor="let p of pageNumbers"
+          mat-icon-button
+          [class.active-page]="p === currentPage"
+          (click)="goToPage(p)">
+          {{ p + 1 }}
+        </button>
+        <button mat-icon-button (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1">
+          <i-tabler name="chevron-right"></i-tabler>
+        </button>
+        <span class="page-info">
+          Page {{ currentPage + 1 }} / {{ totalPages }}
+        </span>
+      </div>
+
     </mat-card-content>
   </mat-card>
 

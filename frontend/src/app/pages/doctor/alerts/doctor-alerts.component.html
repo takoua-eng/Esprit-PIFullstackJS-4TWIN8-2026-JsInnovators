@@ -9,7 +9,7 @@
         mat-icon-button
         type="button"
         (click)="load()"
-        [disabled]="loading || queueLoading || noPhysicianAccount"
+        [disabled]="loading || queueLoading || noDoctorSession"
         [attr.aria-label]="'NURSE_ALERTS_REFRESH' | translate"
       >
         <i-tabler name="refresh"></i-tabler>
@@ -22,7 +22,7 @@
   </div>
 </div>
 
-@if (noPhysicianAccount && !loading) {
+@if (noDoctorSession && !loading) {
   <mat-card class="cardWithShadow">
     <mat-card-content class="p-24">
       <p class="text-muted m-b-0">{{ 'DOCTOR_ALERTS_NO_PHYSICIAN' | translate }}</p>
@@ -73,8 +73,25 @@
             <ng-container matColumnDef="urgency">
               <th mat-header-cell *matHeaderCellDef>{{ 'DOCTOR_ALERT_COL_URGENCY' | translate }}</th>
               <td mat-cell *matCellDef="let row">
-                <span class="sev-pill" [ngClass]="queueSeverityClass(row)">{{ row.heuristicSeverity }}</span>
+                <span class="sev-pill" [ngClass]="queueSeverityClass(row)">{{ severityLabel(row) }}</span>
                 <span class="f-s-11 text-muted m-l-4">({{ row.sortScore }})</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="videoCall">
+              <th mat-header-cell *matHeaderCellDef>{{ 'DOCTOR_ALERT_COL_VIDEO_CALL' | translate }}</th>
+              <td mat-cell *matCellDef="let row" class="cell-video-call">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  color="primary"
+                  class="btn-video-call"
+                  [disabled]="!activePhysicianId"
+                  (click)="openVideoCall(row)"
+                  [matTooltip]="'DOCTOR_ALERT_VIDEO_CALL_TOOLTIP' | translate"
+                >
+                  <i-tabler name="video" class="icon-18 m-r-4"></i-tabler>
+                  {{ 'DOCTOR_ALERT_VIDEO_CALL_BTN' | translate }}
+                </button>
               </td>
             </ng-container>
             <ng-container matColumnDef="actions">

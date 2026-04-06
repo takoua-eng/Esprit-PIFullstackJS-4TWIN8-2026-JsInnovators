@@ -4,7 +4,7 @@ import { Document, Types } from 'mongoose';
 
 export type VitalParametersDocument = VitalParameters & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'vitalparameters' })
 export class VitalParameters {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
@@ -17,7 +17,11 @@ export class VitalParameters {
   temperature?: number; // en °C, optionnel
 
   @Prop()
-  bloodPressuresystolic?: number; // mmHg, optionnel
+  bloodPressuresystolic?: number; // mmHg (legacy key)
+
+  /** Standard camelCase — some documents / Compass use this key instead of `bloodPressuresystolic`. */
+  @Prop()
+  bloodPressureSystolic?: number;
 
   @Prop()
   bloodPressureDiastolic?: number; // mmHg, optionnel

@@ -9,4 +9,10 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  /** Active MongoDB database name (same connection as `alerts`, `users`, etc.). */
+  @Get('database')
+  getDatabase() {
+    return this.appService.getDatabaseInfo();
+  }
 }

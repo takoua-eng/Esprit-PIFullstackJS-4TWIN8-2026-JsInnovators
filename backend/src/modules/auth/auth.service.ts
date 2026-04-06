@@ -28,6 +28,7 @@ export class AuthService {
 
     const token = randomBytes(32).toString('hex');
     (user as any).resetToken = token;
+    (user as any).resetTokenExpiry = Date.now() + 3600_000; // valable 1h
     await user.save();
 
     await this.sendResetEmail(email, token);
@@ -38,9 +39,12 @@ export class AuthService {
   async resetPassword(token: string, newPassword: string) {
     const user = await this.userModel.findOne({ resetToken: token }).exec();
     if (!user) throw new BadRequestException('Token invalide');
+    if ((user as any).resetTokenExpiry < Date.now())
+      throw new BadRequestException('Token expiré');
 
     user.password = await bcrypt.hash(newPassword, 10);
     (user as any).resetToken = null;
+    (user as any).resetTokenExpiry = null;
     await user.save();
 
     return { message: 'Mot de passe réinitialisé avec succès' };
@@ -51,77 +55,66 @@ export class AuthService {
   // 🔹 Sign In
   async signIn(
     signInDto: SignInDto,
-  ): Promise<{ accessToken: string; role: string }> {
-    const rawEmail = signInDto?.email?.trim();
+  ): Promise<{ accessToken: string; role: string; user: any }> {
+    const email = signInDto?.email?.trim();
     const password = signInDto?.password ?? '';
-    if (!rawEmail || !password) {
-      throw new UnauthorizedException('Email ou mot de passe incorrect');
-    }
+    if (!email || !password) throw new UnauthorizedException('Email ou mot de passe incorrect');
 
-    // Case-insensitive email (do not filter isArchived here — we message explicitly)
-    const escaped = rawEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escaped = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const user = await this.userModel
-      .findOne({
-        email: new RegExp(`^${escaped}$`, 'i'),
-      })
+      .findOne({ email: new RegExp(`^${escaped}$`, 'i') })
       .populate<{ name: string }>('role')
       .exec();
-    if (!user) {
-      throw new UnauthorizedException('Email ou mot de passe incorrect');
-    }
+    if (!user) throw new UnauthorizedException('Email ou mot de passe incorrect');
 
-    if (user.isArchived) {
-      throw new UnauthorizedException(
-        'Ce compte est archivé. Un administrateur doit le restaurer (isArchived: false) pour permettre la connexion.',
-      );
-    }
-
-    if (user.isActive === false) {
-      throw new UnauthorizedException('Compte désactivé');
-    }
+    if (user.isArchived) throw new UnauthorizedException('Compte archivé');
+    if (user.isActive === false) throw new UnauthorizedException('Compte désactivé');
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Email ou mot de passe incorrect');
-    }
+    if (!isPasswordValid) throw new UnauthorizedException('Email ou mot de passe incorrect');
 
     const roleName =
       user.role && typeof user.role === 'object' && 'name' in user.role
         ? String((user.role as { name: string }).name)
         : '';
 
-    const payload = {
-      sub: user._id,
-      email: user.email,
-      role: roleName,
-    };
+    const payload = { sub: user._id, email: user.email, role: roleName };
     const accessToken = this.jwtService.sign(payload);
 
-    return { accessToken, role: roleName };
+    // ✅ Return the user object (excluding password & sensitive tokens)
+    const { password: _, resetToken: __, resetTokenExpiry: ___, ...userMetadata } = (user as any).toObject();
+
+    return {
+      accessToken,
+      role: roleName,
+      user: userMetadata,
+    };
   }
 
   // 🔹 Envoi email réinitialisation
   private async sendResetEmail(email: string, token: string) {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: this.configService.get<string>('EMAIL_USER'),
-        pass: this.configService.get<string>('EMAIL_PASS'),
-      },
-    });
+const transporter = nodemailer.createTransport({
+  host: this.configService.get<string>('SMTP_HOST'),
+  port: Number(this.configService.get<string>('SMTP_PORT')),
+  secure: this.configService.get<string>('SMTP_SECURE') === 'true',
+  auth: {
+    user: this.configService.get<string>('SMTP_USER'),
+    pass: this.configService.get<string>('SMTP_PASS'),
+  },
+});
 
-    const resetLink = `${this.configService.get<string>('FRONTEND_URL')}/reset-password?token=${token}`;
+  const resetLink = `${this.configService.get<string>('FRONTEND_URL')}/reset-password?token=${token}`;
 
-    await transporter.sendMail({
-      from: `"Mediflow" <${this.configService.get<string>('EMAIL_USER')}>`,
-      to: email,
-      subject: 'Réinitialisation du mot de passe',
-      html: `
-        <h3>Réinitialisation du mot de passe</h3>
-        <p>Cliquez sur le lien ci-dessous :</p>
-        <a href="${resetLink}">${resetLink}</a>
-        <p>Ce lien expire bientôt.</p>
-      `,
-    });
-  }
+  await transporter.sendMail({
+    from: `"Mediflow" <${this.configService.get<string>('SMTP_USER')}>`,
+    to: email,
+    subject: 'Réinitialisation du mot de passe',
+    html: `
+      <h3>Réinitialisation du mot de passe</h3>
+      <p>Cliquez sur le lien ci-dessous :</p>
+      <a href="${resetLink}">${resetLink}</a>
+      <p>Ce lien expire bientôt.</p>
+    `,
+  });
+}
 }

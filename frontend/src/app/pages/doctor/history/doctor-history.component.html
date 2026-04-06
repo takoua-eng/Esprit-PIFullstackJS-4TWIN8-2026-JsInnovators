@@ -11,8 +11,8 @@
 </div>
 
 <div class="row m-b-16">
-  <div class="col-12 col-md-6">
-    <mat-form-field appearance="outline" class="w-100">
+  <div class="col-12 col-md-6 m-b-16">
+    <mat-form-field appearance="outline" class="w-100 m-b-0">
       <mat-label>{{ 'NURSE_RECORDS_FILTER_PATIENT' | translate }}</mat-label>
       <mat-select [(ngModel)]="selectedPatientId" (ngModelChange)="loadHistory()">
         @for (p of patients; track p._id) {
@@ -21,81 +21,23 @@
       </mat-select>
     </mat-form-field>
   </div>
-</div>
-
-<div class="row m-b-24">
-  <div class="col-md-4 m-b-12">
-    <mat-card class="cardWithShadow">
-      <mat-card-content class="p-20">
-        <div class="f-s-13 text-muted">{{ 'DOCTOR_ANALYSIS_AVG_TEMP' | translate }}</div>
-        <div class="d-flex align-items-center gap-8">
-          <div class="f-w-700 f-s-26">{{ avgTemperature }}</div>
-          <span class="trend-chip" [ngClass]="trendClass(temperatureTrend)">
-            <mat-icon>{{ trendIcon(temperatureTrend) }}</mat-icon>
-          </span>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-  <div class="col-md-4 m-b-12">
-    <mat-card class="cardWithShadow">
-      <mat-card-content class="p-20">
-        <div class="f-s-13 text-muted">{{ 'DOCTOR_ANALYSIS_AVG_HR' | translate }}</div>
-        <div class="d-flex align-items-center gap-8">
-          <div class="f-w-700 f-s-26">{{ avgHeartRate }}</div>
-          <span class="trend-chip" [ngClass]="trendClass(heartRateTrend)">
-            <mat-icon>{{ trendIcon(heartRateTrend) }}</mat-icon>
-          </span>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-  <div class="col-md-4 m-b-12">
-    <mat-card class="cardWithShadow">
-      <mat-card-content class="p-20">
-        <div class="f-s-13 text-muted">{{ 'DOCTOR_ANALYSIS_LAST_PAIN' | translate }}</div>
-        <div class="d-flex align-items-center gap-8">
-          <div class="f-w-700 f-s-26">{{ latestPain }}</div>
-          <span class="trend-chip" [ngClass]="trendClass(painTrend)">
-            <mat-icon>{{ trendIcon(painTrend) }}</mat-icon>
-          </span>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-  <div class="col-md-4 m-b-12">
-    <mat-card class="cardWithShadow">
-      <mat-card-content class="p-20">
-        <div class="f-s-13 text-muted">{{ 'DOCTOR_ANALYSIS_BP_FLAGS' | translate }}</div>
-        <div class="f-w-700 f-s-26">{{ bpOutOfRangeCount }}</div>
-      </mat-card-content>
-    </mat-card>
+  <div class="col-12 col-md-6 d-flex align-items-center justify-content-md-end m-b-16">
+    <button mat-flat-button color="primary" 
+            [disabled]="!selectedPatientId"
+            (click)="openSendQuestionnaireDialog()">
+      <mat-icon class="m-r-8">send</mat-icon>
+      {{ 'SEND_QUESTIONNAIRE' | translate }}
+    </button>
   </div>
 </div>
 
-<mat-card class="cardWithShadow m-b-24">
-  <mat-card-content class="p-20">
-    <div class="f-w-600 m-b-12">{{ 'DOCTOR_ANALYSIS_LAST7_TITLE' | translate }}</div>
-    <div class="trend-grid">
-      @for (d of trendsLast7Days; track d.label) {
-        <div class="trend-day">
-          <div class="trend-bar-wrap">
-            <div class="trend-bar" [style.width]="barWidth(d)"></div>
-          </div>
-          <div class="trend-day-label">{{ d.label }}</div>
-          <div class="trend-day-value">{{ d.value }}</div>
-        </div>
-      }
-    </div>
-  </mat-card-content>
-</mat-card>
 
 <div class="row m-b-24">
   <div class="col-md-6 m-b-12">
     <mat-card class="cardWithShadow h-100">
       <mat-card-content class="p-20">
         <div class="f-w-600 m-b-12">{{ 'DOCTOR_VALIDATION_TITLE' | translate }}</div>
-        @if (pendingValidationVitals.length === 0 && pendingValidationSymptoms.length === 0) {
+        @if (pendingValidationVitals.length === 0 && pendingValidationSymptoms.length === 0 && unreviewedResponses.length === 0) {
           <p class="text-muted m-b-0">{{ 'DOCTOR_VALIDATION_EMPTY' | translate }}</p>
         } @else {
           <div class="d-flex flex-column gap-8">
@@ -119,6 +61,18 @@
                   <button mat-stroked-button color="primary" type="button" (click)="validateSymptom(s)">{{ 'DOCTOR_VALIDATE_ACTION' | translate }}</button>
                   <button mat-flat-button color="warn" type="button" (click)="openUrgentClinicFromSymptom(s)">
                     {{ 'DOCTOR_URGENT_CLINIC_CTA' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+            @for (r of unreviewedResponses; track r._id) {
+              <div class="validation-row questionnaire-row">
+                <div class="text-muted f-s-12">{{ r.createdAt | date: 'short' }} · {{ 'QUESTIONNAIRE_RESPONSE' | translate }}</div>
+                <div class="f-s-13 m-b-6">{{ 'QUESTIONNAIRE' | translate }} — {{ "WAITING_REVIEW" | translate }}</div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button mat-stroked-button color="accent" type="button" (click)="openReviewDialog(r)">
+                    <mat-icon class="m-r-4">rate_review</mat-icon>
+                    {{ 'REVIEW_ACTION' | translate }}
                   </button>
                 </div>
               </div>
@@ -180,8 +134,10 @@
             <td mat-cell *matCellDef="let row">
               @if (row.source === 'vital') {
                 {{ 'NURSE_RECORDS_TAB_VITALS' | translate }}
-              } @else {
+              } @else if (row.source === 'symptom') {
                 {{ 'NURSE_RECORDS_TAB_SYMPTOMS' | translate }}
+              } @else if (row.source === 'questionnaire') {
+                {{ 'QUESTIONNAIRE' | translate }}
               }
             </td>
           </ng-container>

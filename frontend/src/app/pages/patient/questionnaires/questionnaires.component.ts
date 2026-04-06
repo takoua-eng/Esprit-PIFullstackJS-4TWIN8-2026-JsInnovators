@@ -1,9 +1,10 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
 import { CommonModule } from '@angular/common';
 import { PatientService } from 'src/app/services/patient.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 interface QuestionItem {
   key: string;
@@ -29,95 +30,155 @@ interface Template {
 
 @Component({
   selector: 'app-questionnaires',
-  imports: [MaterialModule, FormsModule, ReactiveFormsModule, CommonModule],
+  imports: [MaterialModule, FormsModule, ReactiveFormsModule, CommonModule, TranslateModule],
   templateUrl: './questionnaires.component.html',
   styleUrl: './questionnaires.component.scss',
 })
 export class QuestionnairesComponent implements OnInit {
-  templates: Template[] = [];
+  instances: any[] = [];
   isLoading = true;
-  noTemplatesYet = false;
+  noQuestionnaires = false;
 
-  constructor(private fb: FormBuilder, private patientService: PatientService) {}
+  constructor(
+    private fb: FormBuilder,
+    private patientService: PatientService
+  ) {}
 
   ngOnInit() {
     this.patientService.getAssignedQuestionnaires().subscribe({
-      next: (templates) => {
-        if (!templates || templates.length === 0) {
-          this.noTemplatesYet = true;
+      next: (instances) => {
+        if (!instances || instances.length === 0) {
+          this.noQuestionnaires = true;
           this.isLoading = false;
           return;
         }
 
-        // Check which ones were already completed today
-        const checks = templates.map(t =>
-          this.patientService.hasCompletedTemplate(t._id)
-        );
+        // Check completion status for each instance using the new backend endpoint
+        if (instances.length > 0) {
+          const checks = instances.map(inst => {
+            const id = inst._id || inst.id;
+            if (!id) return of(false); // Safety: avoid 404 for empty ID
+            return this.patientService.hasCompletedInstance(id);
+          });
 
-        forkJoin(checks).subscribe({
-          next: (results) => {
-            this.templates = templates.map((t, i) => ({
-              ...t,
-              completedToday: results[i],
-              isOpen: false,
-              form: undefined,
-              isSubmitting: false,
-              successMessage: '',
-              errorMessage: '',
-            }));
-            this.isLoading = false;
-          },
-          error: () => {
-            this.templates = templates.map(t => ({ ...t, completedToday: false, isOpen: false, isSubmitting: false, successMessage: '', errorMessage: '' }));
-            this.isLoading = false;
-          },
-        });
+          forkJoin(checks).subscribe({
+            next: (statuses) => {
+              this.instances = instances.map((inst, index) => ({
+                ...inst,
+                isOpen: false,
+                form: undefined,
+                isSubmitting: false,
+                successMessage: '',
+                errorMessage: '',
+                completedToday: statuses[index]
+              }));
+              this.isLoading = false;
+            },
+            error: () => {
+              // Fallback: show instances without completion status if check fails
+              this.instances = instances.map((inst) => ({
+                ...inst,
+                isOpen: false,
+                form: undefined,
+                isSubmitting: false,
+                successMessage: '',
+                errorMessage: '',
+                completedToday: false
+              }));
+              this.isLoading = false;
+            }
+          });
+        }
       },
       error: () => {
-        this.noTemplatesYet = true;
+        this.noQuestionnaires = true;
         this.isLoading = false;
       },
     });
   }
 
-  openTemplate(t: Template) {
-    if (t.completedToday) return;
-    t.isOpen = true;
+  openInstance(inst: any) {
+    inst.isOpen = true;
     const controls: any = {};
-    t.questions.forEach(q => {
-      if (q.type === 'scale') {
-        controls[q.key] = ['', [Validators.required, Validators.min(q.min ?? 1), Validators.max(q.max ?? 10)]];
-      } else if (q.type === 'radio') {
-        controls[q.key] = ['', Validators.required];
+    
+    // instance.questions is the actual list of Questions (from template + doctor extra)
+    inst.questions.forEach((q: any) => {
+      const qId = q._id || q.id;
+      const validators = [];
+      if (q.required) validators.push(Validators.required);
+      
+      if (q.type === 'number') {
+        controls[qId] = ['', [...validators, Validators.pattern('^-?\\d*(\\.\\d+)?$')]];
       } else {
-        controls[q.key] = [''];
+        controls[qId] = ['', validators];
       }
     });
-    t.form = this.fb.group(controls);
+
+    inst.form = this.fb.group(controls);
   }
 
-  getControl(t: Template, key: string): FormControl {
-    return t.form!.get(key) as FormControl;
+  getControl(inst: any, question: any): any {
+    const qId = question._id || question.id;
+    return inst.form?.get(qId);
   }
 
-  submit(t: Template) {
-    if (!t.form || t.form.invalid) { t.form?.markAllAsTouched(); return; }
-    t.isSubmitting = true;
-    t.successMessage = '';
-    t.errorMessage = '';
-    const answers: Record<string, string> = {};
-    t.questions.forEach(q => { answers[q.key] = String(t.form!.value[q.key] ?? ''); });
+  isChecked(inst: any, question: any, option: string): boolean {
+    const qId = question._id || question.id;
+    const value = inst.form?.get(qId)?.value;
+    return Array.isArray(value) && value.includes(option);
+  }
 
-    this.patientService.submitQuestionnaireWithTemplate(t._id, answers).subscribe({
+  toggleCheckbox(inst: any, question: any, option: string) {
+    const qId = question._id || question.id;
+    const control = inst.form?.get(qId);
+    if (!control) return;
+    
+    const current = Array.isArray(control.value) ? [...control.value] : [];
+    const idx = current.indexOf(option);
+    if (idx > -1) current.splice(idx, 1);
+    else current.push(option);
+    
+    control.setValue(current);
+    control.markAsDirty();
+  }
+
+  submit(inst: any) {
+    if (!inst.form || inst.form.invalid) {
+      Object.keys(inst.form?.controls || {}).forEach(key => {
+        inst.form.get(key)?.markAsTouched();
+      });
+      return;
+    }
+
+    inst.isSubmitting = true;
+    inst.successMessage = '';
+    inst.errorMessage = '';
+
+    const answers = inst.questions.map((q: any) => {
+      const qId = q._id || q.id;
+      return {
+        questionId: qId,
+        value: inst.form.value[qId]
+      };
+    });
+
+    const instanceId = inst._id || inst.id;
+    if (!instanceId) {
+      inst.isSubmitting = false;
+      return;
+    }
+
+    this.patientService.submitInstanceResponse(instanceId, answers).subscribe({
       next: () => {
-        t.isSubmitting = false;
-        t.completedToday = true;
-        t.isOpen = false;
-        t.successMessage = 'Questionnaire submitted successfully!';
+        inst.isSubmitting = false;
+        inst.isOpen = false;
+        inst.completedToday = true;
+        inst.successMessage = 'SUBMIT_SUCCESS';
+        setTimeout(() => (inst.successMessage = ''), 5000);
       },
-      error: (err: any) => {
-        t.isSubmitting = false;
-        t.errorMessage = err?.error?.message ?? 'Failed to submit. Please try again.';
+      error: (err) => {
+        inst.isSubmitting = false;
+        inst.errorMessage = err.error?.message || 'Error submitting response';
       },
     });
   }

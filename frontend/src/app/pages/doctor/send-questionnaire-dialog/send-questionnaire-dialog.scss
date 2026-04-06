@@ -1,0 +1,45 @@
+.dialog-header {
+  border-bottom: 1px solid #f1f1f1;
+  padding-bottom: 8px;
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+.dialog-content {
+  padding-top: 16px !important;
+  min-height: 120px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.template-desc {
+  margin-top: 8px;
+  display: block;
+  font-style: italic;
+  color: #666;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 0;
+}
+
+.no-templates {
+  text-align: center;
+  padding: 24px;
+  color: #888;
+}
+
+.dialog-actions {
+  padding: 16px 24px !important;
+  border-top: 1px solid #f1f1f1;
+}

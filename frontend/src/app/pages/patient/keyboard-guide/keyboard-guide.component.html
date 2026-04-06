@@ -1,0 +1,83 @@
+<ng-container *ngIf="visible">
+  <!-- Backdrop -->
+  <div class="kb-backdrop" (click)="close()" role="presentation"></div>
+
+  <!-- Panel -->
+  <div
+    class="kb-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="kb-guide-title"
+    tabindex="-1">
+
+    <div class="kb-header">
+      <div class="kb-title-row">
+        <div class="kb-badge">
+          <i-tabler name="keyboard" class="icon-18"></i-tabler>
+        </div>
+        <h2 id="kb-guide-title" class="kb-title">Keyboard Shortcuts</h2>
+      </div>
+      <button
+        mat-icon-button
+        class="kb-close"
+        (click)="close()"
+        aria-label="Close keyboard shortcuts guide">
+        <i-tabler name="x"></i-tabler>
+      </button>
+    </div>
+
+    <p class="kb-subtitle">
+      Use these shortcuts to navigate without a mouse. Press <kbd>?</kbd> or <kbd>F1</kbd> anytime to toggle this guide.
+    </p>
+
+    <div class="kb-sections">
+
+      <div class="kb-section">
+        <h3 class="kb-section-title">
+          <i-tabler name="settings" class="icon-14"></i-tabler>
+          General
+        </h3>
+        <div class="kb-list">
+          <div *ngFor="let s of generalShortcuts" class="kb-row">
+            <kbd class="kb-key">{{ s.key }}</kbd>
+            <span class="kb-desc">{{ s.description }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kb-section">
+        <h3 class="kb-section-title">
+          <i-tabler name="navigation" class="icon-14"></i-tabler>
+          Navigation
+        </h3>
+        <div class="kb-list">
+          <div *ngFor="let s of navShortcuts" class="kb-row">
+            <kbd class="kb-key">{{ s.key }}</kbd>
+            <span class="kb-desc">{{ s.description }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kb-section">
+        <h3 class="kb-section-title">
+          <i-tabler name="click" class="icon-14"></i-tabler>
+          Interaction
+        </h3>
+        <div class="kb-list">
+          <div *ngFor="let s of interactionShortcuts" class="kb-row">
+            <kbd class="kb-key">{{ s.key }}</kbd>
+            <span class="kb-desc">{{ s.description }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="kb-footer">
+      <button mat-flat-button color="primary" (click)="close()">
+        Got it — Close guide
+      </button>
+    </div>
+
+  </div>
+</ng-container>

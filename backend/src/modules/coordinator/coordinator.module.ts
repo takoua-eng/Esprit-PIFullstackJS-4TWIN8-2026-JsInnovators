@@ -4,14 +4,10 @@ import { CoordinatorController } from './coordinator.controller';
 import { CoordinatorService } from './coordinator.service';
 import { User, UserSchema } from '../users/users.schema';
 import { Reminder, ReminderSchema } from './reminder.schema';
-
-// Schémas légers pour lire les collections de la collègue
+import { NotificationsModule } from '../notifications/notifications.module';
 import { Schema } from 'mongoose';
 
-const VitalParameterSchema = new Schema(
-  {},
-  { strict: false, collection: 'vitalparameters' },
-);
+const VitalParameterSchema = new Schema({}, { strict: false, collection: 'vitalparameters' });
 const SymptomSchema = new Schema({}, { strict: false, collection: 'symptoms' });
 
 @Module({
@@ -22,6 +18,7 @@ const SymptomSchema = new Schema({}, { strict: false, collection: 'symptoms' });
       { name: 'VitalParameter', schema: VitalParameterSchema },
       { name: 'Symptom', schema: SymptomSchema },
     ]),
+    NotificationsModule,
   ],
   controllers: [CoordinatorController],
   providers: [CoordinatorService],

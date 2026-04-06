@@ -4,7 +4,7 @@ import { Document, Types } from 'mongoose';
 
 export type SymptomsDocument = Symptoms & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'symptoms' })
 export class Symptoms {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })

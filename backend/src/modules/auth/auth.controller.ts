@@ -1,30 +1,105 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UnauthorizedException
+} from '@nestjs/common';
+
 import { AuthService } from './auth.service';
-import { SignUpDto } from '../auth/dto/SignUp.dto';
 import { SignInDto } from '../auth/dto/SignIn.dto';
-import { User } from '../users/users.schema';
 import { ForgotPasswordDto } from '../auth/dto/forgot-password.dto';
 import { ResetPasswordDto } from '../auth/dto/reset-password.dto';
 
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { JwtService } from '@nestjs/jwt';
+
+// 👇 عدّل path حسب مشروعك
+import { User, UserDocument } from '../users/users.schema';
+
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
 
+  constructor(
+    private readonly authService: AuthService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private jwtService: JwtService
+  ) {}
 
+  // ================= CLASSIC LOGIN =================
   @Post('login')
   signIn(
     @Body() signInDto: SignInDto,
-  ): Promise<{ accessToken: string; role: string }> {
+  ): Promise<{ accessToken: string; role: string; user: any }> {
     return this.authService.signIn(signInDto);
   }
 
+  // ================= FORGOT PASSWORD =================
   @Post('forgot-password')
   forgotPassword(@Body() body: ForgotPasswordDto) {
     return this.authService.forgotPassword(body.email);
   }
 
+  // ================= RESET PASSWORD =================
   @Post('reset-password')
   resetPassword(@Body() body: ResetPasswordDto) {
     return this.authService.resetPassword(body.token, body.newPassword);
+  }
+
+  // ================= FACE LOGIN =================
+@Post('face-login')
+async faceLogin(@Body() body: any) {
+
+  const { faceDescriptor } = body;
+
+  if (!faceDescriptor) {
+    throw new UnauthorizedException('No face data provided');
+  }
+
+  const users = await this.userModel.find({
+    faceDescriptor: { $exists: true, $ne: [] }
+  });
+
+  let bestMatch: UserDocument | null = null; // ✅ typage explicite
+  let minDistance = Infinity;
+
+  for (const user of users) {
+    const distance = this.euclideanDistance(
+      faceDescriptor,
+      user.faceDescriptor
+    );
+
+    if (distance < minDistance) {
+      minDistance = distance;
+      bestMatch = user;
+    }
+  }
+
+  if (bestMatch && minDistance < 0.6) {
+    return {
+      user: bestMatch,
+      token: this.generateJWT(bestMatch)
+    };
+  }
+
+  throw new UnauthorizedException('Face not recognized');
+}
+
+  // ================= DISTANCE =================
+  euclideanDistance(desc1: number[], desc2: number[]) {
+    return Math.sqrt(
+      desc1.reduce((sum, val, i) =>
+        sum + Math.pow(val - desc2[i], 2), 0
+      )
+    );
+  }
+
+  // ================= JWT =================
+  generateJWT(user: any) {
+    return this.jwtService.sign({
+      sub: user._id,
+      email: user.email,
+      role: user.role
+    });
   }
 }

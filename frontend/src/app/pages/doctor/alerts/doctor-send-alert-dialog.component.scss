@@ -1,0 +1,55 @@
+.sev-band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sev-band-high {
+  background: rgba(214, 48, 49, 0.18);
+  color: #a93226;
+  border: 1px solid rgba(192, 57, 43, 0.35);
+}
+
+.sev-band-medium {
+  background: rgba(243, 156, 18, 0.28);
+  color: #b9770e;
+  border: 1px solid rgba(211, 172, 49, 0.45);
+}
+
+.sev-band-low {
+  background: rgba(46, 213, 115, 0.22);
+  color: #1e8449;
+  border: 1px solid rgba(39, 174, 96, 0.35);
+}
+
+.sev-band-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+}
+
+.sev-band-preset {
+  font-weight: 700;
+}
+
+.m-b-8 {
+  margin-bottom: 8px;
+}
+
+.m-t-12 {
+  margin-top: 12px;
+}
+
+.m-t-0 {
+  margin-top: 0;
+}
+
+.m-b-12 {
+  margin-bottom: 12px;
+}

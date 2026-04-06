@@ -1,0 +1,35 @@
+<div mat-dialog-title class="dialog-header">
+  <h2>{{ "SEND_QUESTIONNAIRE_TO" | translate: { name: data.patientName } }}</h2>
+</div>
+
+<mat-dialog-content class="dialog-content">
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>{{ "LOADING_TEMPLATES" | translate }}</p>
+  </div>
+
+  <div *ngIf="!loading && templates.length === 0" class="no-templates">
+    <p>{{ "NO_TEMPLATES_AVAILABLE" | translate }}</p>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width" *ngIf="!loading && templates.length > 0">
+    <mat-label>{{ "SELECT_QUESTIONNAIRE_TEMPLATE" | translate }}</mat-label>
+    <mat-select [(ngModel)]="selectedTemplateId" required>
+      <mat-option *ngFor="let t of templates" [value]="t._id">
+        {{ t.title }}
+      </mat-option>
+    </mat-select>
+    <mat-hint *ngIf="selectedTemplateId && selectedTemplate?.description" class="template-desc">
+      {{ selectedTemplate.description }}
+    </mat-hint>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button (click)="onCancel()">{{ "CAN_CANCEL" | translate }}</button>
+  <button mat-raised-button color="primary" 
+          [disabled]="!selectedTemplateId" 
+          (click)="onConfirm()">
+    {{ "SEND_NOW" | translate }}
+  </button>
+</mat-dialog-actions>

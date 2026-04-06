@@ -4,7 +4,8 @@
    ============================================================ */
 
 /* ── Reset ─────────────────────────────────────────────────── */
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
 }
@@ -55,14 +56,38 @@ html, body {
   justify-content: center;
 }
 
-.logo { max-width: 170px; margin-bottom: 20px; }
-.title { font-weight: 700; margin-bottom: 5px; }
-.subtitle { color: #777; margin-bottom: 20px; }
+.logo {
+  max-width: 170px;
+  margin-bottom: 20px;
+}
+.title {
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+.subtitle {
+  color: #777;
+  margin-bottom: 20px;
+}
 
-.social-login { display: flex; gap: 12px; margin-bottom: 15px; }
-.social-btn { flex: 1; height: 42px; border-radius: 25px; }
-.divider { text-align: center; color: #999; margin: 10px 0 20px; }
-.full { width: 100%; margin-bottom: 15px; }
+.social-login {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+.social-btn {
+  flex: 1;
+  height: 42px;
+  border-radius: 25px;
+}
+.divider {
+  text-align: center;
+  color: #999;
+  margin: 10px 0 20px;
+}
+.full {
+  width: 100%;
+  margin-bottom: 15px;
+}
 
 .form-links {
   display: flex;
@@ -89,7 +114,9 @@ html, body {
   font-size: 14px;
   text-decoration: none;
 
-  &:hover { text-decoration: underline; }
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 /* ============================================================
@@ -122,11 +149,20 @@ html, body {
   }
 }
 
-.custom-dialog-panel ::-webkit-scrollbar { width: 8px; }
-.custom-dialog-panel ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-.custom-dialog-panel ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-.custom-dialog-panel ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-
+.custom-dialog-panel ::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-dialog-panel ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+.custom-dialog-panel ::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+.custom-dialog-panel ::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
 
 /* ============================================================
    HIGH CONTRAST MODE — ACCESSIBILITÉ WCAG AAA
@@ -140,21 +176,20 @@ html, body {
    ============================================================ */
 
 html.high-contrast {
-
   /* ── Design tokens ────────────────────────────────────────── */
-  --hc-bg:        #0b0e17;   /* fond principal */
-  --hc-bg2:       #131825;   /* cartes */
-  --hc-bg3:       #1a2035;   /* éléments surélevés */
-  --hc-bg4:       #222840;   /* hover états */
-  --hc-text:      #eef2ff;   /* texte principal */
-  --hc-text2:     #8899bb;   /* texte secondaire */
-  --hc-accent:    #5ebbff;   /* bleu accent */
-  --hc-border:    #2e3a55;   /* bordures */
-  --hc-border2:   #3d4f72;   /* bordures interactives */
-  --hc-good:      #34d399;   /* vert succès */
-  --hc-warn:      #fbbf24;   /* orange avertissement */
-  --hc-danger:    #f87171;   /* rouge danger */
-  --hc-purple:    #a78bfa;   /* violet symptômes */
+  --hc-bg: #0b0e17; /* fond principal */
+  --hc-bg2: #131825; /* cartes */
+  --hc-bg3: #1a2035; /* éléments surélevés */
+  --hc-bg4: #222840; /* hover états */
+  --hc-text: #eef2ff; /* texte principal */
+  --hc-text2: #8899bb; /* texte secondaire */
+  --hc-accent: #5ebbff; /* bleu accent */
+  --hc-border: #2e3a55; /* bordures */
+  --hc-border2: #3d4f72; /* bordures interactives */
+  --hc-good: #34d399; /* vert succès */
+  --hc-warn: #fbbf24; /* orange avertissement */
+  --hc-danger: #f87171; /* rouge danger */
+  --hc-purple: #a78bfa; /* violet symptômes */
 
   /* Fond et couleur de base */
   background-color: var(--hc-bg) !important;
@@ -172,7 +207,10 @@ html.high-contrast * {
 }
 
 /* Fonds globaux — exclusions SVG pour ne pas casser les icônes */
-html.high-contrast *:not(svg):not(path):not(circle):not(polyline):not(line):not(rect):not(ellipse):not(i-tabler) {
+html.high-contrast
+  *:not(svg):not(path):not(circle):not(polyline):not(line):not(rect):not(
+    ellipse
+  ):not(i-tabler) {
   background-color: var(--hc-bg) !important;
   border-color: var(--hc-border) !important;
 }
@@ -552,11 +590,19 @@ html.high-contrast .legend-bar {
 
 /* Dots — garder les couleurs sémantiques */
 html.high-contrast .sub-dot.green,
-html.high-contrast .legend-dot.green { background: var(--hc-good) !important; }
+html.high-contrast .legend-dot.green {
+  background: var(--hc-good) !important;
+}
 html.high-contrast .sub-dot.orange,
-html.high-contrast .legend-dot.orange { background: var(--hc-warn) !important; }
-html.high-contrast .sub-dot.red { background: var(--hc-danger) !important; }
-html.high-contrast .legend-dot.grey { background: var(--hc-text2) !important; }
+html.high-contrast .legend-dot.orange {
+  background: var(--hc-warn) !important;
+}
+html.high-contrast .sub-dot.red {
+  background: var(--hc-danger) !important;
+}
+html.high-contrast .legend-dot.grey {
+  background: var(--hc-text2) !important;
+}
 
 /* ── Avatars ──────────────────────────────────────────────── */
 
@@ -918,11 +964,13 @@ html.high-contrast .chart-loading {
    FIN HIGH CONTRAST
    ============================================================ */
 
-
-   /* ── PATCH CRITIQUE — Sidebar visible + hover corrigé ── */
+/* ── PATCH CRITIQUE — Sidebar visible + hover corrigé ── */
 
 /* 1. Neutraliser complètement la règle globale * qui écrase tout */
-html.high-contrast *:not(svg):not(path):not(circle):not(polyline):not(line):not(rect):not(ellipse):not(i-tabler) {
+html.high-contrast
+  *:not(svg):not(path):not(circle):not(polyline):not(line):not(rect):not(
+    ellipse
+  ):not(i-tabler) {
   background-color: unset !important;
 }
 
@@ -1055,4 +1103,248 @@ html.high-contrast .mat-mdc-row:hover td {
 html.high-contrast .mat-mdc-header-row,
 html.high-contrast th.mat-mdc-header-cell {
   background-color: #1a2035 !important;
+}
+
+/* ============================================================
+   KEYBOARD ACCESSIBILITY — WCAG 2.1 AA
+   Styles globaux pour la compatibilité clavier complète
+   ============================================================ */
+
+/* ── Skip Navigation Link ────────────────────────────────── */
+.skip-nav-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 9999;
+  background: #2563eb;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 0 0 8px 8px;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  transition: top 0.15s ease;
+  outline: none;
+
+  &:focus {
+    top: 0;
+    outline: 3px solid #fbbf24;
+    outline-offset: 2px;
+  }
+}
+
+/* Skip to form inside pages */
+.skip-to-form {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 9999;
+  background: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 0 0 8px 8px;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+
+  &:focus {
+    top: 0;
+    outline: 3px solid #fbbf24;
+  }
+}
+
+/* ── Focus visible — tous les éléments interactifs ────────── */
+*:focus-visible {
+  outline: 3px solid #2563eb !important;
+  outline-offset: 3px !important;
+  border-radius: 4px;
+}
+
+/* Focus pour les cards navigables au clavier */
+[tabindex="0"]:focus-visible {
+  outline: 3px solid #2563eb !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15) !important;
+}
+
+/* ── Keyboard tip dans les pages patient ─────────────────── */
+.kb-tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-top: 6px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #0284c7;
+  }
+
+  kbd {
+    display: inline-block;
+    padding: 1px 7px;
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-bottom: 2px solid #94a3b8;
+    border-radius: 5px;
+    font-size: 11px;
+    font-family: monospace;
+    font-weight: 600;
+    color: #1e293b;
+  }
+}
+
+/* ── Quick access keyboard badge ────────────────────────── */
+.qk-kbd {
+  display: inline-block;
+  padding: 1px 7px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  font-size: 10px;
+  font-family: monospace;
+  font-weight: 600;
+  color: white;
+  margin-left: auto;
+  align-self: center;
+}
+
+/* ── Keyboard shortcuts guide button in header ───────────── */
+.kb-hint-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #475569;
+  transition: all 0.15s;
+  margin-left: auto;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background: #f1f5f9;
+    color: #2563eb;
+    border-color: #bfdbfe;
+  }
+
+  &:focus-visible {
+    outline: 3px solid #2563eb !important;
+  }
+}
+
+/* ── Symptoms fieldset ───────────────────────────────────── */
+.symptoms-fieldset {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.symptoms-legend {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  padding: 0 8px;
+}
+
+/* ── Alert messages accessible ──────────────────────────── */
+.alert-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 10px;
+  color: #166534;
+  font-weight: 500;
+
+  mat-icon {
+    color: #16a34a;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.alert-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  color: #991b1b;
+  font-weight: 500;
+
+  mat-icon {
+    color: #dc2626;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ── High contrast mode adjustments ─────────────────────── */
+html.high-contrast {
+  .skip-nav-link,
+  .skip-to-form {
+    background: #5ebbff !important;
+    color: #000 !important;
+    &:focus {
+      outline-color: #fbbf24 !important;
+    }
+  }
+
+  *:focus-visible {
+    outline-color: #5ebbff !important;
+  }
+
+  .kb-tip {
+    background: #0c1828 !important;
+    border-color: #3d4f72 !important;
+    color: #8899bb !important;
+
+    kbd {
+      background: #1a2035 !important;
+      border-color: #3d4f72 !important;
+      color: #eef2ff !important;
+    }
+  }
+
+  .kb-hint-btn {
+    border-color: #2e3a55 !important;
+    color: #eef2ff !important;
+    &:hover {
+      background: #1a2035 !important;
+      color: #5ebbff !important;
+    }
+  }
+
+  .symptoms-fieldset {
+    border-color: #2e3a55 !important;
+  }
+
+  .symptoms-legend {
+    color: #eef2ff !important;
+  }
 }
