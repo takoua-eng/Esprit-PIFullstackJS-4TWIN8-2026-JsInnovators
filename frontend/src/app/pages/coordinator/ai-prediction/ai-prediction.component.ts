@@ -48,6 +48,10 @@ export class AiPredictionComponent implements OnInit {
   aiError = '';
   selectedPatient: PatientPrediction | null = null;
 
+  todayFormatted = new Date().toLocaleDateString('en-GB', {
+  weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+});
+
   ngOnInit(): void {
     this.loadPrediction();
   }

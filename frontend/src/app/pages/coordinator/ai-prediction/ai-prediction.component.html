@@ -11,12 +11,8 @@
           </div>
           <div>
             <h1 class="page-title">Non-Compliance Prediction</h1>
-            <p class="page-subtitle">
-              AI-powered analysis of patient submission patterns — last 14 days
-            </p>
-            <p class="generated-at" *ngIf="prediction">
-              Generated: {{ formatDate(prediction.generatedAt) }}
-            </p>
+            <p class="page-subtitle">AI-powered analysis of patient submission patterns — last 14 days</p>
+            <p class="generated-at" *ngIf="prediction">Generated: {{ formatDate(prediction.generatedAt) }}</p>
           </div>
         </div>
         <button mat-flat-button class="refresh-btn" (click)="loadPrediction()" [disabled]="loading">
@@ -43,21 +39,18 @@
         <div class="kpi-label">High Risk</div>
         <div class="kpi-sub">Immediate action needed</div>
       </div>
-
       <div class="kpi-card medium-risk-card">
         <i-tabler name="alert-circle" class="kpi-icon"></i-tabler>
         <div class="kpi-number">{{ mediumRiskCount }}</div>
         <div class="kpi-label">Medium Risk</div>
         <div class="kpi-sub">Monitor closely</div>
       </div>
-
       <div class="kpi-card low-risk-card">
         <i-tabler name="circle-check" class="kpi-icon"></i-tabler>
         <div class="kpi-number">{{ lowRiskCount }}</div>
         <div class="kpi-label">Low Risk</div>
         <div class="kpi-sub">Compliant patients</div>
       </div>
-
       <div class="kpi-card avg-card">
         <i-tabler name="chart-bar" class="kpi-icon"></i-tabler>
         <div class="kpi-number">{{ avgCompliance }}%</div>
@@ -66,44 +59,133 @@
       </div>
     </div>
 
-    <!-- AI MORNING BRIEFING -->
-    <mat-card class="ai-briefing-card">
-      <mat-card-content>
-        <div class="briefing-header">
-          <div class="briefing-title">
-            <div class="ai-badge-sm">
-              <i-tabler name="sparkles" class="icon-14"></i-tabler>
-              AI
+    <!-- AI MORNING BRIEFING — REDESIGNED -->
+    <div class="briefing-wrapper">
+
+      <!-- Urgent alert banner si HIGH RISK > 0 -->
+      <div class="urgent-banner" *ngIf="highRiskCount > 0">
+        <div class="urgent-pulse"></div>
+        <i-tabler name="alert-triangle" class="icon-18"></i-tabler>
+        <strong>URGENT:</strong> {{ highRiskCount }} patient{{ highRiskCount > 1 ? 's require' : ' requires' }} immediate attention today
+      </div>
+
+      <mat-card class="ai-briefing-card">
+        <mat-card-content>
+
+          <!-- Header briefing -->
+          <div class="briefing-header">
+            <div class="briefing-title-block">
+              <div class="briefing-title-row">
+                <div class="ai-badge-sm">
+                  <i-tabler name="sparkles" class="icon-14"></i-tabler>
+                  AI
+                </div>
+                <span class="briefing-title-text">Morning Briefing</span>
+                <span class="briefing-date">{{ todayFormatted }}</span>
+              </div>
+              <p class="briefing-subtitle">Daily patient compliance intelligence report</p>
             </div>
-            <span>Morning Briefing</span>
+            <button mat-stroked-button (click)="runAiAnalysis()" [disabled]="loadingAi" class="regen-btn">
+              <i-tabler name="refresh" class="icon-14"></i-tabler>
+              Regenerate
+            </button>
           </div>
-          <button mat-stroked-button (click)="runAiAnalysis()" [disabled]="loadingAi" class="regen-btn">
-            <i-tabler name="refresh" class="icon-14"></i-tabler>
-            Regenerate
-          </button>
-        </div>
 
-        <!-- AI Loading -->
-        <div class="ai-loading" *ngIf="loadingAi">
-          <div class="ai-dots">
-            <span></span><span></span><span></span>
+          <!-- Loading -->
+          <div class="ai-loading" *ngIf="loadingAi">
+            <div class="briefing-skeleton">
+              <div class="skeleton-line w-80"></div>
+              <div class="skeleton-line w-60"></div>
+              <div class="skeleton-line w-90"></div>
+              <div class="skeleton-line w-50"></div>
+            </div>
+            <div class="ai-loading-label">
+              <div class="ai-dots"><span></span><span></span><span></span></div>
+              <p>AI is analyzing patient compliance data...</p>
+            </div>
           </div>
-          <p>Claude is analyzing patient data...</p>
-        </div>
 
-        <!-- AI Error -->
-        <div class="ai-error" *ngIf="aiError && !loadingAi">
-          <i-tabler name="alert-circle" class="icon-16"></i-tabler>
-          {{ aiError }}
-        </div>
+          <!-- Error -->
+          <div class="ai-error" *ngIf="aiError && !loadingAi">
+            <i-tabler name="alert-circle" class="icon-16"></i-tabler>
+            {{ aiError }}
+          </div>
 
-        <!-- AI Analysis -->
-        <div class="ai-text" *ngIf="aiAnalysis && !loadingAi">
-          <pre class="analysis-content">{{ aiAnalysis }}</pre>
-        </div>
+          <!-- Briefing content — parsé en sections -->
+          <div class="briefing-content" *ngIf="aiAnalysis && !loadingAi">
 
-      </mat-card-content>
-    </mat-card>
+            <!-- Compliance score bar en haut -->
+            <div class="compliance-overview-bar">
+              <div class="compliance-stat"
+                [class.stat-critical]="avgCompliance < 30"
+                [class.stat-warning]="avgCompliance >= 30 && avgCompliance < 70"
+                [class.stat-good]="avgCompliance >= 70">
+                <span class="compliance-pct">{{ avgCompliance }}%</span>
+                <span class="compliance-lbl">Overall Compliance</span>
+              </div>
+              <div class="compliance-track-wrap">
+                <div class="compliance-track">
+                  <div class="compliance-fill"
+                    [style.width.%]="avgCompliance"
+                    [class.fill-critical]="avgCompliance < 30"
+                    [class.fill-warning]="avgCompliance >= 30 && avgCompliance < 70"
+                    [class.fill-good]="avgCompliance >= 70">
+                  </div>
+                </div>
+                <div class="compliance-thresholds">
+                  <span>0%</span><span>30%</span><span>70%</span><span>100%</span>
+                </div>
+              </div>
+              <div class="compliance-status-badge"
+                [class.badge-critical]="avgCompliance < 30"
+                [class.badge-warning]="avgCompliance >= 30 && avgCompliance < 70"
+                [class.badge-good]="avgCompliance >= 70">
+                <i-tabler [name]="avgCompliance >= 70 ? 'circle-check' : avgCompliance >= 30 ? 'alert-circle' : 'alert-triangle'" class="icon-14"></i-tabler>
+                {{ avgCompliance >= 70 ? 'ACCEPTABLE' : avgCompliance >= 30 ? 'MODERATE' : 'CRITICAL' }}
+              </div>
+            </div>
+
+            <!-- Texte IA dans un bloc stylisé -->
+            <div class="analysis-block">
+              <div class="analysis-icon-col">
+                <div class="analysis-icon-wrap">
+                  <i-tabler name="robot" class="icon-20"></i-tabler>
+                </div>
+                <div class="analysis-timeline-line"></div>
+              </div>
+              <div class="analysis-text-col">
+                <pre class="analysis-text">{{ aiAnalysis }}</pre>
+              </div>
+            </div>
+
+            <!-- Résumé rapide en bas -->
+            <div class="briefing-quick-stats">
+              <div class="quick-stat high">
+                <i-tabler name="alert-triangle" class="icon-16"></i-tabler>
+                <span class="qs-number">{{ highRiskCount }}</span>
+                <span class="qs-label">High Risk</span>
+              </div>
+              <div class="quick-stat medium">
+                <i-tabler name="alert-circle" class="icon-16"></i-tabler>
+                <span class="qs-number">{{ mediumRiskCount }}</span>
+                <span class="qs-label">Medium Risk</span>
+              </div>
+              <div class="quick-stat low">
+                <i-tabler name="circle-check" class="icon-16"></i-tabler>
+                <span class="qs-number">{{ lowRiskCount }}</span>
+                <span class="qs-label">Low Risk</span>
+              </div>
+              <div class="quick-stat total">
+                <i-tabler name="users" class="icon-16"></i-tabler>
+                <span class="qs-number">{{ prediction.patients.length }}</span>
+                <span class="qs-label">Total Patients</span>
+              </div>
+            </div>
+
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
 
     <!-- PATIENT RISK TABLE -->
     <mat-card class="patients-card cardWithShadow">
@@ -123,7 +205,6 @@
             [style.border-left-color]="getRiskColor(patient.riskLevel)"
             (click)="selectPatient(patient)">
 
-            <!-- Avatar + info -->
             <div class="patient-info">
               <div class="risk-avatar"
                 [style.background]="getRiskBgColor(patient.riskLevel)"
@@ -136,7 +217,6 @@
               </div>
             </div>
 
-            <!-- Risk badge -->
             <div class="risk-badge"
               [style.background]="getRiskBgColor(patient.riskLevel)"
               [style.color]="getRiskColor(patient.riskLevel)">
@@ -144,7 +224,6 @@
               {{ patient.riskLevel }}
             </div>
 
-            <!-- Stats -->
             <div class="patient-stats">
               <div class="stat-item">
                 <span class="stat-label">Compliance</span>
@@ -164,7 +243,6 @@
               </div>
             </div>
 
-            <!-- Risk score bar -->
             <div class="risk-bar-wrap">
               <div class="risk-bar-label">Risk score: {{ patient.riskScore }}/100</div>
               <div class="risk-bar-track">
@@ -175,7 +253,6 @@
               </div>
             </div>
 
-            <!-- Action -->
             <button mat-flat-button class="remind-btn"
               [style.background]="getRiskColor(patient.riskLevel)"
               (click)="$event.stopPropagation(); sendReminderToPatient(patient)">
