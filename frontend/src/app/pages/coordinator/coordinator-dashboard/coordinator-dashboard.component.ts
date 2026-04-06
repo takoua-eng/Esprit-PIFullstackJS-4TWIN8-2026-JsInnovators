@@ -1,12 +1,10 @@
 import { Component, OnInit, inject, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { MaterialModule } from 'src/app/material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import {
   CoordinatorDashboardResponse,
-  CoordinatorPatientRow,
   ComplianceRow,
   CoordinatorService,
   buildReminderMessages,
@@ -14,6 +12,7 @@ import {
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { CoreService } from 'src/app/services/core.service';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -31,11 +30,11 @@ export interface ChatMessage {
 export class CoordinatorDashboardComponent implements OnInit {
   private coordinatorService = inject(CoordinatorService);
   private router = inject(Router);
-
+  private coreService = inject(CoreService);
 
   @ViewChild('chatMsgsContainer') chatMessagesEl!: ElementRef;
 
-  coordinatorId = '69c32545a5201407afd209cf';
+  coordinatorId = '';
   todayDate = new Date();
 
   remindedPatientIds: Set<string> = new Set(
@@ -62,13 +61,11 @@ export class CoordinatorDashboardComponent implements OnInit {
   selectedReminderMessage: string = '';
   reminderMessageOptions: { value: string; label: string }[] = [];
 
-  // Daily Summary
   showSummaryPanel = false;
   summaryText = '';
   summaryLoading = false;
   summaryCopied = false;
 
-  // Chatbot
   chatOpen = false;
   chatInput = '';
   chatMessages: ChatMessage[] = [
@@ -82,6 +79,30 @@ export class CoordinatorDashboardComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    // ── Récupérer l'ID du coordinator connecté ──────────────
+    const user = this.coreService.currentUser();
+    if (user?._id) {
+      this.coordinatorId = user._id;
+    } else {
+      // Fallback sur localStorage directement
+      const raw = localStorage.getItem('medi_follow_user_data');
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          this.coordinatorId = parsed._id || '';
+        } catch { }
+      }
+    }
+
+    if (!this.coordinatorId) {
+      console.error('No coordinator ID found — user not logged in?');
+      return;
+    }
+
+    this.loadDashboard();
+  }
+
+  private loadDashboard(): void {
     this.coordinatorService.getDashboard(this.coordinatorId).subscribe({
       next: (data) => { this.dashboardData = data; this.buildDepartmentChart(); },
       error: (err) => console.error('Dashboard error', err),
@@ -264,15 +285,15 @@ ${patientDetails}
 Write 3-5 professional sentences suitable for sharing with a physician. Include compliance rate, patients needing attention, and a brief recommendation. No bullet points — flowing paragraphs only.`;
 
     this.coordinatorService.generateSummaryAI(this.coordinatorId, prompt).subscribe({
-  next: (res) => {
-    this.summaryText = res.response || `Daily Compliance Report — ${today}. Out of ${total} patients, ${compliant} (${rate}%) fully compliant.`;
-    this.summaryLoading = false;
-  },
-  error: () => {
-    this.summaryText = `Daily Compliance Report — ${today}. Out of ${total} assigned patients, ${compliant} (${rate}%) have fully completed their daily submissions.`;
-    this.summaryLoading = false;
-  }
-});
+      next: (res) => {
+        this.summaryText = res.response || `Daily Compliance Report — ${today}. Out of ${total} patients, ${compliant} (${rate}%) fully compliant.`;
+        this.summaryLoading = false;
+      },
+      error: () => {
+        this.summaryText = `Daily Compliance Report — ${today}. Out of ${total} assigned patients, ${compliant} (${rate}%) have fully completed their daily submissions.`;
+        this.summaryLoading = false;
+      }
+    });
   }
 
   copySummary(): void {
@@ -320,19 +341,19 @@ ${patientContext}
 Coordinator asks: ${input}`;
 
     this.coordinatorService.askAI(this.coordinatorId, systemContext).subscribe({
-  next: (res) => {
-    const idx = this.chatMessages.findIndex(m => m.loading);
-    if (idx !== -1) this.chatMessages[idx] = { role: 'assistant', content: res.response };
-    this.chatLoading = false;
-    this.scrollChatToBottom();
-  },
-  error: () => {
-    const idx = this.chatMessages.findIndex(m => m.loading);
-    if (idx !== -1) this.chatMessages[idx] = { role: 'assistant', content: 'Sorry, AI is temporarily unavailable.' };
-    this.chatLoading = false;
-    this.scrollChatToBottom();
-  }
-});
+      next: (res) => {
+        const idx = this.chatMessages.findIndex(m => m.loading);
+        if (idx !== -1) this.chatMessages[idx] = { role: 'assistant', content: res.response };
+        this.chatLoading = false;
+        this.scrollChatToBottom();
+      },
+      error: () => {
+        const idx = this.chatMessages.findIndex(m => m.loading);
+        if (idx !== -1) this.chatMessages[idx] = { role: 'assistant', content: 'Sorry, AI is temporarily unavailable.' };
+        this.chatLoading = false;
+        this.scrollChatToBottom();
+      }
+    });
   }
 
   onChatKeydown(event: KeyboardEvent): void {

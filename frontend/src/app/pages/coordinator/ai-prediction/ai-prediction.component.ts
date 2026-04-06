@@ -5,42 +5,25 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import { TranslateModule } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { CoordinatorService } from 'src/app/services/coordinator.service';
+import { CoreService } from 'src/app/services/core.service';
 
 export interface PatientPrediction {
-  patientId: string;
-  name: string;
-  email: string;
-  department: string;
-  complianceRate: number;
-  consecutiveMissingDays: number;
-  lastSubmission: string | null;
-  totalVitalSubmissions: number;
-  totalSymptomSubmissions: number;
-  riskScore: number;
-  riskLevel: 'HIGH' | 'MEDIUM' | 'LOW';
-  vitalDaysCount: number;
-  symptomDaysCount: number;
+  patientId: string; name: string; email: string; department: string;
+  complianceRate: number; consecutiveMissingDays: number; lastSubmission: string | null;
+  totalVitalSubmissions: number; totalSymptomSubmissions: number;
+  riskScore: number; riskLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+  vitalDaysCount: number; symptomDaysCount: number;
 }
 
 export interface PredictionResponse {
-  generatedAt: string;
-  periodDays: number;
-  patients: PatientPrediction[];
+  generatedAt: string; periodDays: number; patients: PatientPrediction[];
 }
 
 export interface BriefingData {
   situationSummary: string;
   overallStatus: 'CRITICAL' | 'WARNING' | 'STABLE';
-  priorityPatients: {
-    name: string;
-    reason: string;
-    urgency: 'HIGH' | 'MEDIUM';
-  }[];
-  recommendedActions: {
-    patient: string;
-    action: string;
-    icon: string;
-  }[];
+  priorityPatients: { name: string; reason: string; urgency: 'HIGH' | 'MEDIUM' }[];
+  recommendedActions: { patient: string; action: string; icon: string }[];
   positiveNote: string;
 }
 
@@ -54,8 +37,9 @@ export interface BriefingData {
 export class AiPredictionComponent implements OnInit {
   private http = inject(HttpClient);
   private coordinatorService = inject(CoordinatorService);
+  private coreService = inject(CoreService);
 
-  coordinatorId = '69c32545a5201407afd209cf';
+  coordinatorId = '';
 
   prediction: PredictionResponse | null = null;
   loading = true;
@@ -69,24 +53,26 @@ export class AiPredictionComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const user = this.coreService.currentUser();
+    if (user?._id) {
+      this.coordinatorId = user._id;
+    } else {
+      const raw = localStorage.getItem('medi_follow_user_data');
+      if (raw) {
+        try { this.coordinatorId = JSON.parse(raw)._id || ''; } catch { }
+      }
+    }
+
+    if (!this.coordinatorId) { console.error('No coordinator ID'); this.loading = false; return; }
     this.loadPrediction();
   }
 
   loadPrediction(): void {
     this.loading = true;
-    this.http
-      .get<PredictionResponse>(`http://localhost:3000/coordinator/${this.coordinatorId}/prediction`)
-      .subscribe({
-        next: (data) => {
-          this.prediction = data;
-          this.loading = false;
-          this.runAiAnalysis();
-        },
-        error: (err) => {
-          console.error('Prediction error', err);
-          this.loading = false;
-        },
-      });
+    this.http.get<PredictionResponse>(`http://localhost:3000/coordinator/${this.coordinatorId}/prediction`).subscribe({
+      next: (data) => { this.prediction = data; this.loading = false; this.runAiAnalysis(); },
+      error: (err) => { console.error('Prediction error', err); this.loading = false; },
+    });
   }
 
   runAiAnalysis(): void {
@@ -112,33 +98,20 @@ LOW RISK (${lowRisk.length}): ${lowRisk.map(p => p.name).join(', ') || 'None'}
 
 Return this exact JSON structure:
 {
-  "situationSummary": "2-3 sentence professional summary of today's compliance situation",
+  "situationSummary": "2-3 sentence professional summary",
   "overallStatus": "CRITICAL or WARNING or STABLE",
-  "priorityPatients": [
-    { "name": "patient name", "reason": "specific reason why urgent", "urgency": "HIGH or MEDIUM" }
-  ],
-  "recommendedActions": [
-    { "patient": "patient name", "action": "specific action to take", "icon": "phone or mail or alert-triangle or clock" }
-  ],
-  "positiveNote": "one encouraging sentence about what is going well"
+  "priorityPatients": [{ "name": "name", "reason": "reason", "urgency": "HIGH or MEDIUM" }],
+  "recommendedActions": [{ "patient": "name", "action": "action", "icon": "phone or mail or alert-triangle or clock" }],
+  "positiveNote": "one encouraging sentence"
 }
 
-Rules:
-- overallStatus is CRITICAL if avgCompliance < 30%, WARNING if < 70%, STABLE otherwise
-- priorityPatients: only patients needing action today, max 4
-- recommendedActions: specific and actionable, max 4
-- positiveNote: always include even if compliance is low, find something positive
-- Return ONLY the JSON, no other text`;
+Rules: CRITICAL if avg compliance < 30%, WARNING if < 70%, STABLE otherwise. Max 4 priority patients, max 4 actions. Return ONLY JSON.`;
 
     this.coordinatorService.generatePredictionAI(this.coordinatorId, prompt).subscribe({
       next: (res) => {
         if (res.response) {
           try {
-            // Nettoyer les backticks markdown si présents
-            const clean = res.response
-              .replace(/```json\n?/g, '')
-              .replace(/```\n?/g, '')
-              .trim();
+            const clean = res.response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
             this.briefing = JSON.parse(clean);
           } catch (e) {
             console.error('JSON parse error:', e);
@@ -149,10 +122,7 @@ Rules:
         }
         this.loadingAi = false;
       },
-      error: () => {
-        this.aiError = 'AI analysis unavailable. Please check your API configuration.';
-        this.loadingAi = false;
-      },
+      error: () => { this.aiError = 'AI analysis unavailable.'; this.loadingAi = false; },
     });
   }
 
@@ -187,10 +157,7 @@ Rules:
   sendReminderToPatient(patient: PatientPrediction): void {
     const message = `Dear ${patient.name.split(' ')[0]}, this is a reminder to complete your daily health follow-up. You have missed ${patient.consecutiveMissingDays} consecutive day(s). Compliance rate: ${patient.complianceRate}%. Please submit your vital signs and symptoms report.`;
     this.coordinatorService.createReminder(this.coordinatorId, {
-      patientId: patient.patientId,
-      type: 'follow_up',
-      message,
-      status: 'scheduled',
+      patientId: patient.patientId, type: 'follow_up', message, status: 'scheduled',
     }).subscribe({
       next: (reminder) => {
         this.coordinatorService.sendReminder(reminder._id).subscribe({
