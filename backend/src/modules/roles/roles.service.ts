@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import { Role, RoleDocument } from './role.schema';
 import { CreateRoleDto } from '../auth/dto/create-role.dto';
 import { UpdateRoleDto } from '../auth/dto/update-role.dto';
+import { ALL_PERMISSIONS } from 'src/common/constants/permissions';
 
 @Injectable()
 export class RolesService {
@@ -65,5 +66,21 @@ export class RolesService {
   async deleteRole(id: string): Promise<void> {
     const result = await this.roleModel.findByIdAndDelete(id).exec();
     if (!result) throw new NotFoundException(`Role with id ${id} not found`);
+  }
+
+  // roles.service.ts
+
+  async archiveRole(id: string): Promise<Role> {
+    const role = await this.roleModel.findById(id).exec();
+
+    if (!role) {
+      throw new NotFoundException(`Role with id ${id} not found`);
+    }
+
+    role.isArchived = true;
+    return role.save();
+  }
+  getAllPermissions(): Promise<string[]> {
+    return Promise.resolve(ALL_PERMISSIONS);
   }
 }

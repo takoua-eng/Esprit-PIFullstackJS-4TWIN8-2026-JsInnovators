@@ -170,4 +170,163 @@ mat-paginator {
       width: 100%;
     }
   }
+
+  // === Avatar Circle ===
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-initials {
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+  }
+}
+
+// === Nurse Name & Email ===
+.nurse-name {
+  font-weight: 600;
+  color: #1a1a2e;
+  font-size: 0.95rem;
+}
+
+.nurse-email {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+// === Service Badge ===
+.service-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+
+  .badge-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// === Status Badge ===
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &.active {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.inactive {
+    background: #ffebee;
+    color: #c62828;
+  }
+}
+
+// === Actions ===
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  mat-slide-toggle {
+    ::ng-deep {
+      .mdc-switch {
+        transform: scale(0.9);
+      }
+    }
+  }
+}
+
+// === Utilities ===
+.gap-1 { gap: 4px; }
+.d-flex { display: flex; }
+.justify-content-center { justify-content: center; }
+.align-items-center { align-items: center; }
+
+// === Table Styling ===
+.table-container {
+  border-radius: 8px;
+  overflow: hidden;
+
+  table {
+    width: 100%;
+  }
+
+  th.mat-header-cell {
+    background: #f8f9fa;
+    font-weight: 700;
+    color: #495057;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    padding: 16px;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  td.mat-cell {
+    padding: 16px;
+    border-bottom: 1px solid #f1f3f5;
+    vertical-align: middle;
+  }
+
+  tr.mat-row:hover {
+    background: #f8f9fa;
+  }
+}
+
+mat-paginator {
+  border-top: 1px solid #dee2e6;
+  background: #fff;
+}
+
+// === Responsive ===
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+
+    .search-field {
+      width: 100%;
+    }
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+}
 }

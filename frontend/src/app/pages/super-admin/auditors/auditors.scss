@@ -1,123 +1,147 @@
-/* Auditors component styles */.cardWithShadow {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-}
-
-// Header
-.header {
-  .title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin: 0;
+// === Avatar ===
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
-  .subtitle {
+  .avatar-initials {
+    color: white;
+    font-weight: 600;
     font-size: 0.9rem;
-    margin: 0;
+    text-transform: uppercase;
+  }
+}
+.auditor-name {
+  font-weight: 600;
+  color: #1a1a2e;
+  font-size: 0.95rem;
+}
+.auditor-email {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+// === Alert Badge ===
+.alert-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #fff3e0;
+  border-radius: 20px;
+  color: #ef6c00;
+  font-weight: 500;
+  font-size: 0.9rem;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    animation: pulse 2s infinite;
   }
 }
 
-// Toolbar
-.toolbar {
-  .total {
-    font-size: 1rem;
-    color: #495057;
-    strong {
-      color: #4361ee;
-      font-weight: 700;
-      font-size: 1.2rem;
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// === Header Actions ===
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+// === Level Badge ===
+.level-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: #e8f4fd;
+  color: #1976d2;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+// === Status Badge ===
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &.active {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  &.inactive {
+    background: #fff3e0;
+    color: #ef6c00;
+  }
+  &.disabled {
+    background: #ffebee;
+    color: #c62828;
+  }
+  &.archived {
+    background: #f5f5f5;
+    color: #757575;
+  }
+}
+
+// === Actions ===
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  mat-slide-toggle {
+    ::ng-deep {
+      .mdc-switch {
+        transform: scale(0.9);
+      }
     }
   }
-  .search-field {
-    width: 320px;
-    ::ng-deep .mat-form-field-wrapper { margin-bottom: 0; }
-  }
 }
 
-// Table Container
+// === Table ===
 .table-container {
   border-radius: 8px;
   overflow: hidden;
-
-  // ✅ Avatar Circle
-  .avatar-circle {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin: 0 auto;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    border: 3px solid #fff;
-
-    img { width: 100%; height: 100%; object-fit: cover; }
-    .avatar-initials {
-      color: white;
-      font-weight: 700;
-      font-size: 1.1rem;
-      text-transform: uppercase;
-    }
+  table {
+    width: 100%;
   }
-
-  // Auditor Name & Email
-  .auditor-name {
-    font-weight: 600;
-    color: #1a1a2e;
-    font-size: 0.95rem;
-    margin-bottom: 2px;
-  }
-  .auditor-email {
-    color: #6c757d;
-    font-size: 0.8rem;
-  }
-
-  // Status Badge
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    &.active {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-    &.inactive {
-      background: #ffebee;
-      color: #c62828;
-    }
-  }
-
-  // Actions
-  .actions {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-  }
-
-  // Table Styling
-  table { width: 100%; }
   th.mat-header-cell {
     background: #f8f9fa;
     font-weight: 700;
     color: #495057;
     font-size: 0.85rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
     padding: 16px;
     border-bottom: 2px solid #dee2e6;
   }
@@ -126,31 +150,37 @@
     border-bottom: 1px solid #f1f3f5;
     vertical-align: middle;
   }
-  tr.mat-row:hover { background: #f8f9fa; cursor: pointer; }
+  tr.mat-row:hover {
+    background: #f8f9fa;
+  }
 }
-
-// Paginator
 mat-paginator {
   border-top: 1px solid #dee2e6;
   background: #fff;
 }
 
-// Empty State
-.empty-state {
-  .empty-icon {
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
-    color: #adb5bd;
-  }
+// === Utilities ===
+.gap-1 {
+  gap: 4px;
+}
+.d-flex {
+  display: flex;
+}
+.justify-content-center {
+  justify-content: center;
+}
+.align-items-center {
+  align-items: center;
 }
 
-// Responsive
+// === Responsive ===
 @media (max-width: 768px) {
   .toolbar {
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
-    .search-field { width: 100%; }
+  }
+  .actions {
+    flex-wrap: wrap;
   }
 }

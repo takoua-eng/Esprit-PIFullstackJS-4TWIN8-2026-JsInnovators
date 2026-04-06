@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import * as mongoose from 'mongoose';
+import { Role } from '../roles/role.schema';
 
 export type UserDocument = User & Document;
 
@@ -37,7 +38,7 @@ export class User {
   photo: string;
 
   // 🔹 ROLE
-  @Prop({ type: Types.ObjectId, ref: 'Role', required: true })
+  @Prop({ type: Types.ObjectId, ref: Role.name, required: true })
   role: Types.ObjectId;
 
   // 🔹 RELATIONS
@@ -122,7 +123,7 @@ export class User {
   @Prop({ enum: ['single', 'married', 'divorced'] })
   maritalStatus: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Service' })
+  @Prop({ type: mongoose.Schema.Types.Mixed, ref: 'Service', default: undefined })
   serviceId: Types.ObjectId;
 
   @Prop({ default: true })
@@ -136,3 +137,12 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// Clean invalid serviceId before any populate can fail
+UserSchema.pre(['find', 'findOne', 'findOneAndUpdate'], function() {
+  // If the query filter contains serviceId, validate it
+  const filter = (this as any).getFilter?.() ?? {};
+  if (filter.serviceId && !require('mongoose').Types.ObjectId.isValid(filter.serviceId)) {
+    (this as any).setQuery({ ...filter, serviceId: undefined });
+  }
+});

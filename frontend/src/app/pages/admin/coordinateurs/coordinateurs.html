@@ -12,7 +12,8 @@
               {{ 'MANAGE_COORDINATORS' | translate }}
             </p>
           </div>
-          <button mat-raised-button color="primary" (click)="addCoordinator()">
+          <button mat-raised-button color="primary" (click)="addCoordinator()"
+            *ngIf="core.hasPermission('coordinators:create')">
             <mat-icon>add</mat-icon>
             {{ 'ADD_COORDINATOR' | translate }}
           </button>
@@ -90,20 +91,12 @@
               </th>
               <td mat-cell *matCellDef="let row" class="text-center">
                 <div class="actions">
-                  <button
-                    mat-icon-button
-                    color="primary"
-                    matTooltip="{{ 'EDIT' | translate }}"
-                    (click)="editCoordinator(row)"
-                  >
+                  <button mat-icon-button color="primary" matTooltip="{{ 'EDIT' | translate }}"
+                    (click)="editCoordinator(row)" *ngIf="core.hasPermission('coordinators:update')">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button
-                    mat-icon-button
-                    color="warn"
-                    matTooltip="{{ 'DELETE' | translate }}"
-                    (click)="deleteCoordinator(row)"
-                  >
+                  <button mat-icon-button color="warn" matTooltip="{{ 'DELETE' | translate }}"
+                    (click)="deleteCoordinator(row)" *ngIf="core.hasPermission('coordinators:delete')">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>

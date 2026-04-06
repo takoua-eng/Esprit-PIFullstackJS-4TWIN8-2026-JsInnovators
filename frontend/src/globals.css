@@ -64,6 +64,6 @@
     ul,
     menu {
         list-style-type: disc;
-        padding-inline-start: 40px;
+        padding-inline-start: 2.5rem;  /* 40px ÷ 16 */
     }
 }

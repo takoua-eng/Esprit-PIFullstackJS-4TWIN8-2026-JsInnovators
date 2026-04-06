@@ -24,6 +24,7 @@ import {
   CoordinateurService,
   Coordinator,
 } from './../../../services/superadmin/coordinateur.service';
+import { CoreService } from 'src/app/services/core.service';
 
 // ✅ Interface pour l'affichage
 interface CoordinatorRow {
@@ -62,6 +63,9 @@ export class CoordinateursComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = ['photo', 'name', 'email', 'actions'];
   title = 'COORDINATORS';
   dataSource = new MatTableDataSource<CoordinatorRow>([]);
+  constructor(
+    public core: CoreService, //
+  ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;

@@ -18,20 +18,27 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 import {
   AuditorService,
   Auditor,
 } from '../../../services/superadmin/auditor.service';
+import { AlertsApiService } from '../../../services/alerts-api.service';
+import { AddAuditorDialog } from '../add-auditor/add-auditor';
+import { EditAuditorDialog } from '../edit-auditor/edit-auditor';
+import { ConfirmDialog } from './confirm-dialog';
+import { CoreService } from 'src/app/services/core.service';
 
-// ✅ Interface pour l'affichage
+// ✅ Interface AuditorRow - isArchived REQUIRED
 interface AuditorRow {
   _id: string;
   firstName: string;
   lastName: string;
   email: string;
   photo?: string;
-  isArchived: boolean;
+  isArchived: boolean; // ✅ Required
+  isActive?: boolean; // ✅ Optional
 }
 
 @Component({
@@ -50,6 +57,7 @@ interface AuditorRow {
     MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './auditors.html',
   styleUrls: ['./auditors.scss'],
@@ -57,16 +65,24 @@ interface AuditorRow {
 export class AuditorsComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private auditorService = inject(AuditorService);
+  private alertsService = inject(AlertsApiService);
 
   displayedColumns: string[] = ['photo', 'name', 'status', 'actions'];
   title = 'AUDITORS';
   dataSource = new MatTableDataSource<AuditorRow>([]);
+  alertCount = 0;
+  constructor(
+    public core: CoreService, //
+  ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
+  private auditorsData: Auditor[] = [];
+
   ngOnInit(): void {
     this.loadAuditors();
+    this.loadAlerts();
   }
 
   ngAfterViewInit(): void {
@@ -74,24 +90,41 @@ export class AuditorsComponent implements OnInit, AfterViewInit {
     this.dataSource.paginator = this.paginator;
   }
 
-  // ✅ LOAD AUDITORS
+  // ✅ Fonction de mapping explicite pour éviter les erreurs de type
+  private mapToAuditorRow(a: Auditor): AuditorRow {
+    return {
+      _id: a._id,
+      firstName: a.firstName,
+      lastName: a.lastName,
+      email: a.email,
+      photo: a.photo,
+      isArchived: Boolean(a.isArchived), // ✅ Conversion explicite en boolean
+      isActive: Boolean(a.isActive ?? true),
+    };
+  }
+
   loadAuditors(): void {
     this.auditorService.getAuditors().subscribe({
       next: (data: Auditor[]) => {
-        this.dataSource.data = data.map((a: Auditor) => ({
-          _id: a._id,
-          firstName: a.firstName,
-          lastName: a.lastName,
-          email: a.email,
-          photo: a.photo,
-          isArchived: a.isArchived,
-        }));
+        this.auditorsData = data;
+
+        // ✅ Utiliser la fonction de mapping pour garantir les types
+        this.dataSource.data = data.map((a) => this.mapToAuditorRow(a));
       },
-      error: (err) => console.error('Error loading auditors:', err),
+      error: (err) => console.error('❌ Error loading auditors:', err),
     });
   }
 
-  // ✅ SEARCH
+  // ✅ LOAD ALERTS COUNT
+  loadAlerts(): void {
+    this.alertsService.getAlerts().subscribe({
+      next: (alerts: any[]) => {
+        this.alertCount = alerts.filter((a: any) => a.status === 'open').length;
+      },
+      error: (err: any) => console.error('❌ Error loading alerts:', err),
+    });
+  }
+
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
@@ -100,48 +133,77 @@ export class AuditorsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ✅ ADD AUDITOR
   addAuditor(): void {
-    console.log('Add auditor clicked');
-    // ✅ Naviguer ou ouvrir dialog selon votre besoin
-    // this.router.navigate(['/super-admin/auditors/add']);
+    const dialogRef = this.dialog.open(AddAuditorDialog, {
+      width: '800px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+    });
+    dialogRef.afterClosed().subscribe((res) => {
+      if (res) this.loadAuditors();
+    });
   }
 
-  // ✅ EDIT AUDITOR
   editAuditor(auditor: AuditorRow): void {
-    console.log('Edit auditor:', auditor._id);
-    // ✅ this.router.navigate(['/super-admin/auditors/edit', auditor._id]);
+    const fullAuditor = this.auditorsData.find((a) => a._id === auditor._id);
+
+    const dialogRef = this.dialog.open(EditAuditorDialog, {
+      width: '800px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: fullAuditor || auditor,
+    });
+    dialogRef.afterClosed().subscribe((res) => {
+      if (res) this.loadAuditors();
+    });
   }
 
-  // ✅ TOGGLE STATUS (Archive/Activate)
   toggleStatus(auditor: AuditorRow): void {
-    const action = auditor.isArchived ? 'Activate' : 'Archive';
-    if (confirm(`${action} ${this.getFullName(auditor)}?`)) {
-      if (auditor.isArchived) {
-        this.auditorService.activateAuditor?.(auditor._id)?.subscribe({
+    const action = auditor.isActive ? 'Deactivate' : 'Activate';
+
+    const dialogRef = this.dialog.open(ConfirmDialog, {
+      width: '400px',
+      data: { message: `${action} ${this.getFullName(auditor)}?` },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        const apiCall = auditor.isActive
+          ? this.auditorService.deactivateAuditor(auditor._id)
+          : this.auditorService.activateAuditor(auditor._id);
+
+        apiCall.subscribe({
           next: () => this.loadAuditors(),
-          error: (err: any) => console.error('Activate error:', err),
-        });
-      } else {
-        this.auditorService.archiveAuditor?.(auditor._id)?.subscribe({
-          next: () => this.loadAuditors(),
-          error: (err: any) => console.error('Archive error:', err),
+          error: (err) => alert('Error: ' + err.message),
         });
       }
-    }
+    });
   }
 
-  // ✅ GET FULL NAME
+  archiveAuditor(auditor: AuditorRow): void {
+    const dialogRef = this.dialog.open(ConfirmDialog, {
+      width: '400px',
+      data: { message: `Archive ${this.getFullName(auditor)} permanently?` },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.auditorService.archiveAuditor(auditor._id).subscribe({
+          next: () => this.loadAuditors(),
+          error: (err) => alert('Error: ' + err.message),
+        });
+      }
+    });
+  }
+
   getFullName(user: AuditorRow): string {
     return `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown';
   }
 
-  // ✅ GET PHOTO URL
   getPhoto(photo?: string): string {
     return photo ? `http://localhost:3000/uploads/${photo}` : '';
   }
 
-  // ✅ GET INITIALS FOR AVATAR
   getInitials(name: string): string {
     if (!name) return '?';
     const names = name.split(' ');
@@ -150,7 +212,6 @@ export class AuditorsComponent implements OnInit, AfterViewInit {
       : name.substring(0, 2).toUpperCase();
   }
 
-  // ✅ HANDLE IMAGE ERROR
   onImageError(event: any): void {
     event.target.style.display = 'none';
   }

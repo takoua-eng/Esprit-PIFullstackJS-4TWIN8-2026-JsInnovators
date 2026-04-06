@@ -12,6 +12,8 @@ import { SignInDto } from '../auth/dto/SignIn.dto';
 import { randomBytes } from 'crypto';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
+import { AuditService } from '../audit/audit.service';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +21,7 @@ export class AuthService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly auditService: AuditService,
   ) {}
 
   // 🔹 Mot de passe oublié
@@ -46,26 +49,35 @@ export class AuthService {
     return { message: 'Mot de passe réinitialisé avec succès' };
   }
 
-  // 🔹 Sign Up
-
-  // 🔹 Sign In
+  // 🔹 Sign In ✅ MODIFIÉ AVEC PERMISSIONS
   async signIn(
     signInDto: SignInDto,
-  ): Promise<{ accessToken: string; role: string }> {
+    req: Request,
+  ): Promise<{
+    accessToken: string;
+    role: string;
+    permissions: string[]; // ✅ AJOUT: retourne les permissions
+  }> {
     const rawEmail = signInDto?.email?.trim();
     const password = signInDto?.password ?? '';
+
     if (!rawEmail || !password) {
       throw new UnauthorizedException('Email ou mot de passe incorrect');
     }
 
-    // Case-insensitive email (do not filter isArchived here — we message explicitly)
     const escaped = rawEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // ✅ MODIFICATION 1: populate avec 'name' ET 'permissions'
     const user = await this.userModel
       .findOne({
         email: new RegExp(`^${escaped}$`, 'i'),
       })
-      .populate<{ name: string }>('role')
+      .populate<{ name: string; permissions: string[] }>(
+        'role',
+        'name permissions',
+      )
       .exec();
+
     if (!user) {
       throw new UnauthorizedException('Email ou mot de passe incorrect');
     }
@@ -85,19 +97,46 @@ export class AuthService {
       throw new UnauthorizedException('Email ou mot de passe incorrect');
     }
 
+    // ✅ MODIFICATION 2: extraire roleName et permissions
     const roleName =
       user.role && typeof user.role === 'object' && 'name' in user.role
         ? String((user.role as { name: string }).name)
         : '';
 
+    const permissions =
+      user.role && typeof user.role === 'object' && 'permissions' in user.role
+        ? Array.isArray((user.role as { permissions: string[] }).permissions)
+          ? (user.role as { permissions: string[] }).permissions
+          : []
+        : [];
+
+    // ✅ MODIFICATION 3: ajouter permissions dans le payload JWT
     const payload = {
       sub: user._id,
       email: user.email,
       role: roleName,
+      permissions: permissions, // ✅ permissions dans le token
     };
-    const accessToken = this.jwtService.sign(payload);
 
-    return { accessToken, role: roleName };
+    const accessToken = this.jwtService.sign(payload);
+    const ip = req?.ip ?? 'unknown';
+    await this.auditService.create({
+      userId: user._id.toString(),
+      userEmail: user.email,
+      action: 'LOGIN',
+      entityType: 'AUTH',
+      entityId: user._id.toString(),
+      before: null,
+      after: null,
+      ipAddress: ip,
+    });
+
+    // ✅ MODIFICATION 4: retourner permissions dans la réponse
+    return {
+      accessToken,
+      role: roleName,
+      permissions, // ✅ frontend utilise ça pour cacher/afficher les boutons
+    };
   }
 
   // 🔹 Envoi email réinitialisation

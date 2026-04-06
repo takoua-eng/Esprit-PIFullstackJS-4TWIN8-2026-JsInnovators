@@ -8,6 +8,7 @@ export interface Doctor {
   lastName: string;
   email: string;
   specialty?: string;
+  serviceId?: string | { _id: string; name: string };
   isArchived?: boolean;
 }
 

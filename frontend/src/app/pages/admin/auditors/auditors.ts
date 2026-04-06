@@ -23,6 +23,7 @@ import {
   AuditorService,
   Auditor,
 } from '../../../services/superadmin/auditor.service';
+import { CoreService } from 'src/app/services/core.service';
 
 // ✅ Interface pour l'affichage
 interface AuditorRow {
@@ -57,6 +58,7 @@ interface AuditorRow {
 export class AuditorsComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private auditorService = inject(AuditorService);
+  public core = inject(CoreService);
 
   displayedColumns: string[] = ['photo', 'name', 'status', 'actions'];
   title = 'AUDITORS';

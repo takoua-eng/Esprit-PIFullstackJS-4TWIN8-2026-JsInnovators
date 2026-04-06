@@ -1,12 +1,20 @@
 export class CreateAdminDto {
-  firstName: string;
-  lastName: string;
+  // 🔐 Authentification
   email: string;
   password: string;
 
-  isSuperAdmin?: boolean;
-  adminLevel?: string; // 🔥 new
-  permissions?: string[];
-
+  // 👤 Informations personnelles
+  firstName: string;
+  lastName: string;
+  gender: string;
+  phone: string;
+  address: string;
+  nationalId: string;
   photo?: string;
+
+  // 🏥 Service
+  serviceId: string;
+
+  // 📊 Statut
+  isActive?: boolean;
 }

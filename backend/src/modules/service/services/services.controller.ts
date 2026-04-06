@@ -21,7 +21,7 @@ export class ServicesController {
     return this.service.create(dto);
   }
 
-  // GET ALL
+  // GET ALL (only not archived)
   @Get()
   findAll() {
     return this.service.findAll();
@@ -39,9 +39,21 @@ export class ServicesController {
     return this.service.update(id, dto);
   }
 
-  // DELETE
+  // ARCHIVE (soft delete)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  archive(@Param('id') id: string) {
+    return this.service.archive(id);
+  }
+
+  // ACTIVATE
+  @Put(':id/activate')
+  activate(@Param('id') id: string) {
+    return this.service.activate(id);
+  }
+
+  // DEACTIVATE
+  @Put(':id/deactivate')
+  deactivate(@Param('id') id: string) {
+    return this.service.deactivate(id);
   }
 }

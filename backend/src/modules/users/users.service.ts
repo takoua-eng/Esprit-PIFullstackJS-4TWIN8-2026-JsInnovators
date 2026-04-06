@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   Logger,
@@ -12,11 +12,13 @@ import * as bcrypt from 'bcrypt';
 
 import { User, UserDocument } from './users.schema';
 import { Role, RoleDocument } from '../roles/role.schema';
+import { Service, ServiceDocument } from '../service/services/service.schema';
 import {
   PatientDiagnosis,
   PatientDiagnosisDocument,
 } from './patient-diagnosis.schema';
 import { NurseDossierDto } from './dto/nurse-dossier.dto';
+import { NotificationsService } from '../notifications-super-admin/notifications.service';
 
 import { CreatePatientDto } from './dto/CreatePatientDto ';
 import { CreateDoctorDto } from './dto/CreateDoctorDto ';
@@ -35,9 +37,11 @@ export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
+    @InjectModel(Service.name) private serviceModel: Model<ServiceDocument>,
     @InjectModel(PatientDiagnosis.name)
     private patientDiagnosisModel: Model<PatientDiagnosisDocument>,
     private readonly config: ConfigService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private async getRole(name: string) {
@@ -59,24 +63,80 @@ export class UsersService {
     const role = await this.getRole(roleName);
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
+    // Clean all ObjectId reference fields — remove if empty or invalid
+    const cleanDto = { ...dto };
+    for (const field of ['serviceId', 'doctorId', 'coordinatorId', 'nurseId']) {
+      if (!cleanDto[field] || !Types.ObjectId.isValid(cleanDto[field])) {
+        delete cleanDto[field];
+      }
+    }
+
     return this.userModel.create({
-      ...dto,
+      ...cleanDto,
       password: hashedPassword,
       role: role._id,
-      photo: file ? file.filename : null,
+      photo: file ? file.filename : '',
+      isActive: dto.isActive ?? true,
+      isArchived: false,
     });
   }
 
-  createPatient(dto: CreatePatientDto, file?: Express.Multer.File) {
-    return this.createUser(dto, 'patient', file);
+  async createPatient(dto: CreatePatientDto, file?: Express.Multer.File) {
+    const patient = await this.createUser(dto, 'patient', file);
+
+    console.log('🔔 createPatient - doctorId received:', dto.doctorId);
+    console.log('🔔 patient created:', patient._id?.toString());
+
+    // Send notifications if a doctor is assigned
+    if (dto.doctorId) {
+      try {
+        console.log('🔔 Looking for doctor:', dto.doctorId);
+        const doctor = await this.userModel.findById(dto.doctorId).exec();
+        console.log('🔔 Doctor found:', doctor ? `${doctor.firstName} ${doctor.lastName}` : 'NOT FOUND');
+
+        if (doctor) {
+          await this.notificationsService.notifyPatientAssigned(patient, doctor);
+          console.log('✅ Notifications sent to patient and doctor');
+        }
+      } catch (e) {
+        console.error('❌ Notification error:', e.message, e.stack);
+        this.logger.warn(`Notification failed for patient ${patient._id}: ${e.message}`);
+      }
+    } else {
+      console.log('⚠️ No doctorId provided — no notification sent');
+    }
+
+    return patient;
   }
 
   createDoctor(dto: CreateDoctorDto, file?: Express.Multer.File) {
     return this.createUser(dto, 'doctor', file);
   }
 
-  createNurse(dto: CreateNurseDto, file?: Express.Multer.File) {
-    return this.createUser(dto, 'nurse', file);
+  async createNurse(dto: CreateNurseDto, file?: Express.Multer.File) {
+    let serviceObjectId: any = undefined;
+    if (dto.serviceId && Types.ObjectId.isValid(dto.serviceId)) {
+      const service = await this.serviceModel.findById(dto.serviceId);
+      if (!service) throw new NotFoundException('Service not found');
+      serviceObjectId = service._id;
+    }
+
+    const existingUser = await this.userModel.findOne({ email: dto.email });
+    if (existingUser) {
+      throw new BadRequestException('Email already exists');
+    }
+
+    const role = await this.getRole('nurse');
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    return this.userModel.create({
+      ...dto,
+      password: hashedPassword,
+      role: role._id,
+      ...(serviceObjectId ? { serviceId: serviceObjectId } : {}),
+      photo: file ? file.filename : '',
+      isActive: dto.isActive ?? true,
+    });
   }
 
   createCoordinator(dto: CreateCoordinatorDto, file?: Express.Multer.File) {
@@ -84,204 +144,36 @@ export class UsersService {
   }
 
   createAdmin(dto: CreateAdminDto, file?: Express.Multer.File) {
-    return this.createUser(dto, 'admin', file);
+    return this.createAdminWithService(dto, file);
   }
 
-  createAuditor(dto: CreateAuditorDto, file?: Express.Multer.File) {
-    return this.createUser(dto, 'auditor', file);
-  }
-
-  async getAllUsers() {
-    return this.userModel.find({ isArchived: { $ne: true } }).populate('role');
-  }
-
-  async getByRole(roleName: string) {
-    const role = await this.getRole(roleName);
-
-    return this.userModel
-      .find({ role: role._id, isArchived: { $ne: true } })
-      .populate('role');
-  }
-
-  async getUser(id: string) {
-    let user: UserDocument | null = null;
-
-    if (Types.ObjectId.isValid(id)) {
-      user = await this.userModel
-        .findOne({ _id: id, isArchived: { $ne: true } })
-        .populate('role')
-        .exec();
-    }
-    if (!user) {
-      user = await this.userModel
-        .findOne({ userId: id, isArchived: { $ne: true } })
-        .populate('role')
-        .exec();
+  private async createAdminWithService(
+    dto: CreateAdminDto,
+    file?: Express.Multer.File,
+  ) {
+    // Clean all ObjectId reference fields — remove if empty or invalid
+    for (const field of ['serviceId', 'doctorId', 'coordinatorId', 'nurseId']) {
+      if (dto[field] !== undefined) {
+        if (!dto[field] || !Types.ObjectId.isValid(dto[field])) {
+          delete dto[field];
+        }
+      }
     }
 
-    if (!user) throw new NotFoundException('User not found');
-
-    return user;
-  }
-
-  async updateUser(id: string, dto: any) {
-    const user = await this.userModel.findById(id);
-    if (!user) throw new NotFoundException('User not found');
+    // Validate serviceId exists in DB
+    if (dto.serviceId) {
+      const service = await this.serviceModel.findById(dto.serviceId);
+      if (!service) throw new NotFoundException('Service not found');
+      dto.serviceId = service._id;
+    }
 
     Object.assign(user, dto);
-    return user.save();
-  }
 
-  async deleteUser(id: string) {
-    const user = await this.userModel.findById(id);
-    if (!user) throw new NotFoundException('User not found');
-
-    user.isArchived = true;
-    return user.save();
-  }
-
-  async restoreUser(id: string) {
-    const user = await this.userModel.findById(id);
-    if (!user) throw new NotFoundException('User not found');
-
-    user.isArchived = false;
-    return user.save();
-  }
-
-  async updateUserAvatar(id: string, file: Express.Multer.File) {
-    const user = await this.userModel.findById(id);
-    if (!user) throw new NotFoundException('User not found');
-
-    user.photo = file ? file.filename : user.photo;
-    return user.save();
-  }
-
-  async getPatients() {
-    return this.findPatients();
-  }
-
-  async getDoctors() {
-    const role = await this.getRole('doctor');
-    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
-  }
-
-  async getNurses() {
-    const role = await this.getRole('nurse');
-    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
-  }
-
-  async getCoordinators() {
-    const role = await this.getRole('coordinator');
-    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
-  }
-
-  async getAdmins() {
-    const role = await this.getRole('admin');
-    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
-  }
-
-  async getAuditors() {
-    const role = await this.getRole('auditor');
-    return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
-  }
-
-  async activateUser(id: string) {
-    const user = await this.userModel.findById(id);
-
-    if (!user) throw new NotFoundException('User not found');
-
-    user.isActive = true;
-    return user.save();
-  }
-
-  async deactivateUser(id: string) {
-    const user = await this.userModel.findById(id);
-
-    if (!user) throw new NotFoundException('User not found');
-
-    user.isActive = false;
-    return user.save();
-  }
-
-  /** Users with the given role name (e.g. Patient) — for nurse data entry / lists. */
-  async findByRoleName(
-    roleName: string,
-  ): Promise<
-    { _id: string; firstName: string; lastName: string; email: string }[]
-  > {
-    const trimmed = roleName.trim();
-    if (!trimmed) return [];
-    const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const roleRegex = new RegExp(`^${escaped}$`, 'i');
-
-    const roleDocs = await this.roleModel
-      .find({ name: { $regex: roleRegex } })
-      .select('_id')
-      .lean()
-      .exec();
-    const roleIds = roleDocs.map((r) => r._id);
-    const query: Record<string, unknown> =
-      roleIds.length > 0
-        ? { role: { $in: roleIds } }
-        : { role: { $regex: roleRegex } };
-    const direct = await this.userModel
-      .find(query)
-      .select('firstName lastName email')
-      .lean()
-      .exec();
-
-    if (direct.length) {
-      return direct.map((u) => ({
-        _id: (u._id as Types.ObjectId).toString(),
-        firstName: u.firstName,
-        lastName: u.lastName,
-        email: u.email,
-      }));
+    if (file) {
+      user.photo = file.filename;
     }
-    const all = await this.userModel
-      .find()
-      .select('-password')
-      .populate('role')
-      .lean()
-      .exec();
-    return all
-      .filter((u: any) => {
-        const r = u?.role;
-        if (!r) return false;
-        if (typeof r === 'string') return roleRegex.test(r);
-        return roleRegex.test(String(r?.name ?? ''));
-      })
-      .map((u: any) => ({
-        _id: String(u._id),
-        firstName: String(u.firstName ?? ''),
-        lastName: String(u.lastName ?? ''),
-        email: String(u.email ?? ''),
-      }));
-  }
 
-  /**
-   * Users whose `role` field equals this MongoDB ObjectId (exact match).
-   */
-  async findByRoleObjectId(
-    roleObjectId: string,
-  ): Promise<
-    { _id: string; firstName: string; lastName: string; email: string }[]
-  > {
-    const trimmed = roleObjectId.trim();
-    if (!trimmed || !Types.ObjectId.isValid(trimmed)) {
-      return [];
-    }
-    const direct = await this.userModel
-      .find({ role: new Types.ObjectId(trimmed) })
-      .select('firstName lastName email')
-      .lean()
-      .exec();
-    return direct.map((u) => ({
-      _id: (u._id as Types.ObjectId).toString(),
-      firstName: u.firstName,
-      lastName: u.lastName,
-      email: u.email,
-    }));
+    return user.save();
   }
 
   /**
@@ -575,4 +467,39 @@ export class UsersService {
       diagnosisEntries,
     };
   }
+  async findByIdForAuth(id: string) {
+    return this.userModel
+      .findById(id)
+      .populate('role') // Ã°Å¸â€Â¥ Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â£Ã™â€¡Ã™â€¦ Ã˜Â³Ã˜Â·Ã˜Â±
+      .exec();
+  }
+
+  async getUsersCountByRole() {
+    return this.userModel.aggregate([
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'role',
+          foreignField: '_id',
+          as: 'roleData',
+        },
+      },
+      { $unwind: '$roleData' },
+      {
+        $group: {
+          _id: '$roleData.name',
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          role: '$_id',
+          count: 1,
+          _id: 0,
+        },
+      },
+    ]);
+  }
 }
+
+

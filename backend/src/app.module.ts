@@ -4,12 +4,16 @@ import {
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AuditInterceptor } from './modules/audit/audit.interceptor';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { NotificationsModule } from './modules/notifications-super-admin/notifications.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { AlertsModule } from './modules/alerts/alerts.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
@@ -49,6 +53,8 @@ import { Upload, UploadAvatar } from './middleware/upload.middleware';
     UsersModule,
     RolesModule,
     AuthModule,
+    AuditModule,
+    NotificationsModule,
     UploadModule,
     AlertsModule,
     RemindersModule,
@@ -62,8 +68,13 @@ import { Upload, UploadAvatar } from './middleware/upload.middleware';
     PatientNotesModule,
     QuestionnaireTemplatesModule,
   ],
-})
-export class AppModule implements NestModule {
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditInterceptor,
+    },
+  ],
+})export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(Upload).forRoutes('upload');
 

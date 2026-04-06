@@ -426,5 +426,9 @@
   "NURSE_RECORDS_HINT_TAGS": "Max. 500 characters",
   "NURSE_RECORDS_HINT_PAIN": "0ÔÇô10, integer if filled",
   "NURSE_RECORDS_HINT_DESCRIPTION": "Max. 1000 characters",
-  "RETRY": "Retry"
+  "RETRY": "Retry",
+  "AUDIT_LOGS": "Audit Logs",
+  "AUDITOR_MENU": "Auditor",
+  "AUDITOR_DASHBOARD": "Dashboard",
+  "AUDITOR_VERIFY": "Verify Logs"
 }

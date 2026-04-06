@@ -24,6 +24,7 @@ import {
   CoordinateurService,
   Coordinator,
 } from './../../../services/superadmin/coordinateur.service';
+import { CoreService } from 'src/app/services/core.service';
 
 // ✅ Interface pour l'affichage
 interface CoordinatorRow {
@@ -58,6 +59,7 @@ export class CoordinateursComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private router = inject(Router);
   private coordService = inject(CoordinateurService);
+  public core = inject(CoreService);
 
   displayedColumns: string[] = ['photo', 'name', 'email', 'actions'];
   title = 'COORDINATORS';

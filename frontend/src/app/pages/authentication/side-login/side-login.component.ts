@@ -94,10 +94,11 @@ export class AppSideLoginComponent {
     const { email, password } = this.form.value;
 
     this.http
-      .post<{ accessToken: string; role: string }>(
-        `${API_BASE_URL}/auth/login`,
-        { email, password },
-      )
+      .post<{
+        accessToken: string;
+        role: string;
+        permissions: string[];
+      }>(`${API_BASE_URL}/auth/login`, { email, password })
       .pipe(
         catchError((err: HttpErrorResponse) => {
           this.loading = false;
@@ -113,7 +114,17 @@ export class AppSideLoginComponent {
         this.loading = false;
 
         localStorage.setItem('accessToken', res.accessToken);
+        localStorage.setItem('permissions', JSON.stringify(res.permissions));
         this.core.setRoleFromLogin(res.role || '');
+        this.core.setPermissions(res.permissions ?? []);
+
+        // Extract userId from JWT payload (sub field)
+        try {
+          const payload = JSON.parse(atob(res.accessToken.split('.')[1]));
+          if (payload?.sub) {
+            localStorage.setItem('userId', payload.sub);
+          }
+        } catch { /* ignore */ }
 
         this.router.navigateByUrl(getPostLoginPath(res.role));
       });
@@ -143,10 +154,10 @@ export class AppSideLoginComponent {
       });
 
       const res = (await this.http
-        .post<{ accessToken: string; role?: string }>(
-          `${API_BASE_URL}/auth/webauthn/verify`,
-          assertion,
-        )
+        .post<{
+          accessToken: string;
+          role?: string;
+        }>(`${API_BASE_URL}/auth/webauthn/verify`, assertion)
         .toPromise())!;
 
       localStorage.setItem('accessToken', res.accessToken);

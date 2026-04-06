@@ -19,6 +19,7 @@ import {
   Patient,
 } from 'src/app/services/superadmin/patient.service';
 import { ConfirmDialog } from './confirm-dialog';
+import { CoreService } from 'src/app/services/core.service';
 
 interface PatientRow {
   _id: string;
@@ -48,6 +49,9 @@ interface PatientRow {
 export class Patients implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private patientService = inject(PatientService);
+  constructor(
+    public core: CoreService, //
+  ) {}
 
   loading = false;
   displayedColumns: string[] = [
@@ -76,6 +80,7 @@ export class Patients implements OnInit, AfterViewInit {
     this.loading = true;
     this.patientService.getPatients().subscribe({
       next: (data: Patient[]) => {
+        console.log('DATA FROM BACKEND:', data);
         this.dataSource.data = data.map((p) => ({
           _id: p._id,
           name: `${p.firstName} ${p.lastName}`.trim(),

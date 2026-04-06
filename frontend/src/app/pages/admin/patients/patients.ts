@@ -19,6 +19,7 @@ import {
   Patient,
 } from 'src/app/services/superadmin/patient.service';
 import { ConfirmDialog } from './confirm-dialog';
+import { CoreService } from 'src/app/services/core.service';
 
 interface PatientRow {
   _id: string;
@@ -48,6 +49,7 @@ interface PatientRow {
 export class Patients implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private patientService = inject(PatientService);
+  public core = inject(CoreService);
 
   loading = false;
   displayedColumns: string[] = [

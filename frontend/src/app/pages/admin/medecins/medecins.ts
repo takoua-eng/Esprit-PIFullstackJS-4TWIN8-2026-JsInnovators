@@ -27,6 +27,7 @@ import {
   DoctorService,
   Doctor,
 } from 'src/app/services/superadmin/doctor.service';
+import { CoreService } from 'src/app/services/core.service';
 
 // ✅ Interface complète
 interface DoctorRow {
@@ -61,6 +62,7 @@ interface DoctorRow {
 export class MedecinsComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private doctorService = inject(DoctorService);
+  public core = inject(CoreService);
 
   displayedColumns: string[] = [
     'photo',

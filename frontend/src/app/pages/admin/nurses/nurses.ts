@@ -21,6 +21,7 @@ import { MatInputModule } from '@angular/material/input';
 
 import { AddPatientDialog } from '../add-patient-dialog/add-patient-dialog';
 import { NurseService, Nurse } from 'src/app/services/superadmin/nurse.service';
+import { CoreService } from 'src/app/services/core.service';
 
 interface NurseRow {
   _id: string;
@@ -54,6 +55,7 @@ interface NurseRow {
 export class NursesComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private nurseService = inject(NurseService);
+  public core = inject(CoreService);
 
   displayedColumns: string[] = [
     'photo',

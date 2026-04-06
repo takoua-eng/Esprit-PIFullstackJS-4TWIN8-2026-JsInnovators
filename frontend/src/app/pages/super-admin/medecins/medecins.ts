@@ -27,6 +27,7 @@ import {
   DoctorService,
   Doctor,
 } from 'src/app/services/superadmin/doctor.service';
+import { CoreService } from 'src/app/services/core.service';
 
 // ✅ Interface complète
 interface DoctorRow {
@@ -71,6 +72,10 @@ export class MedecinsComponent implements OnInit, AfterViewInit {
   ];
   title = 'PHYSICIANS';
   dataSource = new MatTableDataSource<DoctorRow>([]);
+
+  constructor(
+    public core: CoreService, //
+  ) {}
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;

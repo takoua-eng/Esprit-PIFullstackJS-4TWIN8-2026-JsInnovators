@@ -5,6 +5,8 @@
 export const ALLOWED_LOCAL_STORAGE_KEYS = new Set([
   'accessToken',
   'user_role',
+  'permissions',
+  'userId',
   'app_language',
   'high_contrast',
 ]);
@@ -29,6 +31,8 @@ export function clearAuthLocalStorage(): void {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('auth_token');
   localStorage.removeItem('user_role');
+  localStorage.removeItem('permissions');
+  localStorage.removeItem('userId');
   localStorage.removeItem('app_language');
   localStorage.removeItem('high_contrast');
 }
