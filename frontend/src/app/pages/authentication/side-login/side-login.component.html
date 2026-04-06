@@ -1,3 +1,4 @@
+```html
 <div class="login-wrapper">
 
   <mat-card class="login-card">
@@ -15,13 +16,14 @@
         <h2 class="title">Welcome to MediFollow</h2>
         <p class="subtitle">Your health monitoring dashboard</p>
 
-        <div *ngIf="errorMessage" class="login-error" role="alert">
+        <!-- ERROR -->
+        <div *ngIf="errorMessage" class="login-error">
           {{ errorMessage }}
         </div>
 
         <!-- SOCIAL LOGIN -->
         <div class="social-login">
-          <button mat-stroked-button type="button" class="social-btn" disabled>
+          <button mat-stroked-button class="social-btn" disabled>
             <mat-icon>login</mat-icon>
             Google
           </button>
@@ -29,38 +31,44 @@
 
         <div class="divider">or sign in with</div>
 
-        <!-- 🧠 FACE LOGIN BUTTON -->
-        <button mat-stroked-button color="accent" class="face-btn" (click)="startFaceLogin()">
+        <!-- FACE LOGIN BUTTON -->
+        <button mat-stroked-button color="accent" class="face-btn" (click)="startFaceLogin()" [disabled]="loadingFace">
 
           📷 Login with Face ID
         </button>
 
-        <!-- 🎥 CAMERA -->
-        <div *ngIf="showCamera" class="camera-container">
-          <video #video autoplay playsinline width="320" height="240" *ngIf="useVideo"></video>
-          <img #image *ngIf="!useVideo" src="assets/test/test-face.jpg" width="320" height="240" />
-          <button (click)="startTestFace()">Test Face</button>
-          <div>{{ faceMessage }}</div>
-        </div>
+        <!-- CAMERA -->
+<div class="face-container">
+  <video
+    #video
+    autoplay
+    muted
+    playsinline
+    width="320"
+    height="240">
+  </video>
+</div>
 
 
-
-        <!-- 🧾 MESSAGE -->
+        <!-- FACE MESSAGE -->
         <div class="face-message" *ngIf="faceMessage">
           {{ faceMessage }}
         </div>
 
         <!-- LOADING -->
-        <mat-spinner *ngIf="loadingFace" diameter="30"></mat-spinner>
+        <div class="face-loading" *ngIf="loadingFace">
+          <mat-spinner diameter="30"></mat-spinner>
+        </div>
 
         <div class="divider">or sign in with email</div>
 
-        <!-- FORM -->
+        <!-- LOGIN FORM -->
         <form [formGroup]="form" (ngSubmit)="submit()">
 
           <!-- EMAIL -->
           <mat-form-field appearance="outline" class="full">
             <mat-label>Email</mat-label>
+
             <input matInput type="email" formControlName="email" placeholder="Enter your email">
 
             <mat-error *ngIf="form.get('email')?.hasError('required')">
@@ -70,20 +78,24 @@
             <mat-error *ngIf="form.get('email')?.hasError('email')">
               Invalid email format
             </mat-error>
+
           </mat-form-field>
 
           <!-- PASSWORD -->
           <mat-form-field appearance="outline" class="full">
             <mat-label>Password</mat-label>
+
             <input matInput type="password" formControlName="password" placeholder="Enter your password">
 
             <mat-error *ngIf="form.get('password')?.hasError('required')">
               Password is required
             </mat-error>
+
           </mat-form-field>
 
           <!-- REMEMBER -->
           <div class="remember-row">
+
             <mat-checkbox formControlName="remember">
               Keep me logged in
             </mat-checkbox>
@@ -91,12 +103,14 @@
             <a routerLink="/authentication/forgot-password">
               Forgot password?
             </a>
+
           </div>
 
-          <!-- SUBMIT -->
+          <!-- LOGIN BUTTON -->
           <button mat-flat-button color="primary" class="login-btn" type="submit" [disabled]="form.invalid || loading">
 
             {{ loading ? 'Signing in…' : 'Sign In' }}
+
           </button>
 
         </form>
@@ -108,3 +122,4 @@
   </mat-card>
 
 </div>
+```
