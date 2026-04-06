@@ -6,11 +6,11 @@
   </button>
 
   
-  <!-- Alert Bell with live badge, patient only -->
-  <button *ngIf="core.userRole() === 'Patient'" mat-icon-button routerLink="/dashboard/patient/alerts" aria-label="Alerts">
+  <!-- Alert Bell with live badge for Patient / Nurse / Doctor -->
+  <button *ngIf="canNavigateToAlerts()" mat-icon-button (click)="goToAlerts()" aria-label="Alerts">
     <span class="bell-wrapper">
       <i-tabler class="d-flex" name="bell"></i-tabler>
-      <span *ngIf="pendingAlertsCount > 0" class="alert-badge">{{ pendingAlertsCount }}</span>
+      <span *ngIf="core.userRole() === 'Patient' && pendingAlertsCount > 0" class="alert-badge">{{ pendingAlertsCount }}</span>
     </span>
   </button>
 

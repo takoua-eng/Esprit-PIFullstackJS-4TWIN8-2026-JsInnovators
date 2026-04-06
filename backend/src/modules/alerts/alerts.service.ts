@@ -36,6 +36,7 @@ export class AlertsService implements OnModuleInit {
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
   ) {}
 
+
   /** ObjectIds of users whose role is Patient — clinical alerts are only for patients. */
   private async getPatientUserObjectIds(): Promise<Types.ObjectId[]> {
     const patientRole = await this.roleModel.findOne({ name: 'Patient' }).exec();
@@ -108,6 +109,8 @@ export class AlertsService implements OnModuleInit {
     ]);
   }
 
+
+  
   private toListItem(doc: AlertDocument & { patientId?: unknown }): AlertListItem {
     const p = doc.patientId as unknown as {
       firstName?: string;
@@ -141,6 +144,8 @@ export class AlertsService implements OnModuleInit {
     };
   }
 
+
+
   async findAll(): Promise<AlertListItem[]> {
     const patientIds = await this.getPatientUserObjectIds();
     if (patientIds.length === 0) return [];
@@ -153,6 +158,25 @@ export class AlertsService implements OnModuleInit {
     return docs.map((d) => this.toListItem(d as AlertDocument));
   }
 
+
+
+  async getByPatient(patientId: string, status?: string): Promise<AlertListItem[]> {
+    if (!Types.ObjectId.isValid(patientId)) return [];
+
+    const q: Record<string, unknown> = { patientId: new Types.ObjectId(patientId) };
+    if (status) q['status'] = status;
+
+    const docs = await this.alertModel
+      .find(q)
+      .sort({ createdAt: -1 })
+      .populate('patientId', 'firstName lastName')
+      .exec();
+
+    return docs.map((d) => this.toListItem(d as AlertDocument));
+  }
+
+
+
   async findOpenCount(): Promise<number> {
     const patientIds = await this.getPatientUserObjectIds();
     if (patientIds.length === 0) return 0;
@@ -164,6 +188,9 @@ export class AlertsService implements OnModuleInit {
       })
       .exec();
   }
+
+
+
 
   async acknowledge(
     id: string,
@@ -188,7 +215,7 @@ export class AlertsService implements OnModuleInit {
 
     const doc = await this.alertModel
       .findOneAndUpdate(
-        { _id: id, patientId: { $in: patientIds } },
+        { _id: id },
         update,
         { new: true },
       )
@@ -198,4 +225,7 @@ export class AlertsService implements OnModuleInit {
     if (!doc) throw new NotFoundException(`Alert ${id} not found`);
     return this.toListItem(doc as AlertDocument);
   }
+
+
+
 }

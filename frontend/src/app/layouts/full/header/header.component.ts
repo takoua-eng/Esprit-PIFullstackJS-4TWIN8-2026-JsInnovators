@@ -46,6 +46,9 @@ export class HeaderComponent implements OnInit {
     private patientService: PatientService,
   ) {}
 
+
+
+  
   ngOnInit(): void {
     this.core.initUserRole();
 
@@ -62,6 +65,34 @@ export class HeaderComponent implements OnInit {
     }
   }
 
+
+
+
+  /** Return true when current role has an alerts page we can navigate to */
+  canNavigateToAlerts(): boolean {
+    const r = (localStorage.getItem('user_role') || '').toLowerCase();
+    return r === 'patient' || r === 'nurse' || r === 'physician' || r === 'doctor';
+  }
+
+
+
+  goToAlerts(): void {
+    const r = (localStorage.getItem('user_role') || '').toLowerCase();
+    if (r === 'patient') {
+      this.router.navigate(['/dashboard/patient/alerts']);
+    } else if (r === 'nurse') {
+      this.router.navigate(['/dashboard/nurse/alerts']);
+    } else if (r === 'physician' || r === 'doctor') {
+      this.router.navigate(['/dashboard/doctor/alerts']);
+    } else {
+      // fallback to generic alerts page
+      this.router.navigate(['/dashboard/alerts']);
+    }
+  }
+
+
+
+
   goToProfile(): void {
     const r = (localStorage.getItem('user_role') || '').toLowerCase();
     if (r === 'patient') {
@@ -70,6 +101,10 @@ export class HeaderComponent implements OnInit {
       this.router.navigate(['/dashboard/profile']);
     }
   }
+
+
+
+
 
   logout(): void {
     clearAuthLocalStorage();

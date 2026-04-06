@@ -11,7 +11,15 @@
     </mat-card-header>
 
     <mat-card-content>
-      <form [formGroup]="parametersForm" (ngSubmit)="onSubmit()">
+      <div *ngIf="submittedToday" class="already-submitted">
+        <mat-card>
+          <mat-card-content>
+            <p>You have already submitted your vital parameters today. You can submit again tomorrow.</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <form *ngIf="!submittedToday" [formGroup]="parametersForm" (ngSubmit)="onSubmit()">
         <div class="form-row">
           <mat-form-field appearance="outline">
             <mat-label>Temperature (&deg;C)</mat-label>

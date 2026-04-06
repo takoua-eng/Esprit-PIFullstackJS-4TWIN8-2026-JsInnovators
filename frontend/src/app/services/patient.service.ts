@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface VitalEntry {
   _id?: string;
@@ -35,7 +36,7 @@ export interface AlertEntry {
   parameter: string;
   value?: number;
   message: string;
-  status: 'pending' | 'resolved';
+  status: 'pending' | 'resolved' | 'acknowledged';
   createdAt?: string;
 }
 
@@ -50,9 +51,23 @@ export class PatientService {
 
   constructor(private http: HttpClient) {}
 
-  /** Retourne le patientId stockÃ© en localStorage aprÃ¨s connexion */
+
+
+  /** Retourne le patientId en décodant le JWT (claim 'sub') stocké après connexion */
   getCurrentPatientId(): string {
-    return localStorage.getItem('userId') ?? '';
+    // Priorité : userId explicite si jamais stocké
+    const direct = localStorage.getItem('userId');
+    if (direct) return direct;
+
+    // Sinon décoder le JWT pour extraire sub
+    const token = localStorage.getItem('accessToken');
+    if (!token) return '';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.sub ?? payload._id ?? payload.id ?? '';
+    } catch {
+      return '';
+    }
   }
 
   // â”€â”€â”€ VITAL PARAMETERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -114,6 +129,9 @@ export class PatientService {
     );
   }
 
+
+
+
   // â”€â”€â”€ ALERTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getMyAlerts(): Observable<AlertEntry[]> {
@@ -122,6 +140,42 @@ export class PatientService {
       `${this.API}/auto-alerts/patient/${patientId}`,
     );
   }
+
+  /** Fetch clinical alerts (collection `alerts`) for a specific patient */
+  getPatientAlerts(patientId: string, status?: string): Observable<AlertEntry[]> {
+    let url = `${this.API}/alerts/patient/${patientId}`;
+    if (status) url += `?status=${encodeURIComponent(status)}`;
+    return this.http.get<any[]>(url).pipe(
+      // Map backend Alert -> AlertEntry shape
+      map(arr => (arr || []).map(a => ({
+        _id: a._id,
+        patientId: a.patientId,
+        type: a.type || 'vital',
+        parameter: a.parameter || '',
+        value: a.value,
+        message: a.message,
+        status: a.status === 'open' ? 'pending' : 'resolved',
+        createdAt: a.createdAt ? new Date(a.createdAt).toISOString() : undefined,
+      })))
+    );
+  }
+
+  acknowledgeClinicalAlert(alertId: string): Observable<AlertEntry> {
+  return this.http.patch<any>(`${this.API}/alerts/${alertId}/acknowledge`, {}).pipe(
+    map(a => ({
+      _id: a._id,
+      patientId: a.patientId,
+      type: a.type || 'vital',
+      parameter: a.parameter || '',
+      value: a.value,
+      message: a.message,
+      status: a.status, // <-- garder le vrai status backend
+      createdAt: a.createdAt ? new Date(a.createdAt).toISOString() : undefined,
+    }))
+  );
+}
+
+
 
   getRecentAlerts(): Observable<AlertEntry[]> {
     const patientId = this.getCurrentPatientId();
@@ -143,6 +197,8 @@ export class PatientService {
       {},
     );
   }
+
+
 
   // â”€â”€â”€ QUESTIONNAIRES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -187,31 +243,7 @@ export class PatientService {
     return this.http.post(`${this.API}/questionnaire-responses`, { patientId, templateId, answers });
   }
 
-  // ─── MESSAGES ────────────────────────────────────────────────────────────────
 
-  getDoctorsAndNurses(): Observable<any[]> {
-    return new Observable(obs => {
-      // Fetch Doctor and Nurse roles in parallel
-      Promise.all([
-        fetch(`${this.API}/users/by-role/Doctor`).then(r => r.json()),
-        fetch(`${this.API}/users/by-role/Nurse`).then(r => r.json()),
-      ]).then(([doctors, nurses]) => {
-        obs.next([
-          ...(Array.isArray(doctors) ? doctors : []),
-          ...(Array.isArray(nurses) ? nurses : []),
-        ]);
-        obs.complete();
-      }).catch(e => obs.error(e));
-    });
-  }
 
-  sendNote(toUserId: string, message: string): Observable<any> {
-    const fromUserId = this.getCurrentPatientId();
-    return this.http.post(`${this.API}/patient-notes`, { fromUserId, toUserId, message });
-  }
 
-  getMySentNotes(): Observable<any[]> {
-    const fromUserId = this.getCurrentPatientId();
-    return this.http.get<any[]>(`${this.API}/patient-notes/from/${fromUserId}`);
-  }
 }

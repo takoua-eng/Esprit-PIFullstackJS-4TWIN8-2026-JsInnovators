@@ -33,9 +33,7 @@ import { ParametersComponent } from './patient/parameters/parameters.component';
 import { SymptomsComponent } from './patient/symptoms/symptoms.component';
 import { QuestionnairesComponent } from './patient/questionnaires/questionnaires.component';
 import { HistoryComponent } from './patient/history/history.component';
-import { MessagesComponent } from './patient/messages/messages.component';
 import { AlertsComponent } from './patient/alerts/alerts.component';
-
 // Nurse & doctor workspaces
 import { NurseDashboardComponent } from './nurse/dashboard/nurse-dashboard.component';
 import { NurseAlertsComponent } from './nurse/alerts/nurse-alerts.component';
@@ -45,6 +43,8 @@ import { DoctorDashboardComponent } from './doctor/dashboard/doctor-dashboard.co
 import { DoctorAlertsComponent } from './doctor/alerts/doctor-alerts.component';
 import { DoctorHistoryComponent } from './doctor/history/doctor-history.component';
 import { DoctorPrescriptionsComponent } from './doctor/prescriptions/doctor-prescriptions.component';
+import { MessagesDoctorComponent } from './doctor/messages-doctor/messages-doctor.component';
+import { MessagesPatientComponent } from './patient/messages-patient/messages-patient.component';
 
 /** Roles allowed to use the sub-admin `/dashboard/admin/...` area (not patients, not coordinators). */
 const staffAdminGuard = [
@@ -176,6 +176,11 @@ export const DoctorRoutes: Routes = [
         component: DoctorPrescriptionsComponent,
         data: { title: 'Doctor Prescriptions' },
       },
+      {
+        path: 'messages',
+        component: MessagesDoctorComponent,
+        data: { title: 'Messages' },
+      },
     ],
   },
 ];
@@ -226,8 +231,8 @@ export const PatientRoutes: Routes = [
       { path: 'symptoms', component: SymptomsComponent, data: { title: 'Mes Symptômes' } },
       { path: 'questionnaires', component: QuestionnairesComponent, data: { title: 'Questionnaires' } },
       { path: 'history', component: HistoryComponent, data: { title: 'Historique' } },
-      { path: 'messages', component: MessagesComponent, data: { title: 'Messages' } },
       { path: 'alerts', component: AlertsComponent, data: { title: 'Alerts' } },
+      { path: 'messages', component: MessagesPatientComponent, data: { title: 'Messages' } },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

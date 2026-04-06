@@ -22,6 +22,7 @@ import { nurseNavItems } from './sidebar/nurse-sidebar-data';
 import { doctorNavItems } from './sidebar/doctor-sidebar-data';
 import { NavItem } from './sidebar/nav-item/nav-item';
 import { normalizeRoleKey } from 'src/app/core/post-login-route';
+import { VoiceAssistantComponent } from 'src/app/components/voice-assistant/voice-assistant.component';
 
 
 
@@ -41,6 +42,7 @@ const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
     TablerIconsModule,
     HeaderComponent,
     AppTopstripComponent,
+    VoiceAssistantComponent,
   ],
   templateUrl: './full.component.html',
   styleUrls: [],
@@ -48,6 +50,7 @@ const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
 })
 export class FullComponent implements OnInit {
   navItems: NavItem[] = [];
+  isPatientRoute = false;
 
   @ViewChild('leftsidenav')
   public sidenav: MatSidenav;
@@ -101,6 +104,8 @@ export class FullComponent implements OnInit {
       });
   }
 
+
+  
   // ✅ LOGIQUE FIX
   private updateSidebar(url: string) {
     const role = normalizeRoleKey(
@@ -108,6 +113,10 @@ export class FullComponent implements OnInit {
         ? localStorage.getItem('user_role')
         : null,
     );
+
+
+
+    this.isPatientRoute = url.startsWith('/dashboard/patient');
 
     if (url.startsWith('/dashboard/admin')) {
       this.navItems = adminNavItems;
@@ -124,6 +133,8 @@ export class FullComponent implements OnInit {
       this.navItems = doctorNavItems;
     } else if (url.startsWith('/admin/coordinator')) {
       this.navItems = coordinatorNavItems;
+    } else if (url.startsWith('/dashboard/patient')) {   // <-- AJOUTÉ
+    this.navItems = patientNavItems;
     } else {
       this.navItems = adminNavItems;
     }

@@ -20,7 +20,6 @@ import { CoordinatorModule } from './modules/coordinator/coordinator.module';
 import { VitalParametersModule } from './modules/vital-parameters/vital-parameters.module';
 import { AutoAlertsModule } from './modules/auto-alerts/auto-alerts.module';
 import { QuestionnaireResponseModule } from './modules/questionnaire-responses/questionnaire-response.module';
-import { PatientNotesModule } from './modules/patient-notes/patient-notes.module';
 import { QuestionnaireTemplatesModule } from './modules/questionnaire-templates/questionnaire-templates.module';
 
 import { User, UserSchema } from './modules/users/users.schema';
@@ -28,6 +27,7 @@ import { Role, RoleSchema } from './modules/roles/role.schema';
 import { Service, ServiceSchema } from './modules/service/services/service.schema';
 
 import { Upload, UploadAvatar } from './middleware/upload.middleware';
+import { MessagesPatientDoctorModule } from './modules/messages-patient-doctor/messages-patient-doctor.module';
 
 @Module({
   imports: [
@@ -56,8 +56,8 @@ import { Upload, UploadAvatar } from './middleware/upload.middleware';
     VitalParametersModule,
     AutoAlertsModule,
     QuestionnaireResponseModule,
-    PatientNotesModule,
     QuestionnaireTemplatesModule,
+    MessagesPatientDoctorModule,
   ],
 })
 export class AppModule implements NestModule {

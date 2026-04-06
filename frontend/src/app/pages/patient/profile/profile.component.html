@@ -29,42 +29,72 @@
     <mat-card class="info-card">
       <mat-card-header>
         <mat-card-title>Personal Information</mat-card-title>
+        <mat-card-actions class="card-actions">
+          <button mat-flat-button color="primary" *ngIf="!editMode" (click)="enableEdit()">Edit</button>
+          <div *ngIf="editMode">
+            <button mat-stroked-button color="primary" (click)="saveProfile()">Save</button>
+            <button mat-button (click)="cancelEdit()">Cancel</button>
+          </div>
+        </mat-card-actions>
       </mat-card-header>
       <mat-card-content>
-        <div class="info-grid">
+        <form [formGroup]="form">
+          <div class="info-grid">
           <div class="info-item">
             <span class="label">First Name</span>
-            <span class="value">{{ user.firstName }}</span>
+            <span class="value" *ngIf="!editMode">{{ user.firstName }}</span>
+            <mat-form-field *ngIf="editMode" appearance="outline">
+              <input matInput placeholder="First Name" formControlName="firstName" />
+            </mat-form-field>
           </div>
           <div class="info-item">
             <span class="label">Last Name</span>
-            <span class="value">{{ user.lastName }}</span>
+            <span class="value" *ngIf="!editMode">{{ user.lastName }}</span>
+            <mat-form-field *ngIf="editMode" appearance="outline">
+              <input matInput placeholder="Last Name" formControlName="lastName" />
+            </mat-form-field>
           </div>
           <div class="info-item">
             <span class="label">Email</span>
-            <span class="value">{{ user.email }}</span>
+            <span class="value" *ngIf="!editMode">{{ user.email }}</span>
+            <mat-form-field *ngIf="editMode" appearance="outline">
+              <input matInput placeholder="Email" formControlName="email" />
+            </mat-form-field>
           </div>
           <div class="info-item">
             <span class="label">Phone</span>
-            <span class="value">{{ user.phone || 'Not provided' }}</span>
+            <span class="value" *ngIf="!editMode">{{ user.phone || 'Not provided' }}</span>
+            <mat-form-field *ngIf="editMode" appearance="outline">
+              <input matInput placeholder="Phone" formControlName="phone" />
+            </mat-form-field>
           </div>
           <div class="info-item">
             <span class="label">Date of Birth</span>
-            <span class="value">{{ formatDate(user.dateOfBirth) }}</span>
+            <span class="value" *ngIf="!editMode">{{ formatDate(user.dateOfBirth) }}</span>
+            <mat-form-field *ngIf="editMode" appearance="outline">
+              <input matInput type="date" formControlName="dateOfBirth" />
+            </mat-form-field>
           </div>
           <div class="info-item">
             <span class="label">Gender</span>
-            <span class="value">{{ user.gender ? (user.gender | titlecase) : 'Not provided' }}</span>
+            <span class="value" *ngIf="!editMode">{{ user.gender ? (user.gender | titlecase) : 'Not provided' }}</span>
+            <mat-form-field *ngIf="editMode" appearance="outline">
+              <input matInput placeholder="Gender" formControlName="gender" />
+            </mat-form-field>
           </div>
           <div class="info-item" *ngIf="user.medicalRecordNumber">
             <span class="label">Medical Record #</span>
             <span class="value">{{ user.medicalRecordNumber }}</span>
           </div>
-          <div class="info-item" *ngIf="user.department">
+          <div class="info-item" *ngIf="user.department || editMode">
             <span class="label">Department</span>
-            <span class="value">{{ user.department }}</span>
+            <span class="value" *ngIf="!editMode">{{ user.department }}</span>
+            <mat-form-field *ngIf="editMode" appearance="outline">
+              <input matInput placeholder="Department" formControlName="department" />
+            </mat-form-field>
           </div>
-        </div>
+          </div>
+        </form>
       </mat-card-content>
     </mat-card>
   </div>

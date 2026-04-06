@@ -11,8 +11,7 @@
       <ng-scrollbar class="position-relative" style="height: 100%">
         <mat-nav-list class="sidebar-list">
           @for(item of navItems; track item) {
-          <app-nav-item [item]="item" (notify)="sidenav.toggle()">
-          </app-nav-item>
+<app-nav-item [item]="item" (notify)="isOver ? sidenav.toggle() : null"> </app-nav-item>
           }
         </mat-nav-list>
       </ng-scrollbar>
@@ -61,3 +60,6 @@
   </mat-sidenav-content>
 
 </mat-sidenav-container>
+
+<!-- Voice Assistant – shown only on patient pages -->
+<app-voice-assistant></app-voice-assistant>

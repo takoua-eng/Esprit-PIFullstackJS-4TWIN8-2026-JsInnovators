@@ -1,20 +1,22 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MaterialModule } from 'src/app/material.module';
 import { CommonModule } from '@angular/common';
 import { PatientService, VitalEntry, SymptomEntry, AlertEntry } from 'src/app/services/patient.service';
 import { forkJoin } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [MaterialModule, CommonModule, RouterModule, NgApexchartsModule],
+  imports: [MaterialModule, CommonModule, RouterModule, NgApexchartsModule, TranslateModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   isLoading = true;
   todayDate = new Date();
+  todayDateStr = new Date().toDateString();
   vitalsEnteredToday = false;
   symptomsEnteredToday = false;
   questionnaireAnsweredToday = false;
@@ -22,10 +24,12 @@ export class DashboardComponent implements OnInit {
   recentAlerts: AlertEntry[] = [];
   pendingAlertsCount = 0;
   usageChartOptions: any;
+  private dayCheckInterval: any;
 
   constructor(private patientService: PatientService) {}
 
   ngOnInit() {
+    this.todayDateStr = new Date().toDateString();
     const patientId = this.patientService.getCurrentPatientId();
     if (!patientId) { this.buildUsageChart([], [], []); this.isLoading = false; return; }
     forkJoin({
@@ -44,12 +48,38 @@ export class DashboardComponent implements OnInit {
         this.symptomsEnteredToday = data.symptomsToday;
         this.questionnaireAnsweredToday = data.questionnaireToday;
         this.latestVital = data.latestVital;
-        this.recentAlerts = data.recentAlerts;
+        this.recentAlerts = this.filterAlertsForToday(data.recentAlerts || []);
         this.pendingAlertsCount = data.pendingCount;
         this.buildUsageChart(data.allVitals, data.allSymptoms, data.allQuestionnaires as any[]);
         this.isLoading = false;
       },
       error: () => { this.buildUsageChart([], [], []); this.isLoading = false; },
+    });
+
+    // Periodically check if the day has changed and clear recent alerts when it does
+    this.dayCheckInterval = setInterval(() => {
+      const today = new Date().toDateString();
+      if (today !== this.todayDateStr) {
+        this.todayDateStr = today;
+        this.recentAlerts = [];
+      }
+    }, 60_000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.dayCheckInterval) {
+      clearInterval(this.dayCheckInterval);
+    }
+  }
+
+  private filterAlertsForToday(alerts: AlertEntry[]): AlertEntry[] {
+    return (alerts || []).filter(a => {
+      try {
+        const d = new Date((a as any).createdAt || (a as any).timestamp || null);
+        return d.toDateString() === this.todayDateStr;
+      } catch (e) {
+        return false;
+      }
     });
   }
 
