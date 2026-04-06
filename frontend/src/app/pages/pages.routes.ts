@@ -61,6 +61,7 @@ export const AdminRoutes: Routes = [
     path: '',
     component: AdminDashboardComponent,
     canActivate: staffAdminGuard,
+    pathMatch: 'full',
   },
   {
     path: 'patients',
@@ -198,6 +199,7 @@ export const SuperAdminRoutes: Routes = [
     path: '',
     component: SuperAdminDashboardComponent,
     canActivate: superAdminOnlyGuard,
+    pathMatch: 'full',
   },
   {
     path: 'dashboard',
@@ -245,9 +247,9 @@ export const PatientRoutes: Routes = [
 
 /** `/dashboard` lazy chunk: sub-admin, nurse/doctor portals, super-admin shell, patient portal — not coordinator (use `/admin/coordinator`). */
 export const PagesRoutes: Routes = [
-  ...AdminRoutes,
+  ...PatientRoutes,
   ...NurseRoutes,
   ...DoctorRoutes,
+  ...AdminRoutes,
   ...SuperAdminRoutes,
-  ...PatientRoutes,
 ];

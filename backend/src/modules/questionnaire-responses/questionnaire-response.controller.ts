@@ -46,6 +46,11 @@ export class QuestionnaireResponseController {
     return this.service.hasCompletedTemplate(patientId, templateId);
   }
 
+  @Get('instance/:instanceId/today')
+  hasCompletedInstance(@Param('instanceId') instanceId: string) {
+    return this.service.hasCompletedInstance(instanceId);
+  }
+
   @Put(':id/review')
   @UsePipes(new ValidationPipe({ transform: true }))
   updateReview(

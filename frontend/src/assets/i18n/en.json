@@ -488,5 +488,18 @@
   "CAN_CANCEL": "Cancel",
   "SEND_QUESTIONNAIRE_TO": "Send questionnaire to {{name}}",
   "NO_TEMPLATES_AVAILABLE": "No questionnaire templates available.",
-  "SEND_NOW": "Send Now"
+  "SEND_NOW": "Send Now",
+  "MY_QUESTIONNAIRES_TITLE": "My Questionnaires",
+  "MY_QUESTIONNAIRES_SUBTITLE": "Please complete the follow-up forms assigned by your medical team.",
+  "LOADING_FORMS": "Loading forms...",
+  "NO_PENDING_QUESTIONNAIRES": "You have no pending questionnaires. Great job!",
+  "FROM_DOCTOR": "From: Dr. {{firstName}} {{lastName}}",
+  "ASSIGNED_ON": "Assigned: {{date}}",
+  "START_QUESTIONNAIRE_BTN": "Start Questionnaire",
+  "SUBMIT_ANSWERS_BTN": "Submit Answers",
+  "INVALID_NUMBER_ERROR": "Please enter a valid number",
+  "FIELD_REQUIRED_ERROR": "This field is required",
+  "SUBMIT_SUCCESS": "Questionnaire submitted successfully!",
+  "ENTER_VALUE": "Enter a value",
+  "TYPE_ANSWER": "Type your answer..."
 }

@@ -3,7 +3,8 @@ import { FormBuilder, FormGroup, Validators, FormControl, ReactiveFormsModule, F
 import { MaterialModule } from 'src/app/material.module';
 import { CommonModule } from '@angular/common';
 import { PatientService } from 'src/app/services/patient.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 interface QuestionItem {
   key: string;
@@ -29,7 +30,7 @@ interface Template {
 
 @Component({
   selector: 'app-questionnaires',
-  imports: [MaterialModule, FormsModule, ReactiveFormsModule, CommonModule],
+  imports: [MaterialModule, FormsModule, ReactiveFormsModule, CommonModule, TranslateModule],
   templateUrl: './questionnaires.component.html',
   styleUrl: './questionnaires.component.scss',
 })
@@ -52,18 +53,42 @@ export class QuestionnairesComponent implements OnInit {
           return;
         }
 
-        // Check which ones have responses
-        // Optimization: For now, we show all assigned. 
-        // In a real app, we might filter by "already answered today" or "unanswered"
-        this.instances = instances.map((inst) => ({
-          ...inst,
-          isOpen: false,
-          form: undefined,
-          isSubmitting: false,
-          successMessage: '',
-          errorMessage: '',
-        }));
-        this.isLoading = false;
+        // Check completion status for each instance using the new backend endpoint
+        if (instances.length > 0) {
+          const checks = instances.map(inst => {
+            const id = inst._id || inst.id;
+            if (!id) return of(false); // Safety: avoid 404 for empty ID
+            return this.patientService.hasCompletedInstance(id);
+          });
+
+          forkJoin(checks).subscribe({
+            next: (statuses) => {
+              this.instances = instances.map((inst, index) => ({
+                ...inst,
+                isOpen: false,
+                form: undefined,
+                isSubmitting: false,
+                successMessage: '',
+                errorMessage: '',
+                completedToday: statuses[index]
+              }));
+              this.isLoading = false;
+            },
+            error: () => {
+              // Fallback: show instances without completion status if check fails
+              this.instances = instances.map((inst) => ({
+                ...inst,
+                isOpen: false,
+                form: undefined,
+                isSubmitting: false,
+                successMessage: '',
+                errorMessage: '',
+                completedToday: false
+              }));
+              this.isLoading = false;
+            }
+          });
+        }
       },
       error: () => {
         this.noQuestionnaires = true;
@@ -78,45 +103,50 @@ export class QuestionnairesComponent implements OnInit {
     
     // instance.questions is the actual list of Questions (from template + doctor extra)
     inst.questions.forEach((q: any) => {
+      const qId = q._id || q.id;
       const validators = [];
       if (q.required) validators.push(Validators.required);
       
       if (q.type === 'number') {
-        controls[q._id] = ['', [...validators, Validators.pattern('^-?\\d*(\\.\\d+)?$')]];
+        controls[qId] = ['', [...validators, Validators.pattern('^-?\\d*(\\.\\d+)?$')]];
       } else {
-        controls[q._id] = ['', validators];
+        controls[qId] = ['', validators];
       }
     });
 
     inst.form = this.fb.group(controls);
   }
 
-  getControl(inst: any, qId: string): FormControl {
-    return inst.form!.get(qId) as FormControl;
+  getControl(inst: any, question: any): any {
+    const qId = question._id || question.id;
+    return inst.form?.get(qId);
   }
 
-  toggleCheckbox(inst: any, qId: string, option: string) {
-    const control = this.getControl(inst, qId);
-    let values: string[] = control.value || [];
-    if (!Array.isArray(values)) values = [];
+  isChecked(inst: any, question: any, option: string): boolean {
+    const qId = question._id || question.id;
+    const value = inst.form?.get(qId)?.value;
+    return Array.isArray(value) && value.includes(option);
+  }
 
-    if (values.includes(option)) {
-      values = values.filter(v => v !== option);
-    } else {
-      values = [...values, option];
-    }
-    control.setValue(values);
+  toggleCheckbox(inst: any, question: any, option: string) {
+    const qId = question._id || question.id;
+    const control = inst.form?.get(qId);
+    if (!control) return;
+    
+    const current = Array.isArray(control.value) ? [...control.value] : [];
+    const idx = current.indexOf(option);
+    if (idx > -1) current.splice(idx, 1);
+    else current.push(option);
+    
+    control.setValue(current);
     control.markAsDirty();
-  }
-
-  isChecked(inst: any, qId: string, option: string): boolean {
-    const values = this.getControl(inst, qId).value;
-    return Array.isArray(values) && values.includes(option);
   }
 
   submit(inst: any) {
     if (!inst.form || inst.form.invalid) {
-      inst.form?.markAllAsTouched();
+      Object.keys(inst.form?.controls || {}).forEach(key => {
+        inst.form.get(key)?.markAsTouched();
+      });
       return;
     }
 
@@ -124,22 +154,31 @@ export class QuestionnairesComponent implements OnInit {
     inst.successMessage = '';
     inst.errorMessage = '';
 
-    const answers = inst.questions.map((q: any) => ({
-      questionId: q._id,
-      value: inst.form!.value[q._id]
-    }));
+    const answers = inst.questions.map((q: any) => {
+      const qId = q._id || q.id;
+      return {
+        questionId: qId,
+        value: inst.form.value[qId]
+      };
+    });
 
-    this.patientService.submitInstanceResponse(inst._id, answers).subscribe({
+    const instanceId = inst._id || inst.id;
+    if (!instanceId) {
+      inst.isSubmitting = false;
+      return;
+    }
+
+    this.patientService.submitInstanceResponse(instanceId, answers).subscribe({
       next: () => {
         inst.isSubmitting = false;
         inst.isOpen = false;
-        inst.successMessage = 'Questionnaire submitted successfully!';
-        // Optionally remove from list or mark as completed
         inst.completedToday = true;
+        inst.successMessage = 'SUBMIT_SUCCESS';
+        setTimeout(() => (inst.successMessage = ''), 5000);
       },
-      error: (err: any) => {
+      error: (err) => {
         inst.isSubmitting = false;
-        inst.errorMessage = err?.error?.message ?? 'Failed to submit. Please try again.';
+        inst.errorMessage = err.error?.message || 'Error submitting response';
       },
     });
   }

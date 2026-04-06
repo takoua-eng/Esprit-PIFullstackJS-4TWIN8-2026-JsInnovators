@@ -109,17 +109,22 @@ export class FullComponent implements OnInit {
       this.navItems = nurseNavItems;
     } else if (url.startsWith('/dashboard/doctor')) {
       this.navItems = doctorNavItems;
-    } else if (url.startsWith('/dashboard/profile') && role === 'nurse') {
-      this.navItems = nurseNavItems;
-    } else if (
-      url.startsWith('/dashboard/profile') &&
-      (role === 'doctor' || role === 'physician')
-    ) {
-      this.navItems = doctorNavItems;
+    } else if (url.startsWith('/dashboard/patient')) {
+      this.navItems = patientNavItems;
+    } else if (url.startsWith('/dashboard/profile')) {
+      if (role === 'nurse') this.navItems = nurseNavItems;
+      else if (role === 'doctor' || role === 'physician') this.navItems = doctorNavItems;
+      else if (role === 'patient') this.navItems = patientNavItems;
+      else this.navItems = adminNavItems;
     } else if (url.startsWith('/admin/coordinator')) {
       this.navItems = coordinatorNavItems;
     } else {
-      this.navItems = adminNavItems;
+      // Final fallback based on role
+      if (role === 'patient') this.navItems = patientNavItems;
+      else if (role === 'nurse') this.navItems = nurseNavItems;
+      else if (role === 'doctor' || role === 'physician') this.navItems = doctorNavItems;
+      else if (role === 'coordinator') this.navItems = coordinatorNavItems;
+      else this.navItems = adminNavItems;
     }
   }
 
