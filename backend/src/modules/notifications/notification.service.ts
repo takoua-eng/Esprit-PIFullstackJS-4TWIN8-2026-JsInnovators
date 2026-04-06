@@ -24,29 +24,37 @@ export class NotificationService {
     this.twilioClient = twilio(accountSid, authToken);
   }
 
-  // ─── Claude API proxy ─────────────────────────────────────────
+  // ─── OpenAI API proxy ─────────────────────────────────────────
 
-  async askClaude(prompt: string, maxTokens = 600): Promise<string> {
-    const apiKey = this.configService.get<string>('ANTHROPIC_API_KEY');
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured in .env');
+  async askAI(prompt: string, maxTokens = 600): Promise<string> {
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    if (!apiKey) throw new Error('OPENAI_API_KEY not configured in .env');
 
     const response = await axios.post(
-      'https://api.anthropic.com/v1/messages',
+      'https://api.openai.com/v1/chat/completions',
       {
-        model: 'claude-opus-4-6',
+        model: 'gpt-3.5-turbo',
         max_tokens: maxTokens,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful medical coordinator assistant for MediFollow, a post-hospitalization monitoring system.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
       },
       {
         headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
         },
       },
     );
 
-    return response.data.content?.[0]?.text || 'No response generated.';
+    return response.data.choices?.[0]?.message?.content || 'No response generated.';
   }
 
   // ─── Email ────────────────────────────────────────────────────
@@ -55,7 +63,9 @@ export class NotificationService {
     try {
       await this.transporter.sendMail({
         from: `"MediFollow" <${this.configService.get('GMAIL_USER')}>`,
-        to, subject, html,
+        to,
+        subject,
+        html,
       });
       this.logger.log(`Email sent to ${to}`);
       return true;
@@ -84,20 +94,29 @@ export class NotificationService {
 
   // ─── Email HTML builder ───────────────────────────────────────
 
-  buildEmailHtml(patientName: string, message: string, missingVitals: string[], missingSymptoms: string[]): string {
-    const vitalsSection = missingVitals.length > 0
-      ? `<div style="margin:12px 0;padding:12px 16px;background:#fef2f2;border-left:4px solid #ef4444;border-radius:4px;">
+  buildEmailHtml(
+    patientName: string,
+    message: string,
+    missingVitals: string[],
+    missingSymptoms: string[],
+  ): string {
+    const vitalsSection =
+      missingVitals.length > 0
+        ? `<div style="margin:12px 0;padding:12px 16px;background:#fef2f2;border-left:4px solid #ef4444;border-radius:4px;">
           <strong style="color:#991b1b;">Missing Vital Parameters:</strong>
           <ul style="margin:8px 0 0 0;padding-left:20px;color:#374151;">
-            ${missingVitals.map(f => `<li>${f}</li>`).join('')}
-          </ul></div>` : '';
+            ${missingVitals.map((f) => `<li>${f}</li>`).join('')}
+          </ul></div>`
+        : '';
 
-    const symptomsSection = missingSymptoms.length > 0
-      ? `<div style="margin:12px 0;padding:12px 16px;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:4px;">
+    const symptomsSection =
+      missingSymptoms.length > 0
+        ? `<div style="margin:12px 0;padding:12px 16px;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:4px;">
           <strong style="color:#92400e;">Missing Symptom Report:</strong>
           <ul style="margin:8px 0 0 0;padding-left:20px;color:#374151;">
-            ${missingSymptoms.map(f => `<li>${f}</li>`).join('')}
-          </ul></div>` : '';
+            ${missingSymptoms.map((f) => `<li>${f}</li>`).join('')}
+          </ul></div>`
+        : '';
 
     return `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
       <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;margin:0;padding:0;">
@@ -121,11 +140,17 @@ export class NotificationService {
       </body></html>`;
   }
 
-  buildSmsMessage(patientName: string, missingVitals: string[], missingSymptoms: string[]): string {
+  buildSmsMessage(
+    patientName: string,
+    missingVitals: string[],
+    missingSymptoms: string[],
+  ): string {
     const firstName = patientName.split(' ')[0];
     const missing = [...missingVitals, ...missingSymptoms];
-    if (missing.length === 0) return `MediFollow: Hi ${firstName}, please complete your daily health follow-up.`;
-    const missingText = missing.slice(0, 3).join(', ') + (missing.length > 3 ? '...' : '');
+    if (missing.length === 0)
+      return `MediFollow: Hi ${firstName}, please complete your daily health follow-up.`;
+    const missingText =
+      missing.slice(0, 3).join(', ') + (missing.length > 3 ? '...' : '');
     return `MediFollow: Hi ${firstName}, still missing: ${missingText}. Please submit now.`;
   }
 }

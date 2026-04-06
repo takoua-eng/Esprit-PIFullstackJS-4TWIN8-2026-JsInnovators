@@ -45,7 +45,7 @@ export class CoordinatorController {
     return this.coordinatorService.getPersonalizedMessage(id, patientId);
   }
 
-  // ─── AI endpoints (proxy vers Claude) ────────────────────────
+  // ─── AI endpoints (proxy vers OpenAI) ────────────────────────
 
   @Post(':id/ai/chat')
   async aiChat(
@@ -53,9 +53,10 @@ export class CoordinatorController {
     @Body() body: { prompt: string },
   ) {
     try {
-      const response = await this.notificationService.askClaude(body.prompt, 300);
+      const response = await this.notificationService.askAI(body.prompt, 300);
       return { response };
     } catch (err) {
+      console.error('AI Chat error:', err.message);
       return { response: 'AI temporarily unavailable. Please try again.' };
     }
   }
@@ -66,9 +67,10 @@ export class CoordinatorController {
     @Body() body: { prompt: string },
   ) {
     try {
-      const response = await this.notificationService.askClaude(body.prompt, 500);
+      const response = await this.notificationService.askAI(body.prompt, 500);
       return { response };
     } catch (err) {
+      console.error('AI Summary error:', err.message);
       return { response: null };
     }
   }
@@ -79,9 +81,10 @@ export class CoordinatorController {
     @Body() body: { prompt: string },
   ) {
     try {
-      const response = await this.notificationService.askClaude(body.prompt, 800);
+      const response = await this.notificationService.askAI(body.prompt, 800);
       return { response };
     } catch (err) {
+      console.error('AI Prediction error:', err.message);
       return { response: null };
     }
   }
@@ -96,7 +99,13 @@ export class CoordinatorController {
   @Post(':id/reminders')
   createReminder(
     @Param('id') id: string,
-    @Body() body: { patientId: string; type: string; message: string; scheduledAt?: string; status?: string },
+    @Body() body: {
+      patientId: string;
+      type: string;
+      message: string;
+      scheduledAt?: string;
+      status?: string;
+    },
   ) {
     return this.coordinatorService.createReminder(id, body);
   }
