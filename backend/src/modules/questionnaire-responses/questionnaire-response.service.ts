@@ -15,6 +15,7 @@ import {
   QuestionnaireResponse,
   QuestionnaireResponseDocument,
 } from './questionnaire-response.schema';
+import { AlertsService } from '../alerts/alerts.service';
 
 function isEmptyAnswer(type: QuestionType, value: unknown): boolean {
   if (value === undefined || value === null) {
@@ -86,6 +87,7 @@ export class QuestionnaireResponseService {
     private responseModel: Model<QuestionnaireResponseDocument>,
     @InjectModel(QuestionnaireInstance.name)
     private instanceModel: Model<QuestionnaireInstanceDocument>,
+    private readonly alertsService: AlertsService,
   ) {}
 
   async create(
@@ -158,9 +160,50 @@ export class QuestionnaireResponseService {
     const entry = new this.responseModel({
       questionnaireInstanceId: new Types.ObjectId(dto.questionnaireInstanceId),
       patientId: new Types.ObjectId(dto.patientId),
+      doctorId: instance.doctorId, // Extract from instance
       answers,
     });
-    return entry.save();
+    const saved = await entry.save();
+
+    // Trigger alert for doctor
+    try {
+      await this.alertsService.createPhysicianAlert({
+        patientId: dto.patientId,
+        physicianUserId: instance.doctorId.toString(),
+        severity: 'medium',
+        type: 'questionnaire_submission',
+        message: `New questionnaire response submitted by patient.`,
+        sourceType: 'questionnaire_response',
+        sourceId: saved._id.toString(),
+      });
+    } catch (e) {
+      console.error('Failed to trigger alert for questionnaire submission', e);
+    }
+
+    return saved;
+  }
+
+  async updateReview(
+    id: string,
+    doctorId: string,
+    review: { reviewedByDoctor: boolean; doctorNotes?: string },
+  ): Promise<QuestionnaireResponseDocument> {
+    const response = await this.responseModel.findById(id).exec();
+    if (!response) {
+      throw new NotFoundException('Response not found');
+    }
+
+    // Optimization: check if doctor is assigned to this patient/response
+    if (response.doctorId.toString() !== doctorId) {
+      throw new BadRequestException('You are not authorized to review this response');
+    }
+
+    response.reviewedByDoctor = review.reviewedByDoctor;
+    if (review.doctorNotes !== undefined) {
+      response.doctorNotes = review.doctorNotes;
+    }
+
+    return response.save();
   }
 
   async getByPatient(patientId: string): Promise<QuestionnaireResponse[]> {

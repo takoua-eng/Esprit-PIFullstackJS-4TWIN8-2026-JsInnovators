@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { QuestionnaireInstanceModule } from '../questionnaire-instance/questionnaire-instance.module';
+import { AlertsModule } from '../alerts/alerts.module';
 import {
   QuestionnaireResponse,
   QuestionnaireResponseSchema,
@@ -11,6 +12,7 @@ import { QuestionnaireResponseController } from './questionnaire-response.contro
 @Module({
   imports: [
     QuestionnaireInstanceModule,
+    AlertsModule,
     MongooseModule.forFeature([
       { name: QuestionnaireResponse.name, schema: QuestionnaireResponseSchema },
     ]),

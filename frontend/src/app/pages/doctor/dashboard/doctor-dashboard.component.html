@@ -240,6 +240,27 @@
                   </span>
                 </td>
               </ng-container>
+
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>{{ 'ACTIONS' | translate }}</th>
+                <td mat-cell *matCellDef="let row">
+                  <div class="d-flex gap-2">
+                    <button mat-icon-button color="primary" 
+                            [matTooltip]="'SEND_QUESTIONNAIRE' | translate"
+                            (click)="openSendQuestionnaireDialog(row)">
+                      <i-tabler name="send" class="icon-18"></i-tabler>
+                    </button>
+                    <button mat-icon-button color="accent" 
+                            [matTooltip]="'VIEW_RESPONSES' | translate"
+                            (click)="viewResponses(row)">
+                      <i-tabler name="history" class="icon-18"></i-tabler>
+                      <span *ngIf="row.unreviewedResponses > 0" class="badge-dot"></span>
+                    </button>
+                  </div>
+                </td>
+              </ng-container>
+
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
             </table>

@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -50,9 +50,16 @@ export class PatientService {
 
   constructor(private http: HttpClient) {}
 
-  /** Retourne le patientId stockÃ© en localStorage aprÃ¨s connexion */
+  /** Retourne le patientId stocké en localStorage après connexion */
   getCurrentPatientId(): string {
-    return localStorage.getItem('userId') ?? '';
+    const raw = localStorage.getItem('medi_follow_user_data');
+    if (!raw) return '';
+    try {
+      const user = JSON.parse(raw);
+      return user._id ?? '';
+    } catch (e) {
+      return '';
+    }
   }
 
   // â”€â”€â”€ VITAL PARAMETERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -172,7 +179,7 @@ export class PatientService {
 
   getAssignedQuestionnaires(): Observable<any[]> {
     const patientId = this.getCurrentPatientId();
-    return this.http.get<any[]>(`${this.API}/questionnaire-templates/patient/${patientId}`);
+    return this.http.get<any[]>(`${this.API}/questionnaire-instances/patient/${patientId}`);
   }
 
   hasCompletedTemplate(templateId: string): Observable<boolean> {
@@ -182,9 +189,13 @@ export class PatientService {
     );
   }
 
-  submitQuestionnaireWithTemplate(templateId: string, answers: Record<string, string>): Observable<any> {
+  submitInstanceResponse(instanceId: string, answers: any[]): Observable<any> {
     const patientId = this.getCurrentPatientId();
-    return this.http.post(`${this.API}/questionnaire-responses`, { patientId, templateId, answers });
+    return this.http.post(`${this.API}/questionnaire-responses`, { 
+      questionnaireInstanceId: instanceId,
+      patientId,
+      answers 
+    });
   }
 
   // ─── MESSAGES ────────────────────────────────────────────────────────────────

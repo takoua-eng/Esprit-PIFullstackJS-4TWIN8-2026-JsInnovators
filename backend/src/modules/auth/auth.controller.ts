@@ -30,7 +30,7 @@ export class AuthController {
   @Post('login')
   signIn(
     @Body() signInDto: SignInDto,
-  ): Promise<{ accessToken: string; role: string }> {
+  ): Promise<{ accessToken: string; role: string; user: any }> {
     return this.authService.signIn(signInDto);
   }
 

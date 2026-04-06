@@ -11,7 +11,7 @@ import { CreateTemplateDto } from './dto/create-template.dto';
 import { ParseMongoIdPipe } from './pipes/parse-mongo-id.pipe';
 import { QuestionnaireTemplateService } from './questionnaire-template.service';
 
-@Controller('templates')
+@Controller('questionnaire-templates')
 export class QuestionnaireTemplateController {
   constructor(
     private readonly questionnaireTemplateService: QuestionnaireTemplateService,

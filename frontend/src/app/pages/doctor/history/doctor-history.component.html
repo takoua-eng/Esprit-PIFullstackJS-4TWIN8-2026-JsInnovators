@@ -11,8 +11,8 @@
 </div>
 
 <div class="row m-b-16">
-  <div class="col-12 col-md-6">
-    <mat-form-field appearance="outline" class="w-100">
+  <div class="col-12 col-md-6 m-b-16">
+    <mat-form-field appearance="outline" class="w-100 m-b-0">
       <mat-label>{{ 'NURSE_RECORDS_FILTER_PATIENT' | translate }}</mat-label>
       <mat-select [(ngModel)]="selectedPatientId" (ngModelChange)="loadHistory()">
         @for (p of patients; track p._id) {
@@ -20,6 +20,14 @@
         }
       </mat-select>
     </mat-form-field>
+  </div>
+  <div class="col-12 col-md-6 d-flex align-items-center justify-content-md-end m-b-16">
+    <button mat-flat-button color="primary" 
+            [disabled]="!selectedPatientId"
+            (click)="openSendQuestionnaireDialog()">
+      <mat-icon class="m-r-8">send</mat-icon>
+      {{ 'SEND_QUESTIONNAIRE' | translate }}
+    </button>
   </div>
 </div>
 
@@ -95,7 +103,7 @@
     <mat-card class="cardWithShadow h-100">
       <mat-card-content class="p-20">
         <div class="f-w-600 m-b-12">{{ 'DOCTOR_VALIDATION_TITLE' | translate }}</div>
-        @if (pendingValidationVitals.length === 0 && pendingValidationSymptoms.length === 0) {
+        @if (pendingValidationVitals.length === 0 && pendingValidationSymptoms.length === 0 && unreviewedResponses.length === 0) {
           <p class="text-muted m-b-0">{{ 'DOCTOR_VALIDATION_EMPTY' | translate }}</p>
         } @else {
           <div class="d-flex flex-column gap-8">
@@ -119,6 +127,18 @@
                   <button mat-stroked-button color="primary" type="button" (click)="validateSymptom(s)">{{ 'DOCTOR_VALIDATE_ACTION' | translate }}</button>
                   <button mat-flat-button color="warn" type="button" (click)="openUrgentClinicFromSymptom(s)">
                     {{ 'DOCTOR_URGENT_CLINIC_CTA' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+            @for (r of unreviewedResponses; track r._id) {
+              <div class="validation-row questionnaire-row">
+                <div class="text-muted f-s-12">{{ r.createdAt | date: 'short' }} · {{ 'QUESTIONNAIRE_RESPONSE' | translate }}</div>
+                <div class="f-s-13 m-b-6">{{ 'QUESTIONNAIRE' | translate }} — {{ "WAITING_REVIEW" | translate }}</div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button mat-stroked-button color="accent" type="button" (click)="openReviewDialog(r)">
+                    <mat-icon class="m-r-4">rate_review</mat-icon>
+                    {{ 'REVIEW_ACTION' | translate }}
                   </button>
                 </div>
               </div>

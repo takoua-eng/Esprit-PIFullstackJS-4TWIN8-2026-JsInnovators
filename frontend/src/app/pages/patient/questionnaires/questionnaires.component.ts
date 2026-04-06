@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
 import { CommonModule } from '@angular/common';
@@ -34,90 +34,112 @@ interface Template {
   styleUrl: './questionnaires.component.scss',
 })
 export class QuestionnairesComponent implements OnInit {
-  templates: Template[] = [];
+  instances: any[] = [];
   isLoading = true;
-  noTemplatesYet = false;
+  noQuestionnaires = false;
 
-  constructor(private fb: FormBuilder, private patientService: PatientService) {}
+  constructor(
+    private fb: FormBuilder,
+    private patientService: PatientService
+  ) {}
 
   ngOnInit() {
     this.patientService.getAssignedQuestionnaires().subscribe({
-      next: (templates) => {
-        if (!templates || templates.length === 0) {
-          this.noTemplatesYet = true;
+      next: (instances) => {
+        if (!instances || instances.length === 0) {
+          this.noQuestionnaires = true;
           this.isLoading = false;
           return;
         }
 
-        // Check which ones were already completed today
-        const checks = templates.map(t =>
-          this.patientService.hasCompletedTemplate(t._id)
-        );
-
-        forkJoin(checks).subscribe({
-          next: (results) => {
-            this.templates = templates.map((t, i) => ({
-              ...t,
-              completedToday: results[i],
-              isOpen: false,
-              form: undefined,
-              isSubmitting: false,
-              successMessage: '',
-              errorMessage: '',
-            }));
-            this.isLoading = false;
-          },
-          error: () => {
-            this.templates = templates.map(t => ({ ...t, completedToday: false, isOpen: false, isSubmitting: false, successMessage: '', errorMessage: '' }));
-            this.isLoading = false;
-          },
-        });
+        // Check which ones have responses
+        // Optimization: For now, we show all assigned. 
+        // In a real app, we might filter by "already answered today" or "unanswered"
+        this.instances = instances.map((inst) => ({
+          ...inst,
+          isOpen: false,
+          form: undefined,
+          isSubmitting: false,
+          successMessage: '',
+          errorMessage: '',
+        }));
+        this.isLoading = false;
       },
       error: () => {
-        this.noTemplatesYet = true;
+        this.noQuestionnaires = true;
         this.isLoading = false;
       },
     });
   }
 
-  openTemplate(t: Template) {
-    if (t.completedToday) return;
-    t.isOpen = true;
+  openInstance(inst: any) {
+    inst.isOpen = true;
     const controls: any = {};
-    t.questions.forEach(q => {
-      if (q.type === 'scale') {
-        controls[q.key] = ['', [Validators.required, Validators.min(q.min ?? 1), Validators.max(q.max ?? 10)]];
-      } else if (q.type === 'radio') {
-        controls[q.key] = ['', Validators.required];
+    
+    // instance.questions is the actual list of Questions (from template + doctor extra)
+    inst.questions.forEach((q: any) => {
+      const validators = [];
+      if (q.required) validators.push(Validators.required);
+      
+      if (q.type === 'number') {
+        controls[q._id] = ['', [...validators, Validators.pattern('^-?\\d*(\\.\\d+)?$')]];
       } else {
-        controls[q.key] = [''];
+        controls[q._id] = ['', validators];
       }
     });
-    t.form = this.fb.group(controls);
+
+    inst.form = this.fb.group(controls);
   }
 
-  getControl(t: Template, key: string): FormControl {
-    return t.form!.get(key) as FormControl;
+  getControl(inst: any, qId: string): FormControl {
+    return inst.form!.get(qId) as FormControl;
   }
 
-  submit(t: Template) {
-    if (!t.form || t.form.invalid) { t.form?.markAllAsTouched(); return; }
-    t.isSubmitting = true;
-    t.successMessage = '';
-    t.errorMessage = '';
-    const answers: Record<string, string> = {};
-    t.questions.forEach(q => { answers[q.key] = String(t.form!.value[q.key] ?? ''); });
+  toggleCheckbox(inst: any, qId: string, option: string) {
+    const control = this.getControl(inst, qId);
+    let values: string[] = control.value || [];
+    if (!Array.isArray(values)) values = [];
 
-    this.patientService.submitQuestionnaireWithTemplate(t._id, answers).subscribe({
+    if (values.includes(option)) {
+      values = values.filter(v => v !== option);
+    } else {
+      values = [...values, option];
+    }
+    control.setValue(values);
+    control.markAsDirty();
+  }
+
+  isChecked(inst: any, qId: string, option: string): boolean {
+    const values = this.getControl(inst, qId).value;
+    return Array.isArray(values) && values.includes(option);
+  }
+
+  submit(inst: any) {
+    if (!inst.form || inst.form.invalid) {
+      inst.form?.markAllAsTouched();
+      return;
+    }
+
+    inst.isSubmitting = true;
+    inst.successMessage = '';
+    inst.errorMessage = '';
+
+    const answers = inst.questions.map((q: any) => ({
+      questionId: q._id,
+      value: inst.form!.value[q._id]
+    }));
+
+    this.patientService.submitInstanceResponse(inst._id, answers).subscribe({
       next: () => {
-        t.isSubmitting = false;
-        t.completedToday = true;
-        t.isOpen = false;
-        t.successMessage = 'Questionnaire submitted successfully!';
+        inst.isSubmitting = false;
+        inst.isOpen = false;
+        inst.successMessage = 'Questionnaire submitted successfully!';
+        // Optionally remove from list or mark as completed
+        inst.completedToday = true;
       },
       error: (err: any) => {
-        t.isSubmitting = false;
-        t.errorMessage = err?.error?.message ?? 'Failed to submit. Please try again.';
+        inst.isSubmitting = false;
+        inst.errorMessage = err?.error?.message ?? 'Failed to submit. Please try again.';
       },
     });
   }

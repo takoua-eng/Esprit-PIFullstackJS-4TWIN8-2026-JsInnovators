@@ -11,6 +11,9 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import { AlertsApiService, AlertDto } from 'src/app/services/alerts-api.service';
 import { QuestionnaireApiService } from 'src/app/services/questionnaire-api.service';
 import { UserListRow, UsersApiService } from 'src/app/services/users-api.service';
+import { MatDialog } from '@angular/material/dialog';
+import { SendQuestionnaireDialog } from '../send-questionnaire-dialog/send-questionnaire-dialog.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   VitalParametersApiService,
   VitalParametersRaw,
@@ -26,6 +29,7 @@ interface MonitoredPatientRow {
   lastReading: string;
   status: 'Stable' | 'Watch';
   questionnaireToday: boolean;
+  unreviewedResponses: number;
 }
 
 @Component({
@@ -38,6 +42,7 @@ interface MonitoredPatientRow {
     TablerIconsModule,
     TranslateModule,
     NgApexchartsModule,
+    SendQuestionnaireDialog,
   ],
   templateUrl: './doctor-dashboard.component.html',
   styleUrls: ['./doctor-dashboard.component.scss'],
@@ -73,6 +78,7 @@ export class DoctorDashboardComponent implements OnInit {
     'lastReading',
     'questionnaire',
     'status',
+    'actions'
   ];
 
   constructor(
@@ -81,6 +87,8 @@ export class DoctorDashboardComponent implements OnInit {
     private readonly vitalsApi: VitalsApiService,
     private readonly vitalParametersApi: VitalParametersApiService,
     private readonly questionnaireApi: QuestionnaireApiService,
+    private readonly dialog: MatDialog,
+    private readonly snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -290,6 +298,7 @@ export class DoctorDashboardComponent implements OnInit {
         lastReading: latest ? this.formatLatest(latest) : '—',
         status: openForPatient ? 'Watch' : 'Stable',
         questionnaireToday: questionnaireMap.get(row._id) ?? false,
+        unreviewedResponses: 0, // Will be updated if we fetch responses
       };
     });
 
@@ -456,6 +465,40 @@ export class DoctorDashboardComponent implements OnInit {
     if (delta > 0) {
       return `Upward pattern: average ${a2.toFixed(1)} ${unit} vs ${a1.toFixed(1)} ${unit} earlier in the window.`;
     }
-    return `Downward pattern: average ${a2.toFixed(1)} ${unit} vs ${a1.toFixed(1)} ${unit} earlier in the window.`;
+    return `稳定在 ${a2.toFixed(1)} ${unit} (对比窗口前后半段).`;
+  }
+
+  openSendQuestionnaireDialog(row: MonitoredPatientRow): void {
+    const dialogRef = this.dialog.open(SendQuestionnaireDialog, {
+      width: '500px',
+      data: { patientName: row.name, patientId: row.patientId }
+    });
+
+    dialogRef.afterClosed().subscribe(templateId => {
+      if (templateId) {
+        const doctorId = this.userIdFromAccessToken();
+        if (!doctorId) return;
+
+        this.questionnaireApi.createInstance({
+          templateId,
+          patientId: row.patientId,
+          doctorId
+        }).subscribe({
+          next: () => {
+            this.snackBar.open('Questionnaire envoyé avec succès', 'OK', { duration: 3000 });
+            this.load(); // Refresh to update questionnaireToday if applicable
+          },
+          error: (err) => {
+            this.snackBar.open('Échec de l\'envoi du questionnaire', 'OK', { duration: 3000 });
+          }
+        });
+      }
+    });
+  }
+
+  viewResponses(row: MonitoredPatientRow): void {
+    // This could navigate to a dedicated review page or open another dialog
+    this.snackBar.open('Review feature coming soon (Navigating to patient file...)', 'OK', { duration: 3000 });
+    // In a real app, you might do: this.router.navigate(['/dashboard/doctor/patient', row.patientId, 'responses']);
   }
 }

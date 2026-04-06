@@ -1,69 +1,97 @@
-﻿<div class="container">
-  <div class="page-header">
-    <h2>Questionnaires</h2>
-    <p class="subtitle">Questionnaires assigned to you by your care team</p>
+<div class="q-container" role="main" aria-label="My Questionnaires">
+  <div class="q-header">
+    <h1>My Questionnaires</h1>
+    <p>Please complete the follow-up forms assigned by your medical team.</p>
   </div>
-  <div *ngIf="isLoading" class="loading-state">
+
+  <div *ngIf="isLoading" class="q-loading" role="status">
     <mat-spinner diameter="40"></mat-spinner>
-    <p>Loading your questionnaires...</p>
+    <p>Loading forms...</p>
   </div>
-  <div *ngIf="!isLoading && noTemplatesYet" class="empty-state">
-    <mat-icon>assignment_late</mat-icon>
-    <p>No questionnaires assigned yet.<br>Your doctor or nurse will assign questionnaires when needed.</p>
+
+  <div *ngIf="!isLoading && noQuestionnaires" class="q-empty" role="status">
+    <mat-icon>assignment_turned_in</mat-icon>
+    <p>You have no pending questionnaires. Great job!</p>
   </div>
-  <ng-container *ngIf="!isLoading && !noTemplatesYet">
-    <mat-card *ngFor="let t of templates" class="template-card">
-      <mat-card-header>
-        <div mat-card-avatar class="template-avatar" [class.avatar-done]="t.completedToday" [class.avatar-todo]="!t.completedToday">
-          <mat-icon>{{ t.completedToday ? 'check_circle' : 'assignment' }}</mat-icon>
+
+  <div *ngIf="!isLoading && !noQuestionnaires" class="q-list">
+    <div *ngFor="let inst of instances" class="q-card" [class.qc-completed]="inst.completedToday">
+      <div class="qc-header">
+        <div class="qc-info">
+          <h3>{{ inst.templateId?.title || 'Questionnaire' }}</h3>
+          <p class="qc-desc">{{ inst.templateId?.description }}</p>
+          <div class="qc-meta">
+            <span class="qc-doctor">
+              <mat-icon>person</mat-icon> From: Dr. {{ inst.doctorId?.firstName }} {{ inst.doctorId?.lastName }}
+            </span>
+            <span class="qc-date">
+              <mat-icon>calendar_today</mat-icon> Assigned: {{ inst.createdAt | date:'MMM d, y' }}
+            </span>
+          </div>
         </div>
-        <mat-card-title>{{ t.title }}</mat-card-title>
-        <mat-card-subtitle *ngIf="t.description">{{ t.description }}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content *ngIf="!t.isOpen">
-        <div class="template-status">
-          <span class="badge" [class.badge-done]="t.completedToday" [class.badge-todo]="!t.completedToday">
-            <mat-icon>{{ t.completedToday ? 'check' : 'schedule' }}</mat-icon>
-            {{ t.completedToday ? 'Completed today' : 'Pending' }}
-          </span>
-          <span class="q-count">{{ t.questions.length }} question(s)</span>
+        <div class="qc-status" *ngIf="inst.completedToday">
+          <mat-icon>check_circle</mat-icon>
+          <span>Completed</span>
         </div>
-        <div *ngIf="t.successMessage" class="alert-success">{{ t.successMessage }}</div>
-      </mat-card-content>
-      <mat-card-actions *ngIf="!t.completedToday && !t.isOpen">
-        <button mat-raised-button color="primary" (click)="openTemplate(t)">
-          <mat-icon>edit</mat-icon> Fill Questionnaire
+        <button *ngIf="!inst.completedToday && !inst.isOpen" 
+                mat-flat-button color="primary" 
+                (click)="openInstance(inst)">
+          Start Questionnaire
         </button>
-      </mat-card-actions>
-      <mat-card-content *ngIf="t.isOpen && t.form">
-        <form [formGroup]="t.form" (ngSubmit)="submit(t)">
-          <div *ngFor="let q of t.questions" class="question">
-            <h4 class="q-text">{{ q.text }}</h4>
-            <mat-form-field *ngIf="q.type === 'scale'" appearance="outline" class="scale-field">
-              <mat-label>Score ({{ q.min ?? 1 }} -- {{ q.max ?? 10 }})</mat-label>
-              <input matInput type="number" [formControl]="getControl(t, q.key)" [min]="q.min ?? 1" [max]="q.max ?? 10">
-              <mat-error *ngIf="t.form.get(q.key)?.hasError('required')">Required</mat-error>
-              <mat-error *ngIf="t.form.get(q.key)?.hasError('min') || t.form.get(q.key)?.hasError('max')">Between {{ q.min ?? 1 }} and {{ q.max ?? 10 }}</mat-error>
-            </mat-form-field>
-            <mat-radio-group *ngIf="q.type === 'radio'" [formControl]="getControl(t, q.key)" class="radio-group">
-              <mat-radio-button *ngFor="let opt of q.options" [value]="opt">{{ opt }}</mat-radio-button>
-            </mat-radio-group>
-            <mat-form-field *ngIf="q.type === 'text'" appearance="outline" class="text-field">
-              <mat-label>Your answer</mat-label>
-              <textarea matInput [formControl]="getControl(t, q.key)" rows="3"></textarea>
-            </mat-form-field>
+      </div>
+
+      <!-- Answering Section -->
+      <div *ngIf="inst.isOpen" class="qc-form-wrap">
+        <form [formGroup]="inst.form!" (ngSubmit)="submit(inst)">
+          <div class="qc-questions">
+            <div *ngFor="let q of inst.questions" class="q-item">
+              <label class="q-label">
+                {{ q.label }} <span *ngIf="q.required" class="q-req">*</span>
+              </label>
+
+              <!-- Single Choice (Radio) -->
+              <mat-radio-group *ngIf="q.type === 'single_choice'" [formControlName]="q._id" class="q-radio-group">
+                <mat-radio-button *ngFor="let opt of q.options" [value]="opt">
+                  {{ opt }}
+                </mat-radio-button>
+              </mat-radio-group>
+
+              <!-- Multiple Choice (Checkbox Group) -->
+              <div *ngIf="q.type === 'multiple_choice'" class="q-check-group">
+                <mat-checkbox 
+                  *ngFor="let opt of q.options" 
+                  [checked]="isChecked(inst, q._id, opt)"
+                  (change)="toggleCheckbox(inst, q._id, opt)">
+                  {{ opt }}
+                </mat-checkbox>
+              </div>
+
+              <!-- Number -->
+              <mat-form-field *ngIf="q.type === 'number'" appearance="outline" class="q-field">
+                <input matInput type="number" [formControlName]="q._id" placeholder="Enter a value">
+                <mat-error *ngIf="getControl(inst, q._id).invalid">Please enter a valid number</mat-error>
+              </mat-form-field>
+
+              <!-- Text -->
+              <mat-form-field *ngIf="q.type === 'text'" appearance="outline" class="q-field">
+                <textarea matInput [formControlName]="q._id" rows="3" placeholder="Type your answer..."></textarea>
+                <mat-error *ngIf="getControl(inst, q._id).invalid">This field is required</mat-error>
+              </mat-form-field>
+            </div>
           </div>
-          <div class="form-actions">
-            <button mat-raised-button color="primary" type="submit" [disabled]="!t.form!.valid || t.isSubmitting!">
-              <mat-icon>send</mat-icon>
-              <span *ngIf="!t.isSubmitting">Submit</span>
-              <span *ngIf="t.isSubmitting">Submitting...</span>
+
+          <div class="qc-actions">
+            <button mat-button type="button" (click)="inst.isOpen = false">Cancel</button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="inst.isSubmitting">
+              <mat-spinner *ngIf="inst.isSubmitting" diameter="20"></mat-spinner>
+              <span *ngIf="!inst.isSubmitting">Submit Answers</span>
             </button>
-            <button mat-stroked-button type="button" (click)="t.isOpen = false">Cancel</button>
           </div>
-          <div *ngIf="t.errorMessage" class="alert-error">{{ t.errorMessage }}</div>
+          <p *ngIf="inst.errorMessage" class="q-error">{{ inst.errorMessage }}</p>
         </form>
-      </mat-card-content>
-    </mat-card>
-  </ng-container>
+      </div>
+
+      <p *ngIf="inst.successMessage" class="q-success">{{ inst.successMessage }}</p>
+    </div>
+  </div>
 </div>

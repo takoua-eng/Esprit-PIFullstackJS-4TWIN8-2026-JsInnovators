@@ -67,4 +67,38 @@ export class QuestionnaireInstanceService {
       );
     }
   }
+
+  async findByDoctor(doctorId: string): Promise<QuestionnaireInstanceDocument[]> {
+    return this.instanceModel
+      .find({ doctorId: new Types.ObjectId(doctorId) })
+      .populate('templateId', 'title description')
+      .populate('patientId', 'firstName lastName email')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findByPatient(patientId: string): Promise<QuestionnaireInstanceDocument[]> {
+    return this.instanceModel
+      .find({ patientId: new Types.ObjectId(patientId) })
+      .populate('templateId', 'title description')
+      .populate('doctorId', 'firstName lastName')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findOne(id: string): Promise<QuestionnaireInstanceDocument> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('ID invalide');
+    }
+    const instance = await this.instanceModel
+      .findById(id)
+      .populate('templateId', 'title description')
+      .populate('patientId', 'firstName lastName')
+      .populate('doctorId', 'firstName lastName')
+      .exec();
+    if (!instance) {
+      throw new BadRequestException('Instance introuvable');
+    }
+    return instance;
+  }
 }

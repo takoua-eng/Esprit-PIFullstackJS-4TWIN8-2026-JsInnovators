@@ -470,9 +470,23 @@
   "NURSE_RECORDS_HINT_PAIN": "0ÔÇô10, integer if filled",
   "NURSE_RECORDS_HINT_DESCRIPTION": "Max. 1000 characters",
   "RETRY": "Retry",
-
   "EDIT_REMINDER": "Edit Reminder",
-"SAVE_CHANGES": "Save Changes",
-"SEARCH_PATIENT": "Search by patient",
-"EDIT": "Edit"
+  "SAVE_CHANGES": "Save Changes",
+  "SEARCH_PATIENT": "Search by patient",
+  "SEND_QUESTIONNAIRE": "Send Questionnaire",
+  "QUESTIONNAIRE_RESPONSE": "Questionnaire",
+  "WAITING_REVIEW": "Waiting for review",
+  "REVIEW_ACTION": "Review",
+  "SELECT_TEMPLATE": "Select Template",
+  "SEND_BUTTON": "Send",
+  "REVIEW_QUESTIONNAIRE": "Review Questionnaire: {{title}}",
+  "LOADING_ANSWERS": "Loading answers...",
+  "SUBMITTED_ON": "Submitted on",
+  "DOCTOR_NOTES": "Clinical notes (Doctor)",
+  "ADD_NOTES_FOR_PATIENT": "Add clinical observations or instructions for the patient...",
+  "VALIDATE_AND_SAVE": "Validate and Save",
+  "CAN_CANCEL": "Cancel",
+  "SEND_QUESTIONNAIRE_TO": "Send questionnaire to {{name}}",
+  "NO_TEMPLATES_AVAILABLE": "No questionnaire templates available.",
+  "SEND_NOW": "Send Now"
 }

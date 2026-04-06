@@ -49,7 +49,7 @@ export class AuthService {
   // 🔹 Sign In
   async signIn(
     signInDto: SignInDto,
-  ): Promise<{ accessToken: string; role: string }> {
+  ): Promise<{ accessToken: string; role: string; user: any }> {
     const email = signInDto?.email?.trim();
     const password = signInDto?.password ?? '';
     if (!email || !password) throw new UnauthorizedException('Email ou mot de passe incorrect');
@@ -75,7 +75,14 @@ export class AuthService {
     const payload = { sub: user._id, email: user.email, role: roleName };
     const accessToken = this.jwtService.sign(payload);
 
-    return { accessToken, role: roleName };
+    // ✅ Return the user object (excluding password & sensitive tokens)
+    const { password: _, resetToken: __, resetTokenExpiry: ___, ...userMetadata } = (user as any).toObject();
+
+    return {
+      accessToken,
+      role: roleName,
+      user: userMetadata,
+    };
   }
 
   // 🔹 Envoi email réinitialisation

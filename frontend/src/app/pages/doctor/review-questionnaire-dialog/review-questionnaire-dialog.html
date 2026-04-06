@@ -1,0 +1,36 @@
+<div mat-dialog-title class="dialog-header">
+  <h2 *ngIf="instance">{{ "REVIEW_QUESTIONNAIRE" | translate: { title: instance.templateId?.title } }}</h2>
+  <h2 *ngIf="!instance">{{ "REVIEW_QUESTIONNAIRE" | translate }}</h2>
+</div>
+
+<mat-dialog-content class="dialog-content">
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>{{ "LOADING_ANSWERS" | translate }}</p>
+  </div>
+
+  <div *ngIf="!loading">
+    <div class="patient-info m-b-16">
+      <div class="f-w-600">{{ "SUBMITTED_ON" | translate }}: {{ response.createdAt | date: 'medium' }}</div>
+    </div>
+
+    <div class="answers-list m-b-24">
+      <div *ngFor="let a of mappedAnswers" class="answer-item m-b-12">
+        <div class="question-label f-w-600 f-s-14">{{ a.label }}</div>
+        <div class="answer-value f-s-14 text-muted">{{ formatValue(a.value) }}</div>
+      </div>
+    </div>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>{{ "DOCTOR_NOTES" | translate }}</mat-label>
+      <textarea matInput rows="3" [(ngModel)]="doctorNotes" placeholder="{{ 'ADD_NOTES_FOR_PATIENT' | translate }}"></textarea>
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button (click)="onCancel()">{{ "CAN_CANCEL" | translate }}</button>
+  <button mat-raised-button color="primary" [disabled]="loading" (click)="onConfirm()">
+    {{ "VALIDATE_AND_SAVE" | translate }}
+  </button>
+</mat-dialog-actions>

@@ -4,6 +4,8 @@ import {
   Get,
   Param,
   Post,
+  Put,
+  Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -42,5 +44,15 @@ export class QuestionnaireResponseController {
     @Param('templateId') templateId: string,
   ) {
     return this.service.hasCompletedTemplate(patientId, templateId);
+  }
+
+  @Put(':id/review')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  updateReview(
+    @Param('id') id: string,
+    @Query('doctorId') doctorId: string,
+    @Body() review: { reviewedByDoctor: boolean; doctorNotes?: string },
+  ) {
+    return this.service.updateReview(id, doctorId, review);
   }
 }

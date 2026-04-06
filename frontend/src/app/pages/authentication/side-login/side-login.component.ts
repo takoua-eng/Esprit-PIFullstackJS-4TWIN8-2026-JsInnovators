@@ -98,7 +98,7 @@ export class AppSideLoginComponent implements OnInit {
     const { email, password } = this.form.value;
 
     this.http
-      .post<{ accessToken: string; role: string }>(
+      .post<{ accessToken: string; role: string; user: any }>(
         `${API_BASE_URL}/auth/login`,
         { email, password }
       )
@@ -112,7 +112,7 @@ export class AppSideLoginComponent implements OnInit {
       .subscribe((res) => {
         this.loading = false;
         localStorage.setItem('accessToken', res.accessToken);
-        this.core.setRoleFromLogin(res.role || '');
+        this.core.setUserFromLogin(res.user);
         this.router.navigateByUrl(getPostLoginPath(res.role));
       });
   }
@@ -175,7 +175,7 @@ stopCamera() {
         this.faceMessage = '🎉 Login success';
         this.loadingFace = false;
         localStorage.setItem('accessToken', res.token);
-        this.core.setRoleFromLogin(res.user?.role || '');
+        this.core.setUserFromLogin(res.user);
         this.stopCamera();
         this.router.navigateByUrl(getPostLoginPath(res.user?.role));
       },
@@ -207,11 +207,11 @@ stopCamera() {
       });
 
       const res = (await this.http
-        .post<{ accessToken: string; role?: string }>(`${API_BASE_URL}/auth/webauthn/verify`, assertion)
+        .post<{ accessToken: string; role?: string; user: any }>(`${API_BASE_URL}/auth/webauthn/verify`, assertion)
         .toPromise())!;
 
       localStorage.setItem('accessToken', res.accessToken);
-      this.core.setRoleFromLogin(res.role || '');
+      this.core.setUserFromLogin(res.user);
       this.router.navigateByUrl(getPostLoginPath(res.role));
       this.loading = false;
     } catch (err) {
