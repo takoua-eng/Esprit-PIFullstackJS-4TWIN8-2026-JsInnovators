@@ -25,14 +25,10 @@ import { CoordinatorModule } from './modules/coordinator/coordinator.module';
 import { VitalParametersModule } from './modules/vital-parameters/vital-parameters.module';
 import { AutoAlertsModule } from './modules/auto-alerts/auto-alerts.module';
 import { QuestionnaireResponseModule } from './modules/questionnaire-responses/questionnaire-response.module';
-import { QuestionnaireTemplatesModule } from './modules/questionnaire-templates/questionnaire-templates.module';
-import { PatientNotesModule } from './modules/patient-notes/patient-notes.module';
-//import { QuestionnaireTemplateModule } from './modules/questionnaire-template/questionnaire-template.module';
 import { VideoCallsModule } from './modules/video-calls/video-calls.module';
 import { HospitalizationHandwritingModule } from './modules/hospitalization-handwriting/hospitalization-handwriting.module';
 import { QuestionnairesModule } from './modules/questionnaires/questionnaires.module';
 import { AdminModule } from './modules/admin/admin.module';
-
 import { User, UserSchema } from './modules/users/users.schema';
 import { Role, RoleSchema } from './modules/roles/role.schema';
 import { Service, ServiceSchema } from './modules/service/services/service.schema';
@@ -114,7 +110,6 @@ import { JwtStrategy } from './modules/auth/jwt.strategy';
     QuestionnaireResponseModule,
     MessagesPatientDoctorModule,
     QuestionnaireInstanceModule,
-    PatientNotesModule,
     QuestionnaireTemplateModule,
     VideoCallsModule,
     HospitalizationHandwritingModule,

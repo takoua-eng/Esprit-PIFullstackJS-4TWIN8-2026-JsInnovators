@@ -32,16 +32,6 @@
   (ngSubmit)="onSubmit()"
   aria-labelledby="symptoms-title"
   novalidate>
-  
-  <div class="symptoms-list">
-    <div *ngFor="let symptom of availableSymptoms" class="symptom-item">
-      <mat-checkbox [formControl]="getFormControl(symptom.name)">
-        {{ symptom.label }}
-      </mat-checkbox>
-    </div>
-  </div>
-
-</form>
 
         <fieldset class="symptoms-fieldset">
           <legend class="symptoms-legend">Select your symptoms</legend>

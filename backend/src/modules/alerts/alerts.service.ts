@@ -355,12 +355,6 @@ export class AlertsService implements OnModuleInit {
 
 
 
-  async findAll(): Promise<AlertListItem[]> {
-    const patientIds = await this.getPatientUserObjectIds();
-    if (patientIds.length === 0) return [];
-  }
-
-  
   async findAll(opts?: {
     doctorId?: string;
     patientId?: string;
@@ -422,10 +416,6 @@ export class AlertsService implements OnModuleInit {
 
 
 
-  async findOpenCount(): Promise<number> {
-    const patientIds = await this.getPatientUserObjectIds();
-    if (patientIds.length === 0) return 0;
-  }
   async findOpenCount(opts?: {
     doctorId?: string;
     patientId?: string;
