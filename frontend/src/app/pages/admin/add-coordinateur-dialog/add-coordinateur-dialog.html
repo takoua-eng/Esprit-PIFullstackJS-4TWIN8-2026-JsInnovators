@@ -113,16 +113,7 @@
           <input matInput type="number" formControlName="yearsOfExperience" />
         </mat-form-field>
 
-<mat-form-field appearance="outline" class="form-field">
-  <mat-label>Assigned Service</mat-label>
 
-  <mat-select formControlName="assignedService">
-    <mat-option *ngFor="let s of servicesList" [value]="s._id">
-      {{ s.name }}
-    </mat-option>
-  </mat-select>
-
-</mat-form-field>
       </div>
     </div>
 

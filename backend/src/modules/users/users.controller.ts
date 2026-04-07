@@ -233,12 +233,77 @@ export class UsersController {
     return this.usersService.getDoctor(id); // méthode spécifique à créer dans UsersService
   }
 
+  @Get('nurses/:id')
+  getNurseById(@Param('id') id: string) {
+    return this.usersService.getNurse(id);
+  }
+
+  // Ajouter après @Get('doctors/:id')
+
+  @Get('patients/:id')
+  getPatientById(@Param('id') id: string) {
+    return this.usersService.getPatient(id);
+  }
+
+  @Put('patients/:id/archive')
+  archivePatient(@Param('id') id: string) {
+    return this.usersService.archivePatient(id);
+  }
+
+  @Put('patients/:id/activate')
+  activatePatient(@Param('id') id: string) {
+    return this.usersService.activatePatient(id);
+  }
+
+  @Put('patients/:id/deactivate')
+  deactivatePatient(@Param('id') id: string) {
+    return this.usersService.deactivatePatient(id);
+  }
+
   // ✅ OK ordre correct
 
   @Get('coordinators/:id')
   getCoordinatorById(@Param('id') id: string) {
     return this.usersService.getCoordinator(id);
   }
+
+  @Get('auditors/:id')
+getAuditorById(@Param('id') id: string) {
+  return this.usersService.getAuditor(id);
+}
+
+
+
+
+
+// --- Archive auditor ---
+@Put('auditors/:id/archive')
+archiveAuditor(@Param('id') id: string) {
+  return this.usersService.archiveAuditor(id);
+}
+
+// --- Activate auditor ---
+@Put('auditors/:id/activate')
+activateAuditor(@Param('id') id: string) {
+  return this.usersService.activateAuditor(id);
+}
+
+// --- Deactivate auditor ---
+@Put('auditors/:id/deactivate')
+deactivateAuditor(@Param('id') id: string) {
+  return this.usersService.deactivateAuditor(id);
+}
+
+// --- Update auditor (with optional file upload) ---
+@UseInterceptors(FileInterceptor('file', multerConfig))
+@Put('auditors/:id')
+updateAuditor(
+  @Param('id') id: string,
+  @Body() dto: any,
+  @UploadedFile() file?: Express.Multer.File
+) {
+  return this.usersService.updateAuditor(id, dto, file);
+}
 
   //get profile
   @UseGuards(JwtAuthGuard)
@@ -248,6 +313,19 @@ export class UsersController {
     return this.usersService.getUser(userId);
   }
   // ⚠️ TOUJOURS À LA FIN
+
+
+  //edit patient with optional photo
+  @UseInterceptors(FileInterceptor('file', multerConfig))
+  @Put('patients/:id')
+  updatePatient(
+    @Param('id') id: string,
+    @Body() dto: any,
+    @UploadedFile() file?: Express.Multer.File
+  ) {
+    return this.usersService.updatePatient(id, dto, file);
+  }
+
 
   @UseInterceptors(FileInterceptor('file', multerConfig))
   @Put('doctors/:id')
@@ -270,6 +348,18 @@ export class UsersController {
     return this.usersService.updateCoordinator(id, dto, file);
   }
 
+  // Update Nurse with optional photo
+  // Update Nurse with optional photo
+  @UseInterceptors(FileInterceptor('file', multerConfig))
+  @Put('nurses/:id')
+  updateNurse(
+    @Param('id') id: string,
+    @Body() dto: any,
+    @UploadedFile() file?: Express.Multer.File
+  ) {
+    return this.usersService.updateNurse(id, dto, file);
+  }
+
   // Archiving endpoints
   @Put('coordinators/:id/archive')
   archiveCoordinator(@Param('id') id: string) {
@@ -279,6 +369,24 @@ export class UsersController {
   @Put('coordinators/:id/activate')
   activateCoordinator(@Param('id') id: string) {
     return this.usersService.activateCoordinator(id);
+  }
+
+  // Archiver nurse
+  @Put('nurses/:id/archive')
+  archiveNurse(@Param('id') id: string) {
+    return this.usersService.archiveNurse(id);
+  }
+
+  // Activer nurse
+  @Put('nurses/:id/activate')
+  activateNurse(@Param('id') id: string) {
+    return this.usersService.activateNurse(id);
+  }
+
+  // Désactiver nurse
+  @Put('nurses/:id/deactivate')
+  deactivateNurse(@Param('id') id: string) {
+    return this.usersService.deactivateNurse(id);
   }
 
   @Put('coordinators/:id/deactivate')

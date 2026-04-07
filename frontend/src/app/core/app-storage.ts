@@ -7,7 +7,6 @@ export const ALLOWED_LOCAL_STORAGE_KEYS = new Set([
   'user_role',
   'medi_follow_user_data',
   'medi_follow_user_role',
-  'permissions',
   'userId',
   'app_language',
   'high_contrast',

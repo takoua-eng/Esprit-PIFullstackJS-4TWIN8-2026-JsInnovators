@@ -82,41 +82,49 @@ export class UsersService {
     });
   }
 
-  async createPatient(dto: CreatePatientDto, file?: Express.Multer.File) {
-    const patient = await this.createUser(dto, 'patient', file);
-
-    console.log('🔔 createPatient - doctorId received:', dto.doctorId);
-    console.log('🔔 patient created:', patient._id?.toString());
-
-    // Send notifications if a doctor is assigned
-    if (dto.doctorId) {
-      try {
-        console.log('🔔 Looking for doctor:', dto.doctorId);
-        const doctor = await this.userModel.findById(dto.doctorId).exec();
-        console.log(
-          '🔔 Doctor found:',
-          doctor ? `${doctor.firstName} ${doctor.lastName}` : 'NOT FOUND',
-        );
-
-        if (doctor) {
-          await this.notificationsService.notifyPatientAssigned(
-            patient,
-            doctor,
-          );
-          console.log('✅ Notifications sent to patient and doctor');
-        }
-      } catch (e) {
-        const error = e instanceof Error ? e : new Error(String(e));
-        console.error('❌ Notification error:', error.message, error.stack);
-        this.logger.warn(
-          `Notification failed for patient ${patient._id}: ${error.message}`,
-        );
-      }
-    } else {
-      console.log('⚠️ No doctorId provided — no notification sent');
+  async createPatient(dto: any, file?: Express.Multer.File) {
+    if (file) {
+      dto.photo = file.filename;
     }
 
-    return patient;
+    const doctorId = dto.assignedDoctor;
+    const coordinatorId = dto.assignedCoordinator;
+
+    console.log('🔔 createPatient - doctorId received:', doctorId);
+
+    // ✅ METTRE CE CODE ICI
+    const role = await this.roleModel.findOne({ name: 'Patient' });
+
+    if (!role) {
+      throw new Error('Patient role not found');
+    }
+
+    dto.role = role._id;
+
+    // ✅ création du patient
+    const patient = new this.userModel(dto);
+    const savedPatient = await patient.save();
+
+    console.log('🔔 patient created:', savedPatient._id);
+
+    // Ajouter le patient au coordinator
+    if (coordinatorId) {
+      await this.userModel.findByIdAndUpdate(coordinatorId, {
+        $addToSet: { assignedPatients: savedPatient._id },
+      });
+    }
+
+    // Notification doctor
+    if (doctorId) {
+      await this.notificationsService.create({
+        userId: doctorId,
+        title: 'New Patient Assigned',
+        message: `${savedPatient.firstName} ${savedPatient.lastName} has been assigned to you`,
+        type: 'PATIENT_ASSIGNED',
+      });
+    }
+
+    return savedPatient;
   }
 
   createDoctor(dto: CreateDoctorDto, file?: Express.Multer.File) {
@@ -680,6 +688,13 @@ export class UsersService {
     return { exists: !!user };
   }
 
+  /*async updatePatient(id: string, dto: any, file?: Express.Multer.File) {
+    if (file) {
+      dto.photo = file.filename; // ou le path complet si besoin
+    }
+  
+  }*/
+  // users.service.ts
   // users.service.ts
   async getDoctor(id: string) {
     const doctorRole = await this.roleModel.findOne({ name: 'doctor' }).exec();
@@ -832,14 +847,12 @@ export class UsersService {
   async findById(id: string) {
     return this.userModel.findById(id);
   }
-
   async findByIdForAuth(id: string) {
     return this.userModel
       .findById(id)
       .populate('role') // Ã°Å¸â€Â¥ Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â£Ã™â€¡Ã™â€¦ Ã˜Â³Ã˜Â·Ã˜Â±
       .exec();
   }
-
   async getUsersCountByRole() {
     return this.userModel.aggregate([
       {
@@ -866,7 +879,7 @@ export class UsersService {
       },
     ]);
   }
-//superadmin edit 
+  //superadmin edit
   async updateUsers(id: string, dto: any, file?: Express.Multer.File) {
     const user = await this.userModel.findById(id);
     if (!user) throw new NotFoundException('User not found');
@@ -879,7 +892,13 @@ export class UsersService {
     }
 
     // Clean all ObjectId reference fields
-    for (const field of ['serviceId', 'doctorId', 'coordinatorId', 'nurseId', 'roleId']) {
+    for (const field of [
+      'serviceId',
+      'doctorId',
+      'coordinatorId',
+      'nurseId',
+      'roleId',
+    ]) {
       if (dto[field] !== undefined) {
         if (!dto[field] || !Types.ObjectId.isValid(dto[field])) {
           delete dto[field];
@@ -901,5 +920,239 @@ export class UsersService {
     }
 
     return user.save();
+  }
+
+  // ✅ GET PATIENT BY ID
+  async getPatient(id: string) {
+    const patientRole = await this.roleModel
+      .findOne({ name: 'patient' })
+      .exec();
+    if (!patientRole) throw new NotFoundException('Rôle patient introuvable');
+
+    const patient = await this.userModel
+      .findOne({ _id: id, role: patientRole._id })
+      .populate('role')
+      .exec();
+
+    if (!patient) throw new NotFoundException('Patient non trouvé');
+    return patient;
+  }
+
+  // ✅ UPDATE PATIENT — corrigé (manquait le return)
+  async updatePatient(id: string, dto: any, file?: Express.Multer.File) {
+    if (file) {
+      dto.photo = file.filename;
+    }
+
+    const patientRole = await this.roleModel.findOne({ name: 'patient' });
+    if (!patientRole)
+      throw new Error('Role "patient" introuvable dans la base');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: patientRole._id },
+        { $set: dto },
+        { new: true },
+      )
+      .exec();
+  }
+
+  // ✅ ARCHIVE PATIENT — corrigé (utilisait DELETE au lieu de PUT)
+  async archivePatient(id: string) {
+    const patientRole = await this.roleModel.findOne({ name: 'patient' });
+    if (!patientRole) throw new Error('Role "patient" introuvable');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: patientRole._id },
+        { $set: { isArchived: true } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  // ✅ ACTIVATE PATIENT
+  async activatePatient(id: string) {
+    const patientRole = await this.roleModel.findOne({ name: 'patient' });
+    if (!patientRole) throw new Error('Role "patient" introuvable');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: patientRole._id },
+        { $set: { isActive: true } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  // ✅ DEACTIVATE PATIENT
+  async deactivatePatient(id: string) {
+    const patientRole = await this.roleModel.findOne({ name: 'patient' });
+    if (!patientRole) throw new Error('Role "patient" introuvable');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: patientRole._id },
+        { $set: { isActive: false } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  //nusrse
+  async getNurse(id: string) {
+    const nurseRole = await this.roleModel.findOne({ name: 'nurse' }).exec();
+    if (!nurseRole) throw new NotFoundException('Rôle nurse introuvable');
+
+    const nurse = await this.userModel
+      .findOne({ _id: id, role: nurseRole._id })
+      .populate('role')
+      .populate('serviceId')
+      .exec();
+
+    if (!nurse) throw new NotFoundException('Nurse non trouvée');
+
+    return nurse;
+  }
+
+  async activateNurse(id: string) {
+    const nurseRole = await this.roleModel.findOne({ name: 'nurse' });
+
+    if (!nurseRole) throw new Error('Role "nurse" introuvable');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: nurseRole._id },
+        { $set: { isActive: true } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async deactivateNurse(id: string) {
+    const nurseRole = await this.roleModel.findOne({ name: 'nurse' });
+
+    if (!nurseRole) throw new Error('Role "nurse" introuvable');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: nurseRole._id },
+        { $set: { isActive: false } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async archiveNurse(id: string) {
+    const nurseRole = await this.roleModel.findOne({ name: 'nurse' });
+
+    if (!nurseRole) throw new Error('Role "nurse" introuvable');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: nurseRole._id },
+        { $set: { isArchived: true } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async updateNurse(id: string, dto: any, file?: Express.Multer.File) {
+    if (file) {
+      dto.photo = file.filename;
+    }
+
+    const nurseRole = await this.roleModel.findOne({ name: 'nurse' });
+
+    if (!nurseRole) throw new Error('Role "nurse" introuvable dans la base');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: nurseRole._id },
+        { $set: dto },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async getAllNurses() {
+    const nurseRole = await this.roleModel.findOne({ name: 'nurse' });
+    if (!nurseRole) throw new NotFoundException('Role "nurse" introuvable');
+
+    return this.userModel
+      .find({ role: nurseRole._id })
+      .populate('service') // <-- IMPORTANT: récupère l'objet service complet
+      .exec();
+  }
+
+  /** Récupérer un auditor par id */
+  async getAuditor(id: string) {
+    const auditorRole = await this.roleModel
+      .findOne({ name: 'auditor' })
+      .exec();
+    if (!auditorRole) throw new NotFoundException('Rôle auditor introuvable');
+
+    const auditor = await this.userModel
+      .findOne({ _id: id, role: auditorRole._id })
+      .populate('role') // inclure les infos du rôle
+      .exec();
+
+    if (!auditor) throw new NotFoundException('Auditor non trouvé');
+    return auditor;
+  }
+
+  // --- Archiver un auditor ---
+  async archiveAuditor(id: string) {
+    const auditorRole = await this.roleModel.findOne({ name: 'auditor' });
+    if (!auditorRole) throw new Error('Role "auditor" introuvable');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: auditorRole._id },
+        { $set: { isArchived: true } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  /** Activer un auditor */
+  async activateAuditor(id: string) {
+    const auditorRole = await this.roleModel.findOne({ name: 'auditor' });
+    if (!auditorRole) throw new Error('Role "auditor" introuvable');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: auditorRole._id },
+        { $set: { isActive: true } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  /** Désactiver un auditor */
+  async deactivateAuditor(id: string) {
+    const auditorRole = await this.roleModel.findOne({ name: 'auditor' });
+    if (!auditorRole) throw new Error('Role "auditor" introuvable');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: auditorRole._id },
+        { $set: { isActive: false } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  /** Vérifier si un email existe pour un auditor */
+  async auditorEmailExists(email: string): Promise<{ exists: boolean }> {
+    const auditorRole = await this.roleModel.findOne({ name: 'auditor' });
+    if (!auditorRole) throw new Error('Role "auditor" introuvable');
+
+    const user = await this.userModel.findOne({ email, role: auditorRole._id });
+    return { exists: !!user };
+  }
+
+  updateAuditor(id: string, dto: any, file: Express.Multer.File | undefined) {
+    throw new Error('Method not implemented.');
   }
 }

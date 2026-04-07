@@ -11,7 +11,7 @@ import { Patients } from './admin/patients/patients';
 //import { MedecinsComponent } from './admin/medecins/medecins';
 import { CoordinateursComponent } from './admin/coordinateurs/coordinateurs';
 import { NursesComponent } from './admin/nurses/nurses';
-import { AuditorsComponent } from './admin/auditors/auditors';
+import { AuditorsAComponent } from './admin/auditorsA/auditorsA';
 import { CoordinatorDashboardComponent } from './coordinator/coordinator-dashboard/coordinator-dashboard.component';
 import { RemindersComponent } from './coordinator/reminders/reminders';
 import { CoordinatorPatientsComponent } from './coordinator/coordinator-patients/coordinator-patients';
@@ -61,6 +61,7 @@ import { AiPredictionComponent } from './coordinator/ai-prediction/ai-prediction
 import { ServiceComponent } from './super-admin/service/service';
 import { RoleComponent } from './super-admin/role/role';
 import { PermissionGuard } from '../permission.guard';
+import { MedecinsComponent } from './admin/medecins/medecins';
 
 /** Roles allowed to use the sub-admin `/dashboard/admin/...` area (not patients, not coordinators). */
 const staffAdminGuard = [
@@ -75,38 +76,32 @@ export const AdminRoutes: Routes = [
     path: '',
     component: AdminDashboardComponent,
     pathMatch: 'full',
-    canActivate: [...staffAdminGuard, PermissionGuard],
-    data: { permission: 'dashboard:read' },
+    canActivate: [...staffAdminGuard],
+
   },
   {
     path: 'patients',
     component: Patients,
-
-    canActivate: [...staffAdminGuard, PermissionGuard],
-    data: { permission: 'patients:read' },
+    canActivate: staffAdminGuard,
   },
-  /*{
+    {
     path: 'physicians',
     component: MedecinsComponent,
-    canActivate: [...staffAdminGuard, PermissionGuard],
-
-    data: { permission: 'physicians:read' },
-  },*/
+    canActivate: staffAdminGuard,
+  },
   {
     path: 'nurses',
     component: NursesComponent,
-    canActivate: [...staffAdminGuard, PermissionGuard],
-    data: { permission: 'nurses:read' },
+    canActivate: staffAdminGuard,
   },
   {
     path: 'coordinators',
     component: CoordinateursComponent,
-    canActivate: [...staffAdminGuard, PermissionGuard],
-    data: { permission: 'coordinators:read' },
+    canActivate: staffAdminGuard,
   },
   {
     path: 'auditors',
-    component: AuditorsComponent,
+    component: AuditorsAComponent,
     canActivate: staffAdminGuard,
   },
 
@@ -125,8 +120,8 @@ export const AdminRoutes: Routes = [
   {
     path: 'profile',
     component: AdminProfileComponent,
-    canActivate: [...staffAdminGuard, PermissionGuard],
-    data: { permission: 'auditors:read' },
+    canActivate: [...staffAdminGuard],
+
   },
 ];
 // ✅ COORDINATOR ROUTES — loaded only from `/admin/coordinator` (see `app.routes.ts`)
@@ -237,52 +232,50 @@ export const SuperAdminRoutes: Routes = [
   {
     path: 'admin-users',
     component: AdminsComponent,
-    canActivate: [PermissionGuard],
-    data: { permission: 'users:read' },
+  
+  
   },
   {
     path: 'users',
     component: UserManagementComponent,
     canActivate: [PermissionGuard],
-    data: { permission: 'users:read' },
   },
   {
     path: 'patients',
     component: SuperPatients,
     canActivate: [PermissionGuard],
-    data: { permission: 'patients:read' },
+    
   },
 
   {
     path: 'nurses',
     component: SuperNurses,
     canActivate: [PermissionGuard],
-    data: { permission: 'nurses:read' },
+
   },
   {
     path: 'auditors',
     component: SuperAuditors,
     canActivate: [PermissionGuard],
-    data: { permission: 'auditors:read' },
+
   },
   {
     path: 'services',
     component: ServiceComponent,
     canActivate: [PermissionGuard],
-    data: { permission: 'services:read' },
+
   },
   {
     path: 'role',
     component: RoleComponent,
     canActivate: [PermissionGuard],
-    data: { permission: 'users:manage' },
+
   },
-  {
-    path: 'audit-logs',
-    component: AuditLogsComponent,
-    canActivate: [PermissionGuard],
-    data: { permission: 'audit:read' },
-  },
+{
+  path: 'audit-logs',
+  component: AuditLogsComponent,
+  canActivate: [PermissionGuard],
+},
 ];
 
 const patientOnlyGuard = [authGuard, roleGuard(['patient'])];

@@ -17,7 +17,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
-import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ReplaySubject, Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 
@@ -32,7 +31,6 @@ import { take, takeUntil } from 'rxjs/operators';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    NgxMatSelectSearchModule,
   ],
   templateUrl: './add-role.html',
   styleUrls: ['./add-role.scss'],

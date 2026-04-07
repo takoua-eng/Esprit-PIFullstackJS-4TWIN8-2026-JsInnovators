@@ -58,15 +58,20 @@ export class RemindersComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    const user = this.coreService.currentUser();
-    if (user?._id) {
-      this.coordinatorId = user._id;
-    } else {
-      const raw = localStorage.getItem('medi_follow_user_data');
-      if (raw) {
-        try { this.coordinatorId = JSON.parse(raw)._id || ''; } catch { }
-      }
-    }
+    // Lire l'ID depuis le JWT stocké dans localStorage
+const token = localStorage.getItem('accessToken');
+if (token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    this.coordinatorId = payload.sub || '';
+  } catch { }
+}
+
+// Fallback sur CoreService
+if (!this.coordinatorId) {
+  const user = this.coreService.currentUser();
+  this.coordinatorId = user?._id || '';
+}
     if (!this.coordinatorId) { console.error('No coordinator ID'); return; }
     this.loadReminders();
     this.loadPatients();
@@ -173,26 +178,43 @@ export class RemindersComponent implements OnInit {
   }
 
   submitReminder(): void {
-    if (this.reminderForm.invalid) { this.reminderForm.markAllAsTouched(); return; }
-    const { patientId, type, message, scheduledAt } = this.reminderForm.value;
+  if (this.reminderForm.invalid) { this.reminderForm.markAllAsTouched(); return; }
+  const { patientId, type, message, scheduledAt } = this.reminderForm.value;
 
-    if (this.editingReminder?._id) {
-      this.coordinatorService.updateReminder(this.editingReminder._id, { type, message, scheduledAt }).subscribe({
+  if (this.editingReminder?._id) {
+    this.coordinatorService.updateReminder(this.editingReminder._id, { type, message, scheduledAt })
+      .subscribe({
         next: () => { this.loadReminders(); this.toggleForm(); },
         error: (err) => console.error('Update error', err),
       });
-    } else {
-      this.coordinatorService.createReminder(this.coordinatorId, { patientId, type, message, scheduledAt }).subscribe({
-        next: (reminder) => {
-          this.coordinatorService.sendReminder(reminder._id).subscribe({
-            next: () => { this.loadReminders(); this.toggleForm(); },
-            error: () => { this.loadReminders(); this.toggleForm(); },
-          });
-        },
-        error: (err) => console.error('Create error', err),
-      });
-    }
+  } else {
+    // Créer en tant que SCHEDULED uniquement — pas d'envoi
+    this.coordinatorService.createReminder(this.coordinatorId, {
+      patientId, type, message, scheduledAt, status: 'scheduled'
+    }).subscribe({
+      next: () => { this.loadReminders(); this.toggleForm(); },
+      error: (err) => console.error('Create error', err),
+    });
   }
+}
+
+submitAndSend(): void {
+  if (this.reminderForm.invalid) { this.reminderForm.markAllAsTouched(); return; }
+  const { patientId, type, message, scheduledAt } = this.reminderForm.value;
+
+  // Créer puis envoyer immédiatement (email + SMS planifié)
+  this.coordinatorService.createReminder(this.coordinatorId, {
+    patientId, type, message, scheduledAt, status: 'scheduled'
+  }).subscribe({
+    next: (reminder) => {
+      this.coordinatorService.sendReminder(reminder._id).subscribe({
+        next: () => { this.loadReminders(); this.toggleForm(); },
+        error: () => { this.loadReminders(); this.toggleForm(); },
+      });
+    },
+    error: (err) => console.error('Create error', err),
+  });
+}
 
   sendReminder(reminder: ReminderRow): void {
     if (!reminder._id) return;

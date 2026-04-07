@@ -32,6 +32,7 @@ import { FaceRecognitionService } from 'src/app/services/face-recognition';
   templateUrl: './side-login.component.html',
 })
 export class AppSideLoginComponent implements OnInit {
+
   // 🔐 CLASSIC LOGIN
   loading = false;
   errorMessage = '';
@@ -49,7 +50,7 @@ export class AppSideLoginComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private core: CoreService,
-    private faceService: FaceRecognitionService,
+    private faceService: FaceRecognitionService
   ) {}
 
   // ================= INIT =================
@@ -76,8 +77,7 @@ export class AppSideLoginComponent implements OnInit {
       | null
       | undefined;
 
-    if (!e)
-      return err.status === 401 ? 'Wrong email or password.' : 'Request failed';
+    if (!e) return err.status === 401 ? 'Wrong email or password.' : 'Request failed';
     if (typeof e === 'string') return e;
     const m = e.message;
     if (typeof m === 'string') return m;
@@ -98,11 +98,10 @@ export class AppSideLoginComponent implements OnInit {
     const { email, password } = this.form.value;
 
     this.http
-      .post<{
-        accessToken: string;
-        role: string;
-        permissions: string[];
-      }>(`${API_BASE_URL}/auth/login`, { email, password })
+      .post<{ accessToken: string; role: string; user: any }>(
+        `${API_BASE_URL}/auth/login`,
+        { email, password }
+      )
       .pipe(
         catchError((err: HttpErrorResponse) => {
           this.loading = false;
@@ -113,20 +112,7 @@ export class AppSideLoginComponent implements OnInit {
       .subscribe((res) => {
         this.loading = false;
         localStorage.setItem('accessToken', res.accessToken);
-        localStorage.setItem('permissions', JSON.stringify(res.permissions));
-        this.core.setRoleFromLogin(res.role || '');
-        this.core.setPermissions(res.permissions ?? []);
-
-        // Extract userId from JWT payload (sub field)
-        try {
-          const payload = JSON.parse(atob(res.accessToken.split('.')[1]));
-          if (payload?.sub) {
-            localStorage.setItem('userId', payload.sub);
-          }
-        } catch {
-          /* ignore */
-        }
-
+        this.core.setUserFromLogin(res.user);
         this.router.navigateByUrl(getPostLoginPath(res.role));
       });
   }
@@ -152,13 +138,13 @@ export class AppSideLoginComponent implements OnInit {
     }
   }
 
-  stopCamera() {
-    // Typage explicite pour TS
-    const stream = this.video?.nativeElement?.srcObject as MediaStream | null;
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-    }
+stopCamera() {
+  // Typage explicite pour TS
+  const stream = this.video?.nativeElement?.srcObject as MediaStream | null;
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
   }
+}
 
   closeCamera() {
     this.showCamera = false;
@@ -184,24 +170,20 @@ export class AppSideLoginComponent implements OnInit {
 
     this.faceMessage = '✅ Face detected';
 
-    this.http
-      .post<any>(`${API_BASE_URL}/auth/face-login`, {
-        faceDescriptor: descriptor,
-      })
-      .subscribe({
-        next: (res) => {
-          this.faceMessage = '🎉 Login success';
-          this.loadingFace = false;
-          localStorage.setItem('accessToken', res.token);
-          this.core.setUserFromLogin(res.user);
-          this.stopCamera();
-          this.router.navigateByUrl(getPostLoginPath(res.user?.role));
-        },
-        error: () => {
-          this.faceMessage = '❌ Face not recognized';
-          this.loadingFace = false;
-        },
-      });
+    this.http.post<any>(`${API_BASE_URL}/auth/face-login`, { faceDescriptor: descriptor }).subscribe({
+      next: (res) => {
+        this.faceMessage = '🎉 Login success';
+        this.loadingFace = false;
+        localStorage.setItem('accessToken', res.token);
+        this.core.setUserFromLogin(res.user);
+        this.stopCamera();
+        this.router.navigateByUrl(getPostLoginPath(res.user?.role));
+      },
+      error: () => {
+        this.faceMessage = '❌ Face not recognized';
+        this.loadingFace = false;
+      }
+    });
   }
 
   async loginWithFaceID() {
@@ -217,10 +199,7 @@ export class AppSideLoginComponent implements OnInit {
       }
 
       const options: unknown = await this.http
-        .get(
-          `${API_BASE_URL}/auth/webauthn/login-challenge?email=` +
-            encodeURIComponent(email),
-        )
+        .get(`${API_BASE_URL}/auth/webauthn/login-challenge?email=` + encodeURIComponent(email))
         .toPromise();
 
       const assertion = await SimpleWebAuthnBrowser.startAuthentication({
@@ -228,11 +207,7 @@ export class AppSideLoginComponent implements OnInit {
       });
 
       const res = (await this.http
-        .post<{
-          accessToken: string;
-          role?: string;
-          user?: any;
-        }>(`${API_BASE_URL}/auth/webauthn/verify`, assertion)
+        .post<{ accessToken: string; role?: string; user: any }>(`${API_BASE_URL}/auth/webauthn/verify`, assertion)
         .toPromise())!;
 
       localStorage.setItem('accessToken', res.accessToken);
@@ -250,11 +225,9 @@ export class AppSideLoginComponent implements OnInit {
     const descriptor = await this.captureFace();
     if (!descriptor) return;
 
-    this.http
-      .post('/api/auth/register-face', { faceDescriptor: descriptor })
-      .subscribe(() => {
-        console.log('✅ Face saved');
-      });
+    this.http.post('/api/auth/register-face', { faceDescriptor: descriptor }).subscribe(() => {
+      console.log('✅ Face saved');
+    });
   }
 
   // ================= TEST AVEC VIDEO/IMAGE =================

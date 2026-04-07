@@ -10,6 +10,7 @@ export interface Doctor {
   specialty?: string;
   serviceId?: string | { _id: string; name: string };
   isArchived?: boolean;
+  isActive?: boolean;
 }
 
 @Injectable({
