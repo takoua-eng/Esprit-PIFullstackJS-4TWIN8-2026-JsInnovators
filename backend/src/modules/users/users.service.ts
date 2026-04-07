@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   Logger,
@@ -12,11 +12,13 @@ import * as bcrypt from 'bcrypt';
 
 import { User, UserDocument } from './users.schema';
 import { Role, RoleDocument } from '../roles/role.schema';
+import { Service, ServiceDocument } from '../service/services/service.schema';
 import {
   PatientDiagnosis,
   PatientDiagnosisDocument,
 } from './patient-diagnosis.schema';
 import { NurseDossierDto } from './dto/nurse-dossier.dto';
+import { NotificationsService } from '../notifications-super-admin/notifications.service';
 
 import { CreatePatientDto } from './dto/CreatePatientDto ';
 import { CreateDoctorDto } from './dto/CreateDoctorDto ';
@@ -35,9 +37,11 @@ export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
+    @InjectModel(Service.name) private serviceModel: Model<ServiceDocument>,
     @InjectModel(PatientDiagnosis.name)
     private patientDiagnosisModel: Model<PatientDiagnosisDocument>,
     private readonly config: ConfigService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private async getRole(name: string) {
@@ -59,24 +63,90 @@ export class UsersService {
     const role = await this.getRole(roleName);
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
+    // Clean all ObjectId reference fields — remove if empty or invalid
+    const cleanDto = { ...dto };
+    for (const field of ['serviceId', 'doctorId', 'coordinatorId', 'nurseId']) {
+      if (!cleanDto[field] || !Types.ObjectId.isValid(cleanDto[field])) {
+        delete cleanDto[field];
+      }
+    }
+
     return this.userModel.create({
       ...dto,
-    password: hashedPassword,
+      password: hashedPassword,
+      ...cleanDto,
       role: role._id,
-      photo: file ? file.filename : null,
+      photo: file ? file.filename : '',
+      isActive: dto.isActive ?? true,
+      isArchived: false,
     });
   }
 
-  createPatient(dto: CreatePatientDto, file?: Express.Multer.File) {
-    return this.createUser(dto, 'patient', file);
+  async createPatient(dto: CreatePatientDto, file?: Express.Multer.File) {
+    const patient = await this.createUser(dto, 'patient', file);
+
+    console.log('🔔 createPatient - doctorId received:', dto.doctorId);
+    console.log('🔔 patient created:', patient._id?.toString());
+
+    // Send notifications if a doctor is assigned
+    if (dto.doctorId) {
+      try {
+        console.log('🔔 Looking for doctor:', dto.doctorId);
+        const doctor = await this.userModel.findById(dto.doctorId).exec();
+        console.log(
+          '🔔 Doctor found:',
+          doctor ? `${doctor.firstName} ${doctor.lastName}` : 'NOT FOUND',
+        );
+
+        if (doctor) {
+          await this.notificationsService.notifyPatientAssigned(
+            patient,
+            doctor,
+          );
+          console.log('✅ Notifications sent to patient and doctor');
+        }
+      } catch (e) {
+        const error = e instanceof Error ? e : new Error(String(e));
+        console.error('❌ Notification error:', error.message, error.stack);
+        this.logger.warn(
+          `Notification failed for patient ${patient._id}: ${error.message}`,
+        );
+      }
+    } else {
+      console.log('⚠️ No doctorId provided — no notification sent');
+    }
+
+    return patient;
   }
 
   createDoctor(dto: CreateDoctorDto, file?: Express.Multer.File) {
     return this.createUser(dto, 'doctor', file);
   }
 
-  createNurse(dto: CreateNurseDto, file?: Express.Multer.File) {
-    return this.createUser(dto, 'nurse', file);
+  async createNurse(dto: CreateNurseDto, file?: Express.Multer.File) {
+    let serviceObjectId: any = undefined;
+    if (dto.serviceId && Types.ObjectId.isValid(dto.serviceId)) {
+      const service = await this.serviceModel.findById(dto.serviceId);
+      if (!service) throw new NotFoundException('Service not found');
+      serviceObjectId = service._id;
+    }
+
+    const existingUser = await this.userModel.findOne({ email: dto.email });
+    if (existingUser) {
+      throw new BadRequestException('Email already exists');
+    }
+
+    const role = await this.getRole('nurse');
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    return this.userModel.create({
+      ...dto,
+      password: hashedPassword,
+      role: role._id,
+      ...(serviceObjectId ? { serviceId: serviceObjectId } : {}),
+      photo: file ? file.filename : '',
+      isActive: dto.isActive ?? true,
+    });
   }
 
   createCoordinator(dto: CreateCoordinatorDto, file?: Express.Multer.File) {
@@ -84,7 +154,7 @@ export class UsersService {
   }
 
   createAdmin(dto: CreateAdminDto, file?: Express.Multer.File) {
-    return this.createUser(dto, 'admin', file);
+    return this.createAdminWithService(dto, file);
   }
 
   createAuditor(dto: CreateAuditorDto, file?: Express.Multer.File) {
@@ -109,8 +179,8 @@ export class UsersService {
     if (Types.ObjectId.isValid(id)) {
       user = await this.userModel
         .findOne({ _id: id, isArchived: { $ne: true } })
-      .populate('role')
-      .exec();
+        .populate('role')
+        .exec();
     }
     if (!user) {
       user = await this.userModel
@@ -123,13 +193,41 @@ export class UsersService {
 
     return user;
   }
+  private async createAdminWithService(
+    dto: CreateAdminDto,
+    file?: Express.Multer.File,
+  ) {
+    const existingUser = await this.userModel.findOne({ email: dto.email });
+    if (existingUser) {
+      throw new BadRequestException('Email already exists');
+    }
 
-  async updateUser(id: string, dto: any) {
-    const user = await this.userModel.findById(id);
-    if (!user) throw new NotFoundException('User not found');
+    const role = await this.getRole('admin');
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    Object.assign(user, dto);
-    return user.save();
+    // Clean all ObjectId reference fields — remove if empty or invalid
+    const cleanDto = { ...dto };
+    for (const field of ['serviceId', 'doctorId', 'coordinatorId', 'nurseId']) {
+      if (!cleanDto[field] || !Types.ObjectId.isValid(cleanDto[field])) {
+        delete cleanDto[field];
+      }
+    }
+
+    // Validate serviceId exists in DB
+    if (cleanDto.serviceId) {
+      const service = await this.serviceModel.findById(cleanDto.serviceId);
+      if (!service) throw new NotFoundException('Service not found');
+      cleanDto.serviceId = service._id.toString();
+    }
+
+    return this.userModel.create({
+      ...cleanDto,
+      password: hashedPassword,
+      role: role._id,
+      photo: file ? file.filename : '',
+      isActive: dto.isActive ?? true,
+      isArchived: false,
+    });
   }
 
   async deleteUser(id: string) {
@@ -170,13 +268,13 @@ export class UsersService {
     return this.userModel.find({ role: role._id, isArchived: { $ne: true } });
   }
 
-async getCoordinators() {
-  const role = await this.getRole('coordinator');
-  return this.userModel.find({
-    role: role._id,
-    isArchived: { $ne: true },
-  });
-}
+  async getCoordinators() {
+    const role = await this.getRole('coordinator');
+    return this.userModel.find({
+      role: role._id,
+      isArchived: { $ne: true },
+    });
+  }
 
   async getAdmins() {
     const role = await this.getRole('admin');
@@ -261,9 +359,8 @@ async getCoordinators() {
         email: String(u.email ?? ''),
       }));
   }
-
   /**
-   * Users whose `role` field equals this MongoDB ObjectId (exact match).
+   * Users whose role field equals this MongoDB ObjectId (exact match).
    */
   async findByRoleObjectId(
     roleObjectId: string,
@@ -280,13 +377,12 @@ async getCoordinators() {
       .lean()
       .exec();
     return direct.map((u) => ({
-      _id: (u._id as Types.ObjectId).toString(),
+      _id: u._id.toString(),
       firstName: u.firstName,
       lastName: u.lastName,
       email: u.email,
     }));
   }
-
   /**
    * Patient accounts for nurse/doctor lists (`GET /users/patients`).
    * Uses `PATIENT_ROLE_ID` from env, or {@link DEFAULT_PATIENT_ROLE_OBJECT_ID}.
@@ -577,18 +673,14 @@ async getCoordinators() {
       ...mergedStored,
       diagnosisEntries,
     };
-}
-  
-
-
+  }
 
   async emailExists(email: string): Promise<{ exists: boolean }> {
-  const user = await this.userModel.findOne({ email });
-  return { exists: !!user };
-}
+    const user = await this.userModel.findOne({ email });
+    return { exists: !!user };
+  }
 
-
-// users.service.ts
+  // users.service.ts
   async getDoctor(id: string) {
     const doctorRole = await this.roleModel.findOne({ name: 'doctor' }).exec();
     if (!doctorRole) throw new NotFoundException('Rôle doctor introuvable');
@@ -602,129 +694,176 @@ async getCoordinators() {
     return doctor;
   }
 
+  async updateDoctor(id: string, dto: any, file?: Express.Multer.File) {
+    if (file) {
+      dto.photo = file.filename; // ou le path complet si besoin
+    }
 
-async updateDoctor(id: string, dto: any, file?: Express.Multer.File) {
-  if (file) {
-    dto.photo = file.filename; // ou le path complet si besoin
+    // Récupérer le rôle doctor
+    const doctorRole = await this.roleModel.findOne({ name: 'doctor' });
+    if (!doctorRole) {
+      throw new Error('Role "doctor" introuvable dans la base');
+    }
+
+    // Mettre à jour le doctor uniquement si rôle correct
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: doctorRole._id },
+        { $set: dto },
+        { new: true },
+      )
+      .exec();
   }
 
-  // Récupérer le rôle doctor
-  const doctorRole = await this.roleModel.findOne({ name: 'doctor' });
-  if (!doctorRole) {
-    throw new Error('Role "doctor" introuvable dans la base');
+  async archiveDoctor(id: string) {
+    const doctorRole = await this.roleModel.findOne({ name: 'doctor' });
+    if (!doctorRole) throw new Error('Role "doctor" introuvable');
+
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: doctorRole._id },
+        { $set: { isArchived: true } },
+        { new: true },
+      )
+      .exec();
   }
 
-  // Mettre à jour le doctor uniquement si rôle correct
-  return this.userModel
-    .findOneAndUpdate(
-      { _id: id, role: doctorRole._id },
-      { $set: dto },
-      { new: true },
-    )
-    .exec();
-}
+  // Similar methods for Coordinator
+  async getCoordinator(id: string) {
+    const coordinatorRole = await this.roleModel
+      .findOne({ name: 'coordinator' })
+      .exec();
+    if (!coordinatorRole)
+      throw new NotFoundException('Rôle coordinator introuvable');
 
+    const coordinator = await this.userModel
+      .findOne({ _id: id, role: coordinatorRole._id })
+      .populate('role')
+      .exec();
 
-async archiveDoctor(id: string) {
-  const doctorRole = await this.roleModel.findOne({ name: 'doctor' });
-  if (!doctorRole) throw new Error('Role "doctor" introuvable');
-
-  return this.userModel
-    .findOneAndUpdate(
-      { _id: id, role: doctorRole._id },
-      { $set: { isArchived: true } },
-      { new: true },
-    )
-    .exec();
-}
-
-// Similar methods for Coordinator
-async getCoordinator(id: string) {
-  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' }).exec();
-  if (!coordinatorRole) throw new NotFoundException('Rôle coordinator introuvable');
-
-  const coordinator = await this.userModel
-    .findOne({ _id: id, role: coordinatorRole._id })
-    .populate('role')
-    .exec();
-
-  if (!coordinator) throw new NotFoundException('Coordinator non trouvé');
-  return coordinator;
-}
-
-async updateCoordinator(id: string, dto: any, file?: Express.Multer.File) {
-  if (file) {
-    dto.photo = file.filename;
+    if (!coordinator) throw new NotFoundException('Coordinator non trouvé');
+    return coordinator;
   }
 
-  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' });
-  if (!coordinatorRole) throw new Error('Role "coordinator" introuvable dans la base');
+  async updateCoordinator(id: string, dto: any, file?: Express.Multer.File) {
+    if (file) {
+      dto.photo = file.filename;
+    }
 
-  return this.userModel
-    .findOneAndUpdate(
-      { _id: id, role: coordinatorRole._id },
-      { $set: dto },
-      { new: true },
-    )
-    .exec();
-}
+    const coordinatorRole = await this.roleModel.findOne({
+      name: 'coordinator',
+    });
+    if (!coordinatorRole)
+      throw new Error('Role "coordinator" introuvable dans la base');
 
-async archiveCoordinator(id: string) {
-  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' });
-  if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: coordinatorRole._id },
+        { $set: dto },
+        { new: true },
+      )
+      .exec();
+  }
 
-  return this.userModel
-    .findOneAndUpdate(
-      { _id: id, role: coordinatorRole._id },
-      { $set: { isArchived: true } },
-      { new: true },
-    )
-    .exec();
-}
+  async archiveCoordinator(id: string) {
+    const coordinatorRole = await this.roleModel.findOne({
+      name: 'coordinator',
+    });
+    if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
 
-async activateCoordinator(id: string) {
-  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' });
-  if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: coordinatorRole._id },
+        { $set: { isArchived: true } },
+        { new: true },
+      )
+      .exec();
+  }
 
-  return this.userModel
-    .findOneAndUpdate(
-      { _id: id, role: coordinatorRole._id },
-      { $set: { isActive: true } },
-      { new: true },
-    )
-    .exec();
-}
+  async activateCoordinator(id: string) {
+    const coordinatorRole = await this.roleModel.findOne({
+      name: 'coordinator',
+    });
+    if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
 
-async deactivateCoordinator(id: string) {
-  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' });
-  if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: coordinatorRole._id },
+        { $set: { isActive: true } },
+        { new: true },
+      )
+      .exec();
+  }
 
-  return this.userModel
-    .findOneAndUpdate(
-      { _id: id, role: coordinatorRole._id },
-      { $set: { isActive: false } },
-      { new: true },
-    )
-    .exec();
-}
+  async deactivateCoordinator(id: string) {
+    const coordinatorRole = await this.roleModel.findOne({
+      name: 'coordinator',
+    });
+    if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
 
-async coordinatorEmailExists(email: string): Promise<{ exists: boolean }> {
-  const coordinatorRole = await this.roleModel.findOne({ name: 'coordinator' });
-  if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
+    return this.userModel
+      .findOneAndUpdate(
+        { _id: id, role: coordinatorRole._id },
+        { $set: { isActive: false } },
+        { new: true },
+      )
+      .exec();
+  }
 
-  const user = await this.userModel.findOne({ email, role: coordinatorRole._id });
-  return { exists: !!user };
-}
+  async coordinatorEmailExists(email: string): Promise<{ exists: boolean }> {
+    const coordinatorRole = await this.roleModel.findOne({
+      name: 'coordinator',
+    });
+    if (!coordinatorRole) throw new Error('Role "coordinator" introuvable');
 
-async findByEmail(email: string) {
-  const user = await this.userModel.findOne({ email: email.trim() });
-  console.log('User found:', user);
-  return user;
-}
+    const user = await this.userModel.findOne({
+      email,
+      role: coordinatorRole._id,
+    });
+    return { exists: !!user };
+  }
 
-async findById(id: string) {
-  return this.userModel.findById(id);
-}
+  async findByEmail(email: string) {
+    const user = await this.userModel.findOne({ email: email.trim() });
+    console.log('User found:', user);
+    return user;
+  }
 
+  async findById(id: string) {
+    return this.userModel.findById(id);
+  }
 
+  async findByIdForAuth(id: string) {
+    return this.userModel
+      .findById(id)
+      .populate('role') // Ã°Å¸â€Â¥ Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â£Ã™â€¡Ã™â€¦ Ã˜Â³Ã˜Â·Ã˜Â±
+      .exec();
+  }
+
+  async getUsersCountByRole() {
+    return this.userModel.aggregate([
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'role',
+          foreignField: '_id',
+          as: 'roleData',
+        },
+      },
+      { $unwind: '$roleData' },
+      {
+        $group: {
+          _id: '$roleData.name',
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          role: '$_id',
+          count: 1,
+          _id: 0,
+        },
+      },
+    ]);
+  }
 }

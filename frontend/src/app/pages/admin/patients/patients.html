@@ -12,7 +12,8 @@
               Manage all patients in your system
             </p>
           </div>
-          <button mat-raised-button color="primary" (click)="addUser()">
+          <button mat-raised-button color="primary" (click)="addUser()"
+            *ngIf="core.hasPermission('patients:create')">
             <mat-icon>add</mat-icon>
             Add Patient
           </button>
@@ -119,13 +120,10 @@
                     [checked]="row.isActive"
                     (click)="$event.preventDefault(); toggleStatus(row)"
                     color="primary"
-                  >
-                  </mat-slide-toggle>
-                  <button
-                    mat-icon-button
-                    color="warn"
-                    (click)="deletePatient(row)"
-                  >
+                    *ngIf="core.hasPermission('patients:update')"
+                  ></mat-slide-toggle>
+                  <button mat-icon-button color="warn" (click)="deletePatient(row)"
+                    *ngIf="core.hasPermission('patients:delete')">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>

@@ -1,0 +1,241 @@
+<p>edit-auditor works!</p>
+<div class="row">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-24">
+        <!-- HEADER -->
+        <div
+          class="header d-flex justify-content-between align-items-center mb-4"
+        >
+          <div>
+            <h2 class="title mb-1">
+              <mat-icon class="me-2">edit</mat-icon>
+              Edit Auditor
+            </h2>
+            <p class="subtitle text-muted">Update auditor information</p>
+          </div>
+        </div>
+
+        <form [formGroup]="auditorForm" (ngSubmit)="onSubmit()">
+          <!-- PHOTO SECTION -->
+          <div class="form-section text-center mb-4">
+            <h3 class="section-title">
+              <mat-icon>photo_camera</mat-icon>
+              Profile Photo
+            </h3>
+            <div class="photo-wrapper d-flex justify-content-center">
+              <div class="avatar-circle-large">
+                <img
+                  *ngIf="photoPreview"
+                  [src]="photoPreview"
+                  [alt]="getFullName()"
+                  class="avatar-img"
+                  (error)="onImageError($event)"
+                />
+                <span *ngIf="!photoPreview" class="avatar-initials-large">
+                  {{ getInitials(auditorForm.value.firstName,
+                  auditorForm.value.lastName) }}
+                </span>
+              </div>
+              <input
+                type="file"
+                hidden
+                #fileInput
+                (change)="onFileSelected($event)"
+                accept="image/*"
+              />
+              <button
+                mat-mini-fab
+                color="primary"
+                class="edit-photo-btn"
+                (click)="fileInput.click()"
+                type="button"
+                matTooltip="Change photo"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- PERSONAL INFORMATION -->
+          <div class="form-section mb-4">
+            <h3 class="section-title">
+              <mat-icon>person</mat-icon>
+              Personal Information
+            </h3>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>First Name *</mat-label>
+                <input
+                  matInput
+                  formControlName="firstName"
+                  placeholder="Enter first name"
+                />
+                <mat-error
+                  *ngIf="auditorForm.get('firstName')?.hasError('required')"
+                >
+                  First name is required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Last Name *</mat-label>
+                <input
+                  matInput
+                  formControlName="lastName"
+                  placeholder="Enter last name"
+                />
+                <mat-error
+                  *ngIf="auditorForm.get('lastName')?.hasError('required')"
+                >
+                  Last name is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Email *</mat-label>
+                <input
+                  matInput
+                  formControlName="email"
+                  type="email"
+                  placeholder="Enter email"
+                  autocomplete="email"
+                />
+                <mat-error
+                  *ngIf="auditorForm.get('email')?.hasError('required')"
+                >
+                  Email is required
+                </mat-error>
+                <mat-error *ngIf="auditorForm.get('email')?.hasError('email')">
+                  Invalid email format
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Password</mat-label>
+                <input
+                  matInput
+                  [type]="hidePassword ? 'password' : 'text'"
+                  formControlName="password"
+                  placeholder="New password (optional)"
+                  autocomplete="new-password"
+                />
+                <button
+                  mat-icon-button
+                  matSuffix
+                  (click)="hidePassword = !hidePassword"
+                  type="button"
+                  [attr.aria-label]="'Toggle password visibility'"
+                >
+                  <mat-icon
+                    >{{hidePassword ? 'visibility_off' :
+                    'visibility'}}</mat-icon
+                  >
+                </button>
+                <mat-hint>Leave empty to keep current password</mat-hint>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Phone</mat-label>
+                <input
+                  matInput
+                  formControlName="phone"
+                  placeholder="Enter phone number"
+                />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>National ID</mat-label>
+                <input
+                  matInput
+                  formControlName="nationalId"
+                  placeholder="Enter national ID"
+                />
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="form-field full-width">
+              <mat-label>Address</mat-label>
+              <input
+                matInput
+                formControlName="address"
+                placeholder="Enter address"
+              />
+            </mat-form-field>
+          </div>
+
+          <!-- PROFESSIONAL INFO -->
+          <div class="form-section mb-4">
+            <h3 class="section-title">
+              <mat-icon>work</mat-icon>
+              Professional Information
+            </h3>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Gender</mat-label>
+                <mat-select formControlName="gender">
+                  <mat-option value="">Select gender</mat-option>
+                  <mat-option value="male">Male</mat-option>
+                  <mat-option value="female">Female</mat-option>
+                  <mat-option value="other">Other</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- ACCOUNT STATUS (Super Admin only) -->
+          <div class="form-section mb-4" *ngIf="data?.role !== 'auditor'">
+            <h3 class="section-title">
+              <mat-icon>settings</mat-icon>
+              Account Status
+            </h3>
+            <div class="d-flex align-items-center gap-3">
+              <mat-slide-toggle
+                formControlName="isActive"
+                color="primary"
+                [disabled]="data?._id === currentUserId"
+              >
+                Account Active
+              </mat-slide-toggle>
+              <span class="text-muted small">
+                {{ auditorForm.value.isActive ? '✅ Auditor can login' : '❌
+                Login disabled' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div
+            class="dialog-actions d-flex justify-content-end gap-2 pt-3 border-top"
+          >
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="onCancel()"
+              color="warn"
+            >
+              <mat-icon>close</mat-icon>
+              Cancel
+            </button>
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="auditorForm.invalid || loading"
+            >
+              <mat-icon *ngIf="!loading">save</mat-icon>
+              <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
+              {{ loading ? 'Updating...' : 'Update Auditor' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

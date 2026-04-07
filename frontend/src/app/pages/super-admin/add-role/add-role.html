@@ -1,0 +1,47 @@
+<h2 mat-dialog-title>{{ data ? 'Edit Role' : 'Add Role' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-container">
+    <!-- Role Name -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Role Name</mat-label>
+      <input matInput formControlName="name" />
+      <mat-error *ngIf="form.get('name')?.invalid">
+        Name is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Description -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description"></textarea>
+    </mat-form-field>
+
+    <!-- Permissions Multi Select with Search -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Permissions</mat-label>
+      <mat-select formControlName="permissions" multiple #selectSelect>
+        <ngx-mat-select-search
+          [formControl]="permissionsFilterControl"
+          placeholderLabel="Search permissions..."
+          noEntriesFoundLabel="No permissions found"
+        ></ngx-mat-select-search>
+        <mat-option *ngFor="let p of filteredPermissions | async" [value]="p">
+          {{ p }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Cancel</button>
+  <button
+    mat-flat-button
+    color="primary"
+    (click)="submit()"
+    [disabled]="form.invalid"
+  >
+    Save
+  </button>
+</mat-dialog-actions>

@@ -1,43 +1,84 @@
 // src/app/services/superadmin/auditor.service.ts
-
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
+// ✅ Interface Auditor avec isArchived et isActive comme REQUIRED
 export interface Auditor {
   _id: string;
   firstName: string;
   lastName: string;
   email: string;
+  password?: string;
+
+  // Champs personnels
+  address?: string;
+  nationalId?: string;
+  gender?: string;
+  phone?: string;
   photo?: string;
-  isArchived: boolean;
+
+  // ✅ System fields - REQUIRED (pas de '?')
+  isArchived: boolean;    // ✅ Toujours présent
+  isActive: boolean;      // ✅ Toujours présent
+
+  // Metadata
+  role?: any;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuditorService {
-  private apiUrl = 'http://localhost:3000/users/auditors';
+  private baseUrl = 'http://localhost:3000/users';
 
   constructor(private http: HttpClient) {}
 
   getAuditors(): Observable<Auditor[]> {
-    return this.http.get<Auditor[]>(this.apiUrl);
+    return this.http.get<Auditor[]>(`${this.baseUrl}/auditors`).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  createAuditor(auditor: Partial<Auditor>): Observable<Auditor> {
-    return this.http.post<Auditor>(this.apiUrl, auditor);
+  getAuditorById(id: string): Observable<Auditor> {
+    return this.http.get<Auditor>(`${this.baseUrl}/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  // ✅ ARCHIVE AUDITOR (Soft Delete)
+  createAuditor(formData: FormData): Observable<Auditor> {
+    return this.http.post<Auditor>(`${this.baseUrl}/auditors`, formData).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  updateAuditor(id: string, formData: FormData): Observable<Auditor> {
+    return this.http.put<Auditor>(`${this.baseUrl}/${id}`, formData).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   archiveAuditor(id: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${id}/archive`, {
-      isArchived: true,
-    });
+    return this.http.delete(`${this.baseUrl}/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  // ✅ ACTIVATE AUDITOR
   activateAuditor(id: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${id}/activate`, {
-      isArchived: false,
-    });
+    return this.http.put(`${this.baseUrl}/${id}/activate`, {}).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  deactivateAuditor(id: string): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}/deactivate`, {}).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('❌ AuditorService error:', error);
+    return throwError(() => new Error(error.error?.message || 'Server error'));
   }
 }

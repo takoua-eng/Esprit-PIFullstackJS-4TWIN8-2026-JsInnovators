@@ -1,0 +1,91 @@
+.cardWithShadow {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+.header {
+  .title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+  }
+  .subtitle {
+    font-size: 0.9rem;
+    margin: 0;
+  }
+}
+
+.toolbar {
+  .total {
+    font-size: 1rem;
+    color: #495057;
+    strong {
+      color: #4361ee;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+  }
+  .search-field {
+    width: 320px;
+  }
+}
+
+.table-container {
+  border-radius: 8px;
+  overflow: hidden;
+
+  .patient-name {
+    font-weight: 600;
+    color: #1a1a2e;
+    font-size: 0.95rem;
+  }
+
+  .phone-text {
+    color: #495057;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  table { width: 100%; }
+
+  th.mat-header-cell {
+    background: #f8f9fa;
+    font-weight: 700;
+    color: #495057;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  td.mat-cell {
+    padding: 16px;
+    border-bottom: 1px solid #f1f3f5;
+    vertical-align: middle;
+  }
+
+  tr.mat-row:hover { background: #f8f9fa; }
+}
+
+mat-paginator {
+  border-top: 1px solid #dee2e6;
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    .search-field { width: 100%; }
+  }
+}

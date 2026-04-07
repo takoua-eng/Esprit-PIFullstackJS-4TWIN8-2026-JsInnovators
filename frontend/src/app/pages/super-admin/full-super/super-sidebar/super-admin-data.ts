@@ -7,60 +7,51 @@ export const superAdminNavItems: NavItem[] = [
     iconName: 'gauge',
     route: '/super-admin/dashboard',
     bgcolor: 'primary',
+    permission: 'dashboard:read',
   },
   {
     displayName: 'MANAGE_USERS',
     iconName: 'users',
     route: '/super-admin/users',
     bgcolor: 'secondary',
-    children: [
-      {
-        displayName: 'ADMINS',
-        iconName: 'shield-lock',
-        route: '/super-admin/admin-users',
-      },
-      {
-        displayName: 'PATIENTS',
-        iconName: 'notes',
-        route: '/super-admin/patients',
-      },
-      {
-        displayName: 'MEDECINS',
-        iconName: 'stethoscope',
-        route: '/super-admin/medecins',
-      },
-      {
-        displayName: 'NURSES',
-        iconName: 'nurse',
-        route: '/super-admin/nurses',
-      },
-      {
-        displayName: 'COORDINATORS',
-        iconName: 'users-group',
-        route: '/super-admin/coordinateurs',
-      },
-      {
-        displayName: 'AUDITORS',
-        iconName: 'check',
-        route: '/super-admin/auditors',
-      },
-      {
-        displayName: 'PROFILE',
-        iconName: 'user',
-        route: '/super-admin/profile',
-      },
-    ],
+    permission: 'users:read',
   },
   {
-    displayName: 'REPORTS',
-    iconName: 'report-analytics',
-    route: '/super-admin/reports',
+    displayName: 'SERVICES',
+    iconName: 'building-hospital',
+    route: '/super-admin/services',
+    bgcolor: 'info',
+    permission: 'services:read',
+  },
+  {
+    displayName: 'ROLES',
+    iconName: 'shield-check',
+    route: '/super-admin/role',
     bgcolor: 'warning',
+    permission: 'users:manage',
   },
   {
-    displayName: 'SETTINGS',
-    iconName: 'settings',
-    route: '/super-admin/settings',
-    bgcolor: 'success',
+    displayName: 'AUDIT_LOGS',
+    iconName: 'camera',
+    route: '/super-admin/audit-logs',
+    bgcolor: 'error',
+    permission: 'audit:read',
+  },
+];
+
+export const auditorNavItems: NavItem[] = [
+  { navCap: 'AUDITOR_MENU' },
+  {
+    displayName: 'AUDIT_LOGS',
+    iconName: 'camera',
+    route: '/super-admin/audit-logs',
+    bgcolor: 'primary',
+    permission: 'audit:read',
+  },
+  {
+    displayName: 'PROFILE',
+    iconName: 'user',
+    route: '/super-admin/profile',
+    bgcolor: 'secondary',
   },
 ];

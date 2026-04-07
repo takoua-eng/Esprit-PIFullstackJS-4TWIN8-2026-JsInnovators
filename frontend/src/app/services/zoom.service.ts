@@ -15,7 +15,6 @@ export class ZoomService {
 
   // Signal for reactive updates
   zoomLevel = signal<number>(this.getStoredZoomLevel());
-
   // Zoom levels available
   readonly ZOOM_LEVELS = [100, 125, 150, 175, 200];
 

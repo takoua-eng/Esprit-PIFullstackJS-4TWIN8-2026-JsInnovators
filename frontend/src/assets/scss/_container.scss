@@ -9,28 +9,28 @@
 body {
   font-family: $font-family;
   line-height: 1.334rem;
-  overflow-x: hidden;
+  overflow-x: auto;              /* Changed from hidden for WCAG accessibility */
   color: var(--mat-sys-on-background);
 }
 
 .mainWrapper {
   display: flex;
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh - 4.5rem);  /* 72px ÷ 16 - WCAG Accessible */
   width: 100%;
   flex: 1;
-  margin-top: 72px;
+  margin-top: 4.5rem;               /* 72px ÷ 16 */
 }
 
 @media (max-width: 991px) {
   .mainWrapper {
-    margin-top: 154px;
+    margin-top: 9.625rem;           /* 154px ÷ 16 */
   }
 }
 
 .container {
-  max-width: 1200px;
-  padding-left: 24px;
-  padding-right: 24px;
+  max-width: 75rem;               /* 1200px ÷ 16 - Uses $boxedWidth */
+  padding-left: 1.5rem;           /* 24px ÷ 16 - WCAG Accessible */
+  padding-right: 1.5rem;          /* 24px ÷ 16 */
   margin: 0 auto;
 
   &.full-width {
@@ -41,8 +41,8 @@ body {
 }
 
 .pageWrapper {
-  padding: 24px;
-  min-height: calc(100vh - 70px);
+  padding: 1.5rem;                /* 24px ÷ 16 - WCAG Accessible */
+  min-height: calc(100vh - 4.375rem);  /* 70px ÷ 16 */
 
   margin: 0 auto;
 
@@ -72,11 +72,13 @@ body {
 }
 
 .rounded-pill {
-  border-radius: 25px !important;
+  border-radius: 1.5625rem !important;  /* 25px ÷ 16 */
 }
 
 .overflow-hidden {
-  overflow: hidden;
+  /* WCAG 2.1 Accessible Fix: Use overflow-wrap instead of hidden */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .text-decoration-none {
@@ -93,7 +95,7 @@ body {
   td,
   mat-cell {
     white-space: nowrap;
-    padding: 16px;
+    padding: 1rem;                /* 16px ÷ 16 - WCAG Accessible */
   }
 }
 
@@ -119,7 +121,7 @@ pre {
 }
 
 td.hljs-ln-line.hljs-ln-numbers {
-  padding-right: 10px;
+  padding-right: 0.625rem;        /* 10px ÷ 16 - WCAG Accessible */
 }
 
 @media (min-width: 768px) {

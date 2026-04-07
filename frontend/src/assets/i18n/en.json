@@ -470,6 +470,7 @@
   "NURSE_RECORDS_HINT_PAIN": "0ÔÇô10, integer if filled",
   "NURSE_RECORDS_HINT_DESCRIPTION": "Max. 1000 characters",
   "RETRY": "Retry",
+<<<<<<< HEAD
   "EDIT_REMINDER": "Edit Reminder",
   "SAVE_CHANGES": "Save Changes",
   "SEARCH_PATIENT": "Search by patient",
@@ -502,4 +503,10 @@
   "SUBMIT_SUCCESS": "Questionnaire submitted successfully!",
   "ENTER_VALUE": "Enter a value",
   "TYPE_ANSWER": "Type your answer..."
+=======
+  "AUDIT_LOGS": "Audit Logs",
+  "AUDITOR_MENU": "Auditor",
+  "AUDITOR_DASHBOARD": "Dashboard",
+  "AUDITOR_VERIFY": "Verify Logs"
+>>>>>>> superadmin
 }

@@ -1,24 +1,86 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
-export interface AdminUser {
-  name: string;
+// ✅ Interface Admin avec tous les champs nécessaires
+export interface Admin {
+  _id: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  role: string;
-  service: string;
-  status: 'Active' | 'Inactive';
+  password?: string;
+
+  // Champs personnels
+  address?: string;
+  nationalId?: string;
+  gender?: string;
+  phone?: string;
+  photo?: string;
+
+  // 🏥 Service
+  serviceId?: string | any;
+
+  // ✅ System fields - REQUIRED (pas de '?')
+  isArchived: boolean; // ✅ Toujours présent
+  isActive: boolean; // ✅ Toujours présent
+
+  // Metadata
+  role?: any;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AdminService {
-  private apiUrl = 'http://localhost:3000/admin/users'; // adapte selon ton backend
+  private baseUrl = 'http://localhost:3000/users';
 
   constructor(private http: HttpClient) {}
 
-  getAdmins(): Observable<AdminUser[]> {
-    return this.http.get<AdminUser[]>(this.apiUrl);
+  getAdmins(): Observable<Admin[]> {
+    return this.http
+      .get<Admin[]>(`${this.baseUrl}/admins`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getAdminById(id: string): Observable<Admin> {
+    return this.http
+      .get<Admin>(`${this.baseUrl}/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  createAdmin(formData: FormData): Observable<Admin> {
+    return this.http
+      .post<Admin>(`${this.baseUrl}/admins`, formData)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateAdmin(id: string, formData: FormData): Observable<Admin> {
+    return this.http
+      .put<Admin>(`${this.baseUrl}/${id}`, formData)
+      .pipe(catchError(this.handleError));
+  }
+
+  archiveAdmin(id: string): Observable<any> {
+    return this.http
+      .delete(`${this.baseUrl}/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  activateAdmin(id: string): Observable<any> {
+    return this.http
+      .put(`${this.baseUrl}/${id}/activate`, {})
+      .pipe(catchError(this.handleError));
+  }
+
+  deactivateAdmin(id: string): Observable<any> {
+    return this.http
+      .put(`${this.baseUrl}/${id}/deactivate`, {})
+      .pipe(catchError(this.handleError));
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('❌ AdminService error:', error);
+    return throwError(() => new Error(error.error?.message || 'Server error'));
   }
 }

@@ -6,10 +6,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../users/users.schema';
 import { Role, RoleSchema } from '../roles/role.schema';
 import { JwtStrategy } from './jwt.strategy';
+import { PermissionsGuard } from './guards/permissions.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UsersModule } from '../users/users.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
   imports: [
+    UsersModule,
+    AuditModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Role.name, schema: RoleSchema },
@@ -21,7 +26,12 @@ import { UsersModule } from '../users/users.module';
     UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  providers: [
+    AuthService,
+    JwtStrategy, // ✅ NestJS injectera automatiquement ConfigService + UsersService
+    JwtAuthGuard,
+    PermissionsGuard,
+  ],
+  exports: [AuthService, JwtAuthGuard, PermissionsGuard],
 })
 export class AuthModule {}

@@ -1,167 +1,130 @@
-.admin-dashboard-container {
-  padding: 24px;
+.sa-dashboard { padding: 16px; }
 
-  .welcome-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    margin-bottom: 24px;
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
-
-    mat-card-header {
-      margin-bottom: 16px;
-    }
-
-    .dashboard-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 28px;
-      font-weight: 600;
-      margin: 0;
-
-      .title-icon {
-        font-size: 36px;
-        width: 36px;
-        height: 36px;
-      }
-    }
-
-    .welcome-content {
-      padding-top: 0 !important;
-
-      .welcome-text {
-        font-size: 18px;
-        font-weight: 500;
-        margin: 0 0 8px 0;
-      }
-
-      .subtitle {
-        font-size: 14px;
-        opacity: 0.9;
-        margin: 0;
-      }
-    }
+// Banner
+.sa-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff; border-radius: 14px; padding: 20px 28px; margin-bottom: 24px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.3);
+  .sa-banner-left { display: flex; align-items: center; gap: 14px;
+    .banner-ico { font-size: 2rem; width: 2rem; height: 2rem; opacity: .9; }
+    h2 { margin: 0; font-size: 1.3rem; font-weight: 700; }
+    p  { margin: 3px 0 0; font-size: .8rem; opacity: .7; }
   }
+  .sa-banner-right { display: flex; align-items: center; gap: 10px; font-size: .8rem;
+    .live-dot { width: 9px; height: 9px; border-radius: 50%; background: #ff4444; animation: blink 1s infinite; }
+    .live-lbl { font-weight: 700; color: #ff4444; letter-spacing: 2px; }
+    .refresh-lbl { opacity: .65; }
+  }
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 
-  .admin-card {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    height: 160px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 2px solid transparent;
+// KPI Cards
+.kpi {
+  border-radius: 14px !important; color: #fff !important;
+  mat-card-content { padding: 16px !important; }
+  .kpi-ico { font-size: 1.5rem; width: 1.5rem; height: 1.5rem; margin-bottom: 6px; opacity: .9; }
+  .kpi-val { font-size: 1.7rem; font-weight: 700; line-height: 1; }
+  .kpi-sub { font-size: .7rem; background: rgba(255,255,255,.25); border-radius: 10px; padding: 1px 6px; display: inline-block; margin: 3px 0; }
+  .kpi-lbl { font-size: .72rem; opacity: .85; margin-top: 3px; }
+  &.kpi-purple { background: linear-gradient(135deg,#6c5ce7,#a29bfe); }
+  &.kpi-blue   { background: linear-gradient(135deg,#0984e3,#74b9ff); }
+  &.kpi-teal   { background: linear-gradient(135deg,#00cec9,#81ecec); }
+  &.kpi-green  { background: linear-gradient(135deg,#00b894,#55efc4); }
+  &.kpi-red    { background: linear-gradient(135deg,#d63031,#ff7675); }
+  &.kpi-orange { background: linear-gradient(135deg,#e17055,#fab1a0); }
+  &.kpi-indigo { background: linear-gradient(135deg,#2d3436,#636e72); }
+  &.kpi-cyan   { background: linear-gradient(135deg,#0984e3,#00cec9); }
+}
 
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-    }
-
-    .card-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
-      margin: 0 auto 12px;
-      color: white;
-
-      mat-icon {
-        font-size: 32px;
-        width: 32px;
-        height: 32px;
-      }
-    }
-
-    mat-card-content {
-      text-align: center;
-      padding: 0 !important;
-
-      h3 {
-        margin: 0 0 8px 0;
-        font-size: 18px;
-        font-weight: 600;
-      }
-
-      p {
-        margin: 0;
-        font-size: 13px;
-        opacity: 0.7;
-      }
-    }
-
-    &.patients-card {
-      .card-icon {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      }
-
-      h3 {
-        color: #667eea;
-      }
-    }
-
-    &.physicians-card {
-      .card-icon {
-        background: linear-gradient(135deg, #4bacf5 0%, #3f74cc 100%);
-      }
-
-      h3 {
-        color: #4bacf5;
-      }
-    }
-
-    &.nurses-card {
-      .card-icon {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      }
-
-      h3 {
-        color: #f5576c;
-      }
-    }
-
-    &.coordinators-card {
-      .card-icon {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      }
-
-      h3 {
-        color: #10b981;
-      }
-    }
-
-    &.auditors-card {
-      .card-icon {
-        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-      }
-
-      h3 {
-        color: #06b6d4;
-      }
-    }
+// Section header
+.sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.sec-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .95rem; font-weight: 600; color: #2d3436;
+  .sec-ico { font-size: 1.1rem; width: 1.1rem; height: 1.1rem;
+    &.red    { color: #d63031; }
+    &.purple { color: #6c5ce7; }
+    &.orange { color: #e17055; }
+    &.indigo { color: #636e72; }
   }
 }
 
-// Responsive adjustments
-@media (max-width: 768px) {
-  .admin-dashboard-container {
-    padding: 16px;
-
-    .admin-card {
-      margin-bottom: 12px;
-    }
-
-    .welcome-card .dashboard-title {
-      font-size: 22px;
-
-      .title-icon {
-        font-size: 28px;
-        width: 28px;
-        height: 28px;
-      }
-    }
+// Alert list
+.alert-list { display: flex; flex-direction: column; gap: 8px; }
+.alert-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 8px; background: #fafafa; cursor: pointer;
+  &:hover { background: #f0f0f0; }
+  .alert-sev-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .alert-body { flex: 1; min-width: 0;
+    .alert-msg  { font-size: .82rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .alert-meta { font-size: .72rem; color: #888; margin-top: 2px; }
   }
+  .sev-badge { font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; white-space: nowrap; }
+}
+
+// Service list
+.service-list { display: flex; flex-direction: column; gap: 8px; }
+.service-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 8px; background: #fafafa;
+  .service-icon { width: 32px; height: 32px; border-radius: 8px; background: #e3f2fd; display: flex; align-items: center; justify-content: center; color: #0984e3; flex-shrink: 0; }
+  .service-body { flex: 1;
+    .service-name { font-size: .85rem; font-weight: 600; }
+    .service-code { font-size: .72rem; color: #888; }
+  }
+  .service-badge { font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+    &.active   { background: #e8f5e9; color: #2e7d32; }
+    &.inactive { background: #ffebee; color: #c62828; }
+  }
+}
+
+// Role list
+.role-list { display: flex; flex-direction: column; gap: 10px; }
+.role-row {
+  display: flex; align-items: center; gap: 10px;
+  .role-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .role-name { width: 90px; font-size: .82rem; font-weight: 500; text-transform: capitalize; }
+  .role-bar-wrap { flex: 1; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden;
+    .role-bar { height: 100%; border-radius: 3px; transition: width .4s; }
+  }
+  .role-count { width: 28px; text-align: right; font-size: .82rem; font-weight: 700; }
+}
+
+// AI Insights
+.insight-list { display: flex; flex-direction: column; gap: 10px; }
+.insight-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; border-radius: 8px; background: #fafafa;
+  border-left: 3px solid transparent;
+  .insight-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .insight-text { font-size: .82rem; color: #444; margin: 0; line-height: 1.4; }
+}
+
+// Quick actions
+.quick-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.qa-btn { display: flex; align-items: center; gap: 4px; font-size: .78rem !important; padding: 4px 10px !important; }
+
+// Audit log list
+.log-list { display: flex; flex-direction: column; gap: 6px; }
+.log-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 10px; border-radius: 8px; background: #fafafa;
+  &:hover { background: #f0f0f0; }
+  .log-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .log-action { font-size: .72rem; font-weight: 700; text-transform: uppercase; width: 55px; }
+  .log-action-badge {
+    font-size: .68rem; font-weight: 700; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 8px; white-space: nowrap; flex-shrink: 0;
+  }
+  .log-entity { font-size: .72rem; font-family: monospace; background: #eee; border-radius: 4px; padding: 1px 6px; }
+  .log-user   { flex: 1; font-size: .75rem; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log-time   { font-size: .7rem; color: #888; white-space: nowrap; }
+  .log-ip     { font-size: .68rem; color: #aaa; white-space: nowrap; }
+}
+
+// Empty states
+.empty-sec { text-align: center; padding: 24px 0; color: #ccc;
+  p { margin-top: 6px; font-size: .85rem; }
 }

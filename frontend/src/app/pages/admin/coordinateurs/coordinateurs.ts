@@ -92,7 +92,7 @@ export class CoordinateursComponent implements OnInit, AfterViewInit {
             isActive: c.isActive ?? true,
             isArchived: c.isArchived ?? false,
           }));
-          
+
         this.dataSource.sort = this.sort;
         this.dataSource.paginator = this.paginator;
       },

@@ -6,6 +6,8 @@ import {
   RequestMethod,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AuditInterceptor } from './modules/audit/audit.interceptor';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import {
@@ -18,6 +20,8 @@ import {
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { NotificationsModule } from './modules/notifications-super-admin/notifications.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { AlertsModule } from './modules/alerts/alerts.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
@@ -119,6 +123,8 @@ const DEFAULT_MONGODB_URI =
     UsersModule,
     RolesModule,
     AuthModule,
+    AuditModule,
+    NotificationsModule,
     UploadModule,
     AlertsModule,
     RemindersModule,
@@ -137,7 +143,14 @@ const DEFAULT_MONGODB_URI =
     QuestionnairesModule,
     AdminModule,
   ],
-  providers: [JwtStrategy, AppService],
+  providers: [
+    JwtStrategy,
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditInterceptor,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

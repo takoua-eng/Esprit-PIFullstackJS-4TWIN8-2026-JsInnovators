@@ -9,7 +9,10 @@ Le **Zoom Control Button** est intégré dans le header de l'application et perm
 ## 📍 Localisation
 
 **Header Position**: Dans la barre supérieure (topbar), entre le bouton d'alerte et le menu de profil
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - Icon: 🔍 (Zoom In)
 - Label: Percentage (100%, 125%, 150%, 175%, 200%)
 
@@ -24,15 +27,24 @@ Le **Zoom Control Button** est intégré dans le header de l'application et perm
 ## ✨ Fonctionnalités
 
 ### Niveaux de Zoom Disponibles
+<<<<<<< HEAD
 
 - **100%** - Taille normale (default)
 - **125%** - +25% agrandissement
 - **150%** - +50% agrandissement
+=======
+- **100%** - Taille normale (default)
+- **125%** - +25% agrandissement
+- **150%** - +50% agrandissement  
+>>>>>>> superadmin
 - **175%** - +75% agrandissement
 - **200%** - +100% agrandissement (WCAG 2.1 test limit)
 
 ### Contrôles
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 1. **Menu Zoom**: Cliquer sur le bouton zoom pour ouvrir le menu
 2. **Sélection Rapide**: Cliquer sur un niveau (100%, 125%, etc.)
 3. **Boutons d'Action**:
@@ -41,7 +53,10 @@ Le **Zoom Control Button** est intégré dans le header de l'application et perm
    - **Out** - Zoom -25% (jusqu'à 100%)
 
 ### Persistance
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - Le niveau de zoom est **automatiquement sauvegardé** dans localStorage
 - Le zoom est **restauré automatiquement** au prochain chargement
 
@@ -52,7 +67,10 @@ Le **Zoom Control Button** est intégré dans le header de l'application et perm
 ### **Pour les Développeurs**
 
 #### 1. Tester l'Accessibilité
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```
 1. Ouvrir l'application
 2. Cliquer sur le zoom button (🔍)
@@ -65,7 +83,10 @@ Le **Zoom Control Button** est intégré dans le header de l'application et perm
 ```
 
 #### 2. Utiliser le ZoomService
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```typescript
 import { ZoomService } from 'src/app/services/zoom.service';
 
@@ -93,7 +114,10 @@ const ratio = this.zoomService.getZoomRatio(); // 1.5 for 150%
 ```
 
 #### 3. Écouter les Changements
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```typescript
 // Dans n'importe quel composant
 ngOnInit() {
@@ -109,7 +133,10 @@ ngOnInit() {
 ## 📊 Architecture
 
 ### ZoomService (`app/services/zoom.service.ts`)
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```
 ├─ Gère l'état du zoom (Signal Angular)
 ├─ Persiste dans localStorage
@@ -118,7 +145,10 @@ ngOnInit() {
 ```
 
 ### ZoomControlComponent (`layouts/full/header/zoom-control.component.ts`)
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```
 ├─ UI du bouton zoom
 ├─ Menu de sélection des niveaux
@@ -127,7 +157,10 @@ ngOnInit() {
 ```
 
 ### Intégration au Header
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```
 HeaderComponent
 └─ Imports ZoomControlComponent
@@ -139,7 +172,10 @@ HeaderComponent
 ## 🎯 Checklist WCAG 2.1
 
 ### Avant de merger un composant
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - [ ] Tester à 100% zoom - Normal
 - [ ] Tester à 125% zoom - Pas de débordement
 - [ ] Tester à 150% zoom - Texte lisible
@@ -155,7 +191,10 @@ HeaderComponent
 ## 🐛 Dépannage
 
 ### "Le zoom ne fonctionne pas"
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```
 1. Vérifier que ZoomService est injecté correctement
 2. Vérifier que le composant ZoomControl est importé dans Header
@@ -164,7 +203,10 @@ HeaderComponent
 ```
 
 ### "Le zoom ne persiste pas entre les rechargements"
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```
 1. Vérifier que localStorage est activé
 2. Vérifier les permissions du navigateur
@@ -172,7 +214,10 @@ HeaderComponent
 ```
 
 ### "Les éléments se superposent au zoom 200%"
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```
 1. Vérifier qu'il n'y a pas de fixed positioning non-scalable
 2. Vérifier que les z-index ne sont pas trop agressifs
@@ -184,7 +229,10 @@ HeaderComponent
 ## 📱 Responsive Design
 
 Le zoom button:
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - ✅ **Desktop**: Visible dans le header topbar
 - ✅ **Tablet**: Visible, peut être condensé
 - ✅ **Mobile**: Peut être caché si pas de place (utiliser toggle si nécessaire)
@@ -194,7 +242,10 @@ Le zoom button:
 ## 🧪 Test WCAG AAA
 
 Pour une conformité **WCAG AAA** supplémentaire:
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 1. Utiliser le zoom à 200% (WCAG 2.1 AA minimum)
 2. Tester avec des lecteurs d'écran
 3. Tester avec clavier uniquement (Tab, Enter, Arrows)
@@ -213,21 +264,30 @@ Pour une conformité **WCAG AAA** supplémentaire:
 ## 🎓 Cas d'Usage Recommandés
 
 ### 1. **Test Rapide d'Accessibilité**
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```
 Avant de déployer → Tester à 200% zoom
 → Vérifier absence d'éléments cachés
 ```
 
 ### 2. **Validation de Composant**
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```
 Créer composant → Zoom à 150-200%
 → Vérifier lisibilité → Merger
 ```
 
 ### 3. **Debug d'Overflow**
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```
 Problème d'affichage → Zoom à 200%
 → Identifier overflow: hidden
@@ -244,9 +304,15 @@ Problème d'affichage → Zoom à 200%
 
 ```typescript
 // Accès direct (rare)
+<<<<<<< HEAD
 const savedZoom = localStorage.getItem("app-zoom-level");
 localStorage.setItem("app-zoom-level", "150");
 localStorage.removeItem("app-zoom-level"); // Reset
+=======
+const savedZoom = localStorage.getItem('app-zoom-level');
+localStorage.setItem('app-zoom-level', '150');
+localStorage.removeItem('app-zoom-level'); // Reset
+>>>>>>> superadmin
 ```
 
 ---
@@ -254,7 +320,10 @@ localStorage.removeItem("app-zoom-level"); // Reset
 ## ✅ Vérification Finale
 
 Après implémentation, vérifier:
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - [x] Zoom button visible dans le header
 - [x] Tous les 5 niveaux (100-200%) fonctionnent
 - [x] Boutons Reset, In, Out fonctionnent
@@ -267,3 +336,7 @@ Après implémentation, vérifier:
 **Créé**: Avril 5, 2026  
 **Norme**: WCAG 2.1 Level AA ✅  
 **Status**: ✅ Implémenté et Testé
+<<<<<<< HEAD
+=======
+
+>>>>>>> superadmin

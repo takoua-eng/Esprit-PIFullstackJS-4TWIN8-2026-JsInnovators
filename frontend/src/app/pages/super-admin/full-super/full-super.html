@@ -11,7 +11,7 @@
     [mode]="isOver ? 'over' : 'side'"
     [opened]="!isOver"
     (openedChange)="onSidenavOpenedChange($event)"
-    class="sidebarNav"
+    class="sidebarNav light-theme"
   >
     <div class="flex-layout">
       <!-- ✅ استخدم app-super-sidebar بدلاً من app-sidebar -->
@@ -22,12 +22,12 @@
     </div>
   </mat-sidenav>
 
-  <mat-sidenav-content class="contentWrapper" #content>
+  <mat-sidenav-content class="contentWrapper light-theme" #content>
     <main class="pageWrapper maxWidth">
-      <app-header
+      <app-super-header
         [showToggle]="!isOver"
         (toggleMobileNav)="sidenav.toggle()"
-      ></app-header>
+      ></app-super-header>
       <div class="m-t-30">
         <router-outlet></router-outlet>
       </div>

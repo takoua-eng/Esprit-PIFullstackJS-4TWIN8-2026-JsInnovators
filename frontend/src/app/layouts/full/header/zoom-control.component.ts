@@ -79,7 +79,6 @@ import { TranslateModule } from '@ngx-translate/core';
           <mat-icon>remove_circle</mat-icon>
           <span>Réduire</span>
         </button>
-
         <button
           (click)="zoom.resetZoom()"
           class="action-simple reset-simple"
@@ -88,7 +87,6 @@ import { TranslateModule } from '@ngx-translate/core';
           <mat-icon>restart_alt</mat-icon>
           <span>Normal</span>
         </button>
-
         <button
           (click)="zoom.zoomIn()"
           [disabled]="!zoom.canZoomIn()"

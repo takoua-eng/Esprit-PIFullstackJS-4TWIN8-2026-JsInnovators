@@ -7,7 +7,10 @@
 ## 📁 Fichiers Créés
 
 ### 1. **Zoom Service** (`app/services/zoom.service.ts`)
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - ✅ Gère l'état du zoom avec Angular Signals
 - ✅ Persiste dans localStorage
 - ✅ Applique le CSS zoom globalement
@@ -15,6 +18,7 @@
 - ✅ 23 méthodes públiques & utilitaires
 
 **Fonctionnalités**:
+<<<<<<< HEAD
 
 ```typescript
 setZoom(level); // Définir un niveau spécifique
@@ -28,6 +32,19 @@ canZoomIn() / canZoomOut(); // Vérifier les limites
 
 ### 2. **Zoom Control Component** (`layouts/full/header/zoom-control.component.ts`)
 
+=======
+```typescript
+setZoom(level)          // Définir un niveau spécifique
+zoomIn() / zoomOut()    // +25% / -25%
+resetZoom()             // Retour à 100%
+getCurrentZoom()        // Obtenir le zoom actuel
+getCurrentZoomPercentage()  // "150%"
+getZoomRatio()          // 1.5 pour 150%
+canZoomIn() / canZoomOut()  // Vérifier les limites
+```
+
+### 2. **Zoom Control Component** (`layouts/full/header/zoom-control.component.ts`)
+>>>>>>> superadmin
 - ✅ Bouton zoom dans le header
 - ✅ Menu déroulant avec 5 niveaux (100%, 125%, 150%, 175%, 200%)
 - ✅ Boutons d'action: Reset, In, Out
@@ -36,7 +53,10 @@ canZoomIn() / canZoomOut(); // Vérifier les limites
 - ✅ Accessibilité native (aria-labels, matTooltip)
 
 ### 3. **Tests Unitaires** (`services/zoom.service.spec.ts`)
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - ✅ 45+ cas de test
 - ✅ Tests WCAG 2.1 compliance
 - ✅ Tests reactivity signals
@@ -44,7 +64,10 @@ canZoomIn() / canZoomOut(); // Vérifier les limites
 - ✅ Tests edge cases
 
 ### 4. **Documentation** (`ZOOM_BUTTON_GUIDE.md`)
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - ✅ Guide d'utilisation complet
 - ✅ Integration guide pour les devs
 - ✅ Checklist WCAG 2.1
@@ -56,9 +79,13 @@ canZoomIn() / canZoomOut(); // Vérifier les limites
 ## 🔧 Fichiers Modifiés
 
 ### 1. **Header Component** (`layouts/full/header/header.component.ts`)
+<<<<<<< HEAD
 
 **Changements**:
 
+=======
+**Changements**:
+>>>>>>> superadmin
 ```typescript
 // ✅ Import ZoomService et ZoomControlComponent
 import { ZoomService } from 'src/app/services/zoom.service';
@@ -78,9 +105,13 @@ constructor(
 ```
 
 ### 2. **Header Template** (`layouts/full/header/header.component.html`)
+<<<<<<< HEAD
 
 **Changements**:
 
+=======
+**Changements**:
+>>>>>>> superadmin
 ```html
 <!-- 🔍 Zoom Control - WCAG 2.1 Accessibility Testing -->
 <app-zoom-control></app-zoom-control>
@@ -90,9 +121,13 @@ constructor(
 ```
 
 ### 3. **Header Styles** (`layouts/full/header/header.component.scss`)
+<<<<<<< HEAD
 
 **Changements**:
 
+=======
+**Changements**:
+>>>>>>> superadmin
 ```scss
 // ✅ Styles pour le zoom button et menu
 .zoom-button { ... }
@@ -131,14 +166,20 @@ Application Root
 ## 🎯 Utilisation
 
 ### Pour les Utilisateurs
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 1. **Cliquer sur le bouton zoom** 🔍 dans le header
 2. **Sélectionner le niveau** (100%-200%)
 3. **Tester l'accessibilité** - Vérifier la lisibilité
 4. **Le zoom persiste** automatiquement
 
 ### Pour les Développeurs
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```typescript
 // Dans n'importe quel composant
 import { ZoomService } from 'src/app/services/zoom.service';
@@ -150,7 +191,11 @@ ngOnInit() {
   const currentLevel = this.zoom.getCurrentZoom();    // 100, 125, etc.
   this.zoom.setZoom(150);                             // Définir zoom
   this.zoom.zoomIn();                                 // +25%
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> superadmin
   // Réagir aux changements
   window.addEventListener('zoom-changed', (e) => {
     console.log('Zoom:', e.detail.level, '%');
@@ -178,13 +223,19 @@ ngOnInit() {
 ## 🧪 Tests Unitaires
 
 **Commande pour exécuter les tests**:
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```bash
 ng test --include='**/zoom.service.spec.ts'
 ```
 
 **Coverage**: 100%
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - Initialization ✅
 - Zoom Levels ✅
 - Zoom Controls (In/Out/Reset) ✅
@@ -201,25 +252,39 @@ ng test --include='**/zoom.service.spec.ts'
 
 ## 📱 Responsive Design
 
+<<<<<<< HEAD
 | Device           | Status | Notes                               |
 | ---------------- | ------ | ----------------------------------- |
 | Desktop (1920px) | ✅     | Visible, full menu                  |
 | Tablet (768px)   | ✅     | Visible, peut être condensé         |
 | Mobile (360px)   | ✅     | Visible si de la place, sinon caché |
+=======
+| Device | Status | Notes |
+|--------|--------|-------|
+| Desktop (1920px) | ✅ | Visible, full menu |
+| Tablet (768px) | ✅ | Visible, peut être condensé |
+| Mobile (360px) | ✅ | Visible si de la place, sinon caché |
+>>>>>>> superadmin
 
 ---
 
 ## 🎨 Styling
 
 ### Material Design
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - Utilise Material Buttons & Icons
 - Thème compatible avec Material Theme
 - High contrast mode compatible
 - Dark/Light theme support
 
 ### Styles Personnalisés
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 ```scss
 .zoom-button          // Button dans le header
 .zoom-menu            // Menu déroulant
@@ -233,14 +298,20 @@ ng test --include='**/zoom.service.spec.ts'
 ## 🔒 Sécurité & Performance
 
 ### Sécurité
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - ✅ localStorage avec try-catch pour les erreurs
 - ✅ Pas d'injection de code
 - ✅ Validation des inputs (min/max clamping)
 - ✅ Pas de données sensibles en localStorage
 
 ### Performance
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - ✅ Utilise Angular Signals (pas de change detection)
 - ✅ CSS zoom (natif, très efficace)
 - ✅ Pas de DOM mutations
@@ -250,6 +321,7 @@ ng test --include='**/zoom.service.spec.ts'
 
 ## 🌍 Navigateurs Supportés
 
+<<<<<<< HEAD
 | Browser | Support | Notes              |
 | ------- | ------- | ------------------ |
 | Chrome  | ✅      | Zoom natif parfait |
@@ -257,32 +329,57 @@ ng test --include='**/zoom.service.spec.ts'
 | Safari  | ✅      | Zoom natif parfait |
 | Edge    | ✅      | Zoom natif parfait |
 | IE11    | ⚠️      | CSS zoom supporté  |
+=======
+| Browser | Support | Notes |
+|---------|---------|-------|
+| Chrome | ✅ | Zoom natif parfait |
+| Firefox | ✅ | Zoom natif parfait |
+| Safari | ✅ | Zoom natif parfait |
+| Edge | ✅ | Zoom natif parfait |
+| IE11 | ⚠️ | CSS zoom supporté |
+>>>>>>> superadmin
 
 ---
 
 ## 📌 Points Importants
 
 ### 1. **Niveau de Zoom par Défaut: 100%**
+<<<<<<< HEAD
 
 Ne force jamais le zoom - respecte les préférences utilisateur
 
 ### 2. **localStorage Persistance**
 
+=======
+Ne force jamais le zoom - respecte les préférences utilisateur
+
+### 2. **localStorage Persistance**
+>>>>>>> superadmin
 Clé: `app-zoom-level`  
 Les préférences restent d'une session à l'autre
 
 ### 3. **CSS zoom (pas transform)**
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 - Plus efficace que `transform: scale()`
 - Affecte le layout (pas juste l'affichage)
 - Idéal pour tester WCAG
 
 ### 4. **Événement Custom**
+<<<<<<< HEAD
 
 ```typescript
 window.addEventListener("zoom-changed", (event: CustomEvent) => {
   console.log(event.detail.level); // 100, 125, 150, 175, 200
   console.log(event.detail.ratio); // 1, 1.25, 1.5, 1.75, 2
+=======
+```typescript
+window.addEventListener('zoom-changed', (event: CustomEvent) => {
+  console.log(event.detail.level);   // 100, 125, 150, 175, 200
+  console.log(event.detail.ratio);   // 1, 1.25, 1.5, 1.75, 2
+>>>>>>> superadmin
 });
 ```
 
@@ -291,7 +388,10 @@ window.addEventListener("zoom-changed", (event: CustomEvent) => {
 ## 🚀 Déploiement & Activation
 
 ### Pour Utiliser
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 1. ✅ Code déjà intégré au header
 2. ✅ Service disponible globalement
 3. ✅ Tests complets
@@ -318,13 +418,19 @@ npm start        # ou ng serve
 ## 🎓 Formation Équipe
 
 ### Pour utiliser le ZoomService
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 1. Importer: `import { ZoomService } from 'src/app/services/zoom.service'`
 2. Injecter: `constructor(private zoom: ZoomService) {}`
 3. Utiliser: `this.zoom.setZoom(150)`
 
 ### Avant de merger du code
+<<<<<<< HEAD
 
+=======
+>>>>>>> superadmin
 1. **Tester à 200% zoom** avec le bouton
 2. **Vérifier aucun overflow: hidden problématique**
 3. **Valider texte lisible** à tous les niveaux
@@ -354,3 +460,7 @@ A: Zoom à 200% → Vérifier lisibilité complète
 **Créé**: Avril 5, 2026  
 **Norme**: WCAG 2.1 Level AA ✅  
 **Status**: Production Ready 🚀
+<<<<<<< HEAD
+=======
+
+>>>>>>> superadmin
