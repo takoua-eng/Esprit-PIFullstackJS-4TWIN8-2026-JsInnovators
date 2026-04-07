@@ -99,6 +99,7 @@ export class User {
   @Prop()
   shift: string;
 
+
   // ── COORDINATOR ──────────────────────────────────────────
   @Prop()
   responsibilities: string;
