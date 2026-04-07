@@ -83,35 +83,54 @@ export class UsersService {
     });
   }
 
-  async createPatient(dto: any, file?: Express.Multer.File) {
-    if (file) {
-      dto.photo = file.filename;
-    }
+async createPatient(dto: any, file?: Express.Multer.File) {
 
-    const doctorId = dto.assignedDoctor; // ✅ CORRECTION
-
-    console.log('🔔 createPatient - doctorId received:', doctorId);
-
-    const patient = new this.userModel(dto);
-    const savedPatient = await patient.save();
-
-    console.log('🔔 patient created:', savedPatient._id);
-
-    if (doctorId) {
-      await this.notificationsService.create({
-        userId: doctorId,
-        title: 'New Patient Assigned',
-        message: `${savedPatient.firstName} ${savedPatient.lastName} has been assigned to you`,
-        type: 'PATIENT_ASSIGNED',
-      });
-
-      console.log('📨 Notification sent to doctor:', doctorId);
-    } else {
-      console.log('⚠️ No doctorId provided — no notification sent');
-    }
-
-    return savedPatient;
+  if (file) {
+    dto.photo = file.filename;
   }
+
+  const doctorId = dto.assignedDoctor;
+  const coordinatorId = dto.assignedCoordinator;
+
+  console.log('🔔 createPatient - doctorId received:', doctorId);
+
+  // ✅ METTRE CE CODE ICI
+  const role = await this.roleModel.findOne({ name: 'Patient' });
+
+  if (!role) {
+    throw new Error('Patient role not found');
+  }
+
+  dto.role = role._id;
+
+  // ✅ création du patient
+  const patient = new this.userModel(dto);
+  const savedPatient = await patient.save();
+
+  console.log('🔔 patient created:', savedPatient._id);
+
+  // Ajouter le patient au coordinator
+  if (coordinatorId) {
+    await this.userModel.findByIdAndUpdate(
+      coordinatorId,
+      {
+        $addToSet: { assignedPatients: savedPatient._id }
+      }
+    );
+  }
+
+  // Notification doctor
+  if (doctorId) {
+    await this.notificationsService.create({
+      userId: doctorId,
+      title: 'New Patient Assigned',
+      message: `${savedPatient.firstName} ${savedPatient.lastName} has been assigned to you`,
+      type: 'PATIENT_ASSIGNED',
+    });
+  }
+
+  return savedPatient;
+}
 
   createDoctor(dto: CreateDoctorDto, file?: Express.Multer.File) {
     return this.createUser(dto, 'doctor', file);
