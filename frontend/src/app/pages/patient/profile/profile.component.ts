@@ -4,6 +4,8 @@ import { MaterialModule } from 'src/app/material.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { UserService } from 'src/app/services/users.service';
+import { MatDialog } from '@angular/material/dialog';
+import { EditProfileDialogComponent } from './edit-profile-dialog.component';
 
 @Component({
   selector: 'app-admin-profile',
@@ -24,7 +26,10 @@ export class ProfileComponent implements OnInit {
     avatar: '/assets/images/profile/user-1.jpg',
   };
 
-  constructor(private userService: UserService) {}
+  // full user object from backend (includes id)
+  currentUser: any = null;
+
+  constructor(private userService: UserService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.loadProfile();
@@ -33,6 +38,8 @@ export class ProfileComponent implements OnInit {
   loadProfile() {
     this.userService.getProfile().subscribe({
       next: (user) => {
+
+        this.currentUser = user;
 
         this.profile = {
           name: `${user.firstName} ${user.lastName}`,
@@ -49,6 +56,19 @@ export class ProfileComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur chargement profil', err);
+      }
+    });
+  }
+
+  openEditDialog(): void {
+    const ref = this.dialog.open(EditProfileDialogComponent, {
+      width: '640px',
+      data: { user: this.currentUser },
+    });
+
+    ref.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadProfile();
       }
     });
   }

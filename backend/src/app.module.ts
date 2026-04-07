@@ -49,6 +49,7 @@ import { QuestionnaireInstance, QuestionnaireInstanceSchema } from './modules/qu
 import { QuestionnaireTemplateModule } from './modules/questionnaire-template/questionnaire-template.module';
 import { QuestionnaireInstanceModule } from './modules/questionnaire-instance/questionnaire-instance.module';
 import { JwtStrategy } from './modules/auth/jwt.strategy';
+import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   controllers: [AppController],
@@ -115,6 +116,7 @@ import { JwtStrategy } from './modules/auth/jwt.strategy';
     HospitalizationHandwritingModule,
     QuestionnairesModule,
     AdminModule,
+    AiModule,
   ],
   providers: [JwtStrategy, AppService],
 })

@@ -46,6 +46,7 @@ import { DoctorHistoryComponent } from './doctor/history/doctor-history.componen
 import { DoctorPrescriptionsComponent } from './doctor/prescriptions/doctor-prescriptions.component';
 import { MessagesDoctorComponent } from './doctor/messages-doctor/messages-doctor.component';
 import { MessagesPatientComponent } from './patient/messages-patient/messages-patient.component';
+import { AiChatComponent } from './patient/ai-chat/ai-chat.component';
 import { AiPredictionComponent } from './coordinator/ai-prediction/ai-prediction.component';
 
 /** Roles allowed to use the sub-admin `/dashboard/admin/...` area (not patients, not coordinators). */
@@ -245,6 +246,7 @@ export const PatientRoutes: Routes = [
       { path: 'history', component: HistoryComponent, data: { title: 'Historique' } },
       { path: 'alerts', component: AlertsComponent, data: { title: 'Alerts' } },
       { path: 'messages', component: MessagesPatientComponent, data: { title: 'Messages' } },
+      { path: 'ai-chat', component: AiChatComponent, data: { title: 'Assistant IA' } },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

@@ -85,14 +85,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private filterAlertsForToday(alerts: AlertEntry[]): AlertEntry[] {
-    return (alerts || []).filter(a => {
+    const today = this.todayDateStr;
+    return ((alerts || [])
+      .map(a => ({ ...a, message: this.decodeMessage(a.message) }))
+      .filter(a => {
+        try {
+          const d = new Date((a as any).createdAt || (a as any).timestamp || null);
+          return d.toDateString() === today;
+        } catch (e) {
+          return false;
+        }
+      })) as AlertEntry[];
+  }
+
+  private decodeMessage(msg?: string): string {
+    if (!msg) return '';
+    try {
+      // Try to fix common UTF-8/Latin1 mojibake (e.g. "TempÃ©rature" -> "Température")
+      // This pattern is a pragmatic browser-side fix for double-encoded strings.
+      // Using `escape`/`decodeURIComponent` is a common workaround.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return decodeURIComponent((escape as any)(msg));
+    } catch (e) {
       try {
-        const d = new Date((a as any).createdAt || (a as any).timestamp || null);
-        return d.toDateString() === this.todayDateStr;
-      } catch (e) {
-        return false;
+        const ta = document.createElement('textarea');
+        ta.innerHTML = msg;
+        return ta.value || msg;
+      } catch (err) {
+        return msg;
       }
-    });
+    }
   }
 
   buildUsageChart(vitals: VitalEntry[], symptoms: SymptomEntry[], questionnaires: any[]) {
@@ -131,9 +153,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   resolveAlert(alertId: string) {
-    this.patientService.resolveAlert(alertId).subscribe(() => {
-      this.recentAlerts = this.recentAlerts.filter(a => a._id !== alertId);
+    // Optimistically mark as acknowledged locally so it turns green in the UI
+    const idx = this.recentAlerts.findIndex(a => a._id === alertId);
+    if (idx !== -1) {
+      this.recentAlerts[idx] = { ...this.recentAlerts[idx], status: 'acknowledged' };
       this.pendingAlertsCount = Math.max(0, this.pendingAlertsCount - 1);
+    }
+
+    // Persist on server; on success update the local entry with server data
+    this.patientService.resolveAlert(alertId).subscribe({
+      next: (updated) => {
+        const i = this.recentAlerts.findIndex(a => a._id === alertId);
+        const decodedMsg = this.decodeMessage((updated as any).message);
+        if (i !== -1) {
+          this.recentAlerts[i] = { ...this.recentAlerts[i], ...updated, message: decodedMsg };
+        }
+      },
+      error: () => {
+        // revert optimistic change on error
+        const i = this.recentAlerts.findIndex(a => a._id === alertId);
+        if (i !== -1) {
+          this.recentAlerts[i] = { ...this.recentAlerts[i], status: 'pending' };
+          this.pendingAlertsCount = this.pendingAlertsCount + 1;
+        }
+      }
     });
   }
 

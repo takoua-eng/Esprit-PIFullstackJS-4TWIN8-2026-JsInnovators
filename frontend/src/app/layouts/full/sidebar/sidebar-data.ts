@@ -122,6 +122,12 @@ export const patientNavItems: NavItem[] = [
     bgcolor: 'error',
   },
   {
+    displayName: 'Assistant IA',
+    iconName: 'robot',
+    route: '/dashboard/patient/ai-chat',
+    bgcolor: 'primary',
+  },
+  {
     displayName: 'Profile',
     iconName: 'user',
     route: '/dashboard/patient/profile',
