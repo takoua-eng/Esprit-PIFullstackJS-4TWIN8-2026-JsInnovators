@@ -83,41 +83,34 @@ export class UsersService {
     });
   }
 
-  async createPatient(dto: CreatePatientDto, file?: Express.Multer.File) {
-    const patient = await this.createUser(dto, 'patient', file);
+  async createPatient(dto: any, file?: Express.Multer.File) {
+    if (file) {
+      dto.photo = file.filename;
+    }
 
-    console.log('🔔 createPatient - doctorId received:', dto.doctorId);
-    console.log('🔔 patient created:', patient._id?.toString());
+    const doctorId = dto.assignedDoctor; // ✅ CORRECTION
 
-    // Send notifications if a doctor is assigned
-    if (dto.doctorId) {
-      try {
-        console.log('🔔 Looking for doctor:', dto.doctorId);
-        const doctor = await this.userModel.findById(dto.doctorId).exec();
-        console.log(
-          '🔔 Doctor found:',
-          doctor ? `${doctor.firstName} ${doctor.lastName}` : 'NOT FOUND',
-        );
+    console.log('🔔 createPatient - doctorId received:', doctorId);
 
-        if (doctor) {
-          await this.notificationsService.notifyPatientAssigned(
-            patient,
-            doctor,
-          );
-          console.log('✅ Notifications sent to patient and doctor');
-        }
-      } catch (e) {
-        const error = e instanceof Error ? e : new Error(String(e));
-        console.error('❌ Notification error:', error.message, error.stack);
-        this.logger.warn(
-          `Notification failed for patient ${patient._id}: ${error.message}`,
-        );
-      }
+    const patient = new this.userModel(dto);
+    const savedPatient = await patient.save();
+
+    console.log('🔔 patient created:', savedPatient._id);
+
+    if (doctorId) {
+      await this.notificationsService.create({
+        userId: doctorId,
+        title: 'New Patient Assigned',
+        message: `${savedPatient.firstName} ${savedPatient.lastName} has been assigned to you`,
+        type: 'PATIENT_ASSIGNED',
+      });
+
+      console.log('📨 Notification sent to doctor:', doctorId);
     } else {
       console.log('⚠️ No doctorId provided — no notification sent');
     }
 
-    return patient;
+    return savedPatient;
   }
 
   createDoctor(dto: CreateDoctorDto, file?: Express.Multer.File) {
@@ -1095,7 +1088,7 @@ export class UsersService {
   }
 
 
-    updateAuditor(id: string, dto: any, file: Express.Multer.File | undefined) {
+  updateAuditor(id: string, dto: any, file: Express.Multer.File | undefined) {
     throw new Error('Method not implemented.');
   }
 
