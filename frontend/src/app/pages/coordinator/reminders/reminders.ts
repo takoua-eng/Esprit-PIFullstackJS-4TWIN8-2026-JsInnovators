@@ -58,15 +58,20 @@ export class RemindersComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    const user = this.coreService.currentUser();
-    if (user?._id) {
-      this.coordinatorId = user._id;
-    } else {
-      const raw = localStorage.getItem('medi_follow_user_data');
-      if (raw) {
-        try { this.coordinatorId = JSON.parse(raw)._id || ''; } catch { }
-      }
-    }
+    // Lire l'ID depuis le JWT stocké dans localStorage
+const token = localStorage.getItem('accessToken');
+if (token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    this.coordinatorId = payload.sub || '';
+  } catch { }
+}
+
+// Fallback sur CoreService
+if (!this.coordinatorId) {
+  const user = this.coreService.currentUser();
+  this.coordinatorId = user?._id || '';
+}
     if (!this.coordinatorId) { console.error('No coordinator ID'); return; }
     this.loadReminders();
     this.loadPatients();
