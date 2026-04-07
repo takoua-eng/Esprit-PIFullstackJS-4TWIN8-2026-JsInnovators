@@ -14,7 +14,7 @@ import { CoreService } from 'src/app/services/core.service';
 import { SuperTopstripComponent } from '../super-topstrip/super-topstrip.component';
 // ✅ استيراد SuperSidebarComponent (من نفس المجلد)
 import { SuperSidebarComponent } from './super-sidebar/super-sidebar.component';
-import { HeaderComponent } from '../../../layouts/full/header/header.component';
+import { SuperHeaderComponent } from '../super-header/super-header';
 
 @Component({
   selector: 'app-full-super',
@@ -26,9 +26,9 @@ import { HeaderComponent } from '../../../layouts/full/header/header.component';
     CommonModule,
     RouterModule,
     MatSidenavModule,
-    HeaderComponent,
     SuperTopstripComponent,
-    SuperSidebarComponent, // ✅ استخدام الـ Sidebar الخاص بالـ Super Admin
+    SuperSidebarComponent,
+    SuperHeaderComponent,
   ],
 })
 export class FullSuperComponent implements OnInit {

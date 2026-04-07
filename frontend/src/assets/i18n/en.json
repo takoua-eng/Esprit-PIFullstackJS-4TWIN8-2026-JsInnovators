@@ -470,6 +470,7 @@
   "NURSE_RECORDS_HINT_PAIN": "0ÔÇô10, integer if filled",
   "NURSE_RECORDS_HINT_DESCRIPTION": "Max. 1000 characters",
   "RETRY": "Retry",
+<<<<<<< HEAD
   "EDIT_REMINDER": "Edit Reminder",
   "SAVE_CHANGES": "Save Changes",
   "SEARCH_PATIENT": "Search by patient",
@@ -488,5 +489,24 @@
   "CAN_CANCEL": "Cancel",
   "SEND_QUESTIONNAIRE_TO": "Send questionnaire to {{name}}",
   "NO_TEMPLATES_AVAILABLE": "No questionnaire templates available.",
-  "SEND_NOW": "Send Now"
+  "SEND_NOW": "Send Now",
+  "MY_QUESTIONNAIRES_TITLE": "My Questionnaires",
+  "MY_QUESTIONNAIRES_SUBTITLE": "Please complete the follow-up forms assigned by your medical team.",
+  "LOADING_FORMS": "Loading forms...",
+  "NO_PENDING_QUESTIONNAIRES": "You have no pending questionnaires. Great job!",
+  "FROM_DOCTOR": "From: Dr. {{firstName}} {{lastName}}",
+  "ASSIGNED_ON": "Assigned: {{date}}",
+  "START_QUESTIONNAIRE_BTN": "Start Questionnaire",
+  "SUBMIT_ANSWERS_BTN": "Submit Answers",
+  "INVALID_NUMBER_ERROR": "Please enter a valid number",
+  "FIELD_REQUIRED_ERROR": "This field is required",
+  "SUBMIT_SUCCESS": "Questionnaire submitted successfully!",
+  "ENTER_VALUE": "Enter a value",
+  "TYPE_ANSWER": "Type your answer..."
+=======
+  "AUDIT_LOGS": "Audit Logs",
+  "AUDITOR_MENU": "Auditor",
+  "AUDITOR_DASHBOARD": "Dashboard",
+  "AUDITOR_VERIFY": "Verify Logs"
+>>>>>>> superadmin
 }

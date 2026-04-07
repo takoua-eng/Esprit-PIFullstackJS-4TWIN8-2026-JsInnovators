@@ -26,3 +26,91 @@ button.mat-mdc-button:hover {
 .text-error {
   color: #dc3545 !important;
 }
+
+// ── Notification Bell ─────────────────────────────────────────
+.bell-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #e74c3c;
+  color: #fff;
+  border-radius: 50%;
+  width: 17px;
+  height: 17px;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+::ng-deep .notif-panel .mat-mdc-menu-panel {
+  min-width: 360px !important;
+  max-width: 400px !important;
+  max-height: 500px !important;
+  overflow-y: auto;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12) !important;
+  padding: 0 !important;
+}
+
+::ng-deep .notif-panel .mat-mdc-menu-content { padding: 0 !important; }
+
+.np-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #f0f4f8;
+  background: #fff;
+
+  .np-title { font-size: .95rem; font-weight: 700; color: #1a1a2e; }
+  .np-mark-all { font-size: .72rem; color: #4361ee; padding: 0; min-width: auto; font-weight: 600; }
+}
+
+.np-section-label {
+  font-size: .65rem; font-weight: 700; letter-spacing: 1.2px;
+  color: #94a3b8; padding: 8px 16px 4px; text-transform: uppercase;
+}
+
+.np-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 16px; cursor: pointer; transition: background .15s;
+  border-bottom: 1px solid #f8fafc;
+  &:hover { background: #f8fafc; }
+  &.np-unread { background: #f0f4ff; }
+}
+
+.np-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; background: #e8eeff; color: #4361ee;
+  &.type-WELCOME          { background: #e6faf5; color: #00b894; }
+  &.type-PATIENT_ASSIGNED { background: #e3f2fd; color: #0984e3; }
+  &.type-GENERAL          { background: #f0ebff; color: #6c5ce7; }
+  &.np-avatar-read        { opacity: .5; }
+}
+
+.np-type-dot { display: none; }
+.np-content { flex: 1; min-width: 0; }
+
+.np-msg {
+  font-size: .8rem; color: #2d3436; line-height: 1.45;
+  strong { font-weight: 700; display: block; color: #1a1a2e; font-size: .82rem; }
+  &.np-msg-read { color: #94a3b8; strong { color: #94a3b8; } }
+}
+
+.np-meta { font-size: .68rem; color: #b0bec5; margin-top: 3px; }
+
+.np-empty {
+  text-align: center; padding: 32px 16px; color: #cbd5e1;
+  p { margin: 8px 0 0; font-size: .82rem; }
+}

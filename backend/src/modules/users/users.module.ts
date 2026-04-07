@@ -9,6 +9,7 @@ import {
   PatientDiagnosis,
   PatientDiagnosisSchema,
 } from './patient-diagnosis.schema';
+import { NotificationsModule } from '../notifications-super-admin/notifications.module';
 
 @Module({
   imports: [
@@ -18,10 +19,12 @@ import {
       { name: Service.name, schema: ServiceSchema },
       { name: PatientDiagnosis.name, schema: PatientDiagnosisSchema },
     ]),
+    NotificationsModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService,
+  exports: [
+    UsersService,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
 })

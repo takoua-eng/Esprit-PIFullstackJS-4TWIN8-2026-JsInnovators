@@ -1,43 +1,57 @@
-<!-- ── SKIP NAVIGATION LINK — premier élément Tab ── -->
-<a href="#main-content" class="skip-nav-link">
-  Skip to main content
-</a>
+<!-- Skip navigation -->
+<a href="#main-content" class="skip-nav-link"> Skip to main content </a>
 
 <app-topstrip></app-topstrip>
 
-<!-- Guide clavier global — visible sur toutes les pages patient -->
+<!-- Guide clavier -->
 <app-keyboard-guide></app-keyboard-guide>
 
-<mat-sidenav-container class="mainWrapper blue_theme light-theme" autosize autoFocus dir="ltr">
-
-  <!-- ── Sidebar ── -->
+<mat-sidenav-container
+  class="mainWrapper blue_theme light-theme"
+  autosize
+  autoFocus
+  dir="ltr"
+>
+  <!-- Sidebar -->
   <mat-sidenav
     #leftsidenav
     [mode]="isOver ? 'over' : 'side'"
     [opened]="!isOver"
     (openedChange)="onSidenavOpenedChange($event)"
     (closedStart)="onSidenavClosedStart()"
-    class="sidebarNav">
+    class="sidebarNav"
+  >
     <div class="flex-layout">
-      <app-sidebar (toggleMobileNav)="sidenav.toggle()" [showToggle]="isOver"></app-sidebar>
+      <app-sidebar
+        (toggleMobileNav)="sidenav.toggle()"
+        [showToggle]="isOver"
+      ></app-sidebar>
+
       <ng-scrollbar class="position-relative" style="height: 100%">
         <mat-nav-list class="sidebar-list">
-          @for(item of navItems; track item) {
-            <app-nav-item [item]="item" (notify)="sidenav.toggle()"></app-nav-item>
+          @for (item of navItems; track item) {
+            <app-nav-item
+              [item]="item"
+              (notify)="sidenav.toggle()"
+            ></app-nav-item>
           }
         </mat-nav-list>
       </ng-scrollbar>
     </div>
   </mat-sidenav>
 
-  <!-- ── Main Content ── -->
+  <!-- Main Content -->
   <mat-sidenav-content class="contentWrapper" #content>
     <main class="pageWrapper maxWidth" id="main-content" tabindex="-1">
-      <app-header [showToggle]="!isOver" (toggleMobileNav)="sidenav.toggle()"></app-header>
+      <app-header
+        [showToggle]="!isOver"
+        (toggleMobileNav)="sidenav.toggle()"
+      ></app-header>
+
       <div class="m-t-30">
+        <!-- ✅ UN SEUL router-outlet -->
         <router-outlet></router-outlet>
       </div>
     </main>
   </mat-sidenav-content>
-
 </mat-sidenav-container>

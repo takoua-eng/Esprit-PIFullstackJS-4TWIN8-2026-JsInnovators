@@ -1,16 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import * as mongoose from 'mongoose';
+import { Role } from '../roles/role.schema';
 
 export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
 export class User {
-  // 🔹 ID
   @Prop({ unique: true })
   userId: string;
 
-  // 🔹 COMMON
   @Prop({ required: true })
   firstName: string;
 
@@ -34,6 +33,7 @@ export class User {
 
   @Prop()
   photo: string;
+
 
   // 🔹 ROLE
   @Prop({ type: Types.ObjectId, ref: 'Role', required: true })
@@ -83,9 +83,6 @@ export class User {
   @Prop({ enum: ['single', 'married', 'divorced'] })
   maritalStatus: string;
 
-  // =========================
-  // 🔵 DOCTOR
-  // =========================
   @Prop()
   specialization: string;
 
@@ -95,60 +92,74 @@ export class User {
   @Prop()
   yearsOfExperience: number;
 
-  // =========================
-  // 🟢 NURSE
-  // =========================
   @Prop()
   department: string;
 
   @Prop()
   shift: string;
 
-  // =========================
-  // 🟣 COORDINATOR
-  // =========================
+    @Prop()
+  assignedService: string;
+
   @Prop()
   responsibilities: string;
 
-  // =========================
-  // ⚫ ADMIN
-  // =========================
   @Prop({ default: false })
   isSuperAdmin: boolean;
 
   @Prop()
   adminLevel: string;
 
-  // =========================
-  // ⚪ AUDITOR
-  // =========================
   @Prop()
   auditLevel: string;
 
-  // =========================
-  // 🔹 STATUS & FLAGS
-  // =========================
   @Prop({ default: false })
   isArchived: boolean;
+
+  @Prop()
+  nationalId: string;
+
+  @Prop()
+  age: number;
+
+  @Prop({ enum: ['single', 'married', 'divorced'] })
+  maritalStatus: string;
+
+  @Prop({ type: mongoose.Schema.Types.Mixed, ref: 'Service', default: undefined })
+  serviceId: Types.ObjectId;
 
   @Prop({ default: true })
   isActive: boolean;
 
   // 🔹 SERVICE
-  @Prop({ type: Types.ObjectId, ref: 'Service' })
-  serviceId: Types.ObjectId;
+  /*@Prop({ type: Types.ObjectId, ref: 'Service' })
+  serviceId: Types.ObjectId;*/
 
   // 🔹 ASSIGNED PATIENTS (pour doctor/nurse/coordinator)
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] })
-  assignedPatients: mongoose.Types.ObjectId[];
 
   // 🔹 NURSE DOSSIER
+ /* @Prop({ type: mongoose.Schema.Types.Mixed })
+  nurseDossier?: Record<string, unknown>;
+*/
+  // 🔹 FACE RECOGNITION
+  // ── assignedPatients avec default: [] ────────────────────
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], default: [] })
+  assignedPatients: mongoose.Types.ObjectId[];
+
   @Prop({ type: mongoose.Schema.Types.Mixed })
   nurseDossier?: Record<string, unknown>;
 
-  // 🔹 FACE RECOGNITION
   @Prop({ type: [Number], default: [] })
   faceDescriptor: number[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// Clean invalid serviceId before any populate can fail
+UserSchema.pre(['find', 'findOne', 'findOneAndUpdate'], function() {
+  // If the query filter contains serviceId, validate it
+  const filter = (this as any).getFilter?.() ?? {};
+  if (filter.serviceId && !require('mongoose').Types.ObjectId.isValid(filter.serviceId)) {
+    (this as any).setQuery({ ...filter, serviceId: undefined });
+  }
+});

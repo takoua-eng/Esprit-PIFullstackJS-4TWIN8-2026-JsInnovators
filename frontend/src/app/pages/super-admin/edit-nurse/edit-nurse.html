@@ -1,0 +1,129 @@
+<div class="dialog-container">
+
+  <!-- HEADER -->
+  <div class="dialog-header">
+    <h2 class="dialog-title">
+      <mat-icon>edit</mat-icon>
+      Edit Nurse
+    </h2>
+    <p class="dialog-subtitle">Update nurse information</p>
+  </div>
+
+  <form [formGroup]="nurseForm" (ngSubmit)="onSubmit()">
+
+    <!-- PHOTO SECTION -->
+    <div class="form-section center">
+      <h3 class="section-title">
+        <mat-icon>photo_camera</mat-icon>
+        Profile Photo
+      </h3>
+
+      <div class="photo-wrapper">
+        <img *ngIf="photoPreview" [src]="photoPreview" class="photo-preview"/>
+
+        <input type="file" hidden #fileInput (change)="onFileSelected($event)" />
+
+        <button mat-mini-fab color="primary" (click)="fileInput.click()" type="button">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- PERSONAL INFORMATION -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <mat-icon>person</mat-icon>
+        Personal Information
+      </h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>First Name *</mat-label>
+          <input matInput formControlName="firstName" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Last Name *</mat-label>
+          <input matInput formControlName="lastName" />
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Email *</mat-label>
+          <input matInput formControlName="email" type="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
+          <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-hint>Leave empty to keep current</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Phone</mat-label>
+          <input matInput formControlName="phone" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>National ID</mat-label>
+          <input matInput formControlName="nationalId" />
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="form-field full-width">
+        <mat-label>Address</mat-label>
+        <input matInput formControlName="address" />
+      </mat-form-field>
+    </div>
+
+    <!-- ADDITIONAL INFO -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <mat-icon>settings</mat-icon>
+        Additional Info
+      </h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Gender</mat-label>
+          <mat-select formControlName="gender">
+            <mat-option value="">Select</mat-option>
+            <mat-option value="male">Male</mat-option>
+            <mat-option value="female">Female</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Service</mat-label>
+          <mat-select formControlName="serviceId">
+            <mat-option value="">Select</mat-option>
+            <mat-option *ngFor="let s of services" [value]="s._id">
+              {{ s.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- ✅ ACTIONS - BOUTONS (TRÈS IMPORTANT) -->
+    <div class="dialog-actions">
+      <button mat-stroked-button type="button" (click)="onCancel()" color="warn">
+        <mat-icon>close</mat-icon>
+        Cancel
+      </button>
+
+      <button mat-raised-button type="submit" color="primary" [disabled]="nurseForm.invalid || loading">
+        <mat-icon *ngIf="!loading">save</mat-icon>
+        <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
+        {{ loading ? 'Updating...' : 'Update Nurse' }}
+      </button>
+    </div>
+
+  </form>
+</div>

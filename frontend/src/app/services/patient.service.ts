@@ -56,7 +56,8 @@ export class PatientService {
     if (!raw) return '';
     try {
       const user = JSON.parse(raw);
-      return user._id ?? '';
+      // Check both _id (MongoDB) and id (standard JSON)
+      return user._id || user.id || '';
     } catch (e) {
       return '';
     }
@@ -182,6 +183,12 @@ export class PatientService {
     return this.http.get<any[]>(`${this.API}/questionnaire-instances/patient/${patientId}`);
   }
 
+  hasCompletedInstance(instanceId: string): Observable<boolean> {
+    return this.http.get<boolean>(
+      `${this.API}/questionnaire-responses/instance/${instanceId}/today`,
+    );
+  }
+
   hasCompletedTemplate(templateId: string): Observable<boolean> {
     const patientId = this.getCurrentPatientId();
     return this.http.get<boolean>(
@@ -199,7 +206,6 @@ export class PatientService {
   }
 
   // ─── MESSAGES ────────────────────────────────────────────────────────────────
-
   getDoctorsAndNurses(): Observable<any[]> {
     return new Observable(obs => {
       // Fetch Doctor and Nurse roles in parallel

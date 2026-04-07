@@ -1,0 +1,38 @@
+.auditor-dashboard { padding: 16px; }
+
+.aud-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff; border-radius: 14px; padding: 20px 28px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.3);
+  .banner-ico { font-size: 2rem; width: 2rem; height: 2rem; opacity: .9; }
+  h2 { font-size: 1.3rem; font-weight: 700; }
+  .live-dot { width: 9px; height: 9px; border-radius: 50%; background: #00b894; animation: blink 1s infinite; }
+  .live-lbl { font-weight: 700; color: #00b894; letter-spacing: 2px; font-size: .8rem; }
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+.kpi-card {
+  border-radius: 14px !important; color: #fff !important;
+  mat-card-content { padding: 16px !important; }
+  .kpi-ico { font-size: 1.5rem; width: 1.5rem; height: 1.5rem; margin-bottom: 6px; opacity: .9; }
+  .kpi-val { font-size: 1.7rem; font-weight: 700; line-height: 1; }
+  .kpi-lbl { font-size: .72rem; opacity: .85; margin-top: 3px; }
+  &.kpi-indigo { background: linear-gradient(135deg,#2d3436,#636e72); }
+  &.kpi-blue   { background: linear-gradient(135deg,#0984e3,#74b9ff); }
+  &.kpi-purple { background: linear-gradient(135deg,#6c5ce7,#a29bfe); }
+  &.kpi-red    { background: linear-gradient(135deg,#d63031,#ff7675); }
+}
+
+.log-list { display: flex; flex-direction: column; gap: 6px; }
+.log-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 8px; background: #fafafa;
+  &:hover { background: #f0f0f0; }
+  .log-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .log-badge { font-size: .68rem; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 8px; white-space: nowrap; flex-shrink: 0; }
+  .log-entity { font-size: .72rem; font-family: monospace; background: #eee; border-radius: 4px; padding: 1px 6px; }
+  .log-user   { flex: 1; font-size: .75rem; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log-time   { font-size: .7rem; color: #888; white-space: nowrap; }
+  .log-ip     { font-size: .68rem; color: #aaa; white-space: nowrap; }
+}

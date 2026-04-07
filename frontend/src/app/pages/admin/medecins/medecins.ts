@@ -20,7 +20,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
-import { DoctorService, Doctor } from 'src/app/services/superadmin/doctor.service';
+import { DoctorService, Doctor } from 'src/app/services/admin/doctor.service';
 import {
   AddDoctorDialog,
   DoctorData,

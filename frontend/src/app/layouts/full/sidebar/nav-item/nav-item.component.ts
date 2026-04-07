@@ -9,6 +9,7 @@ import {
 import { NavItem } from './nav-item';
 import { Router } from '@angular/router';
 import { NavService } from '../../../../services/nav.service';
+import { CoreService } from '../../../../services/core.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -30,7 +31,23 @@ export class AppNavItemComponent implements OnChanges {
   @HostBinding('attr.aria-expanded') ariaExpanded = this.expanded;
   @Input() depth: any;
 
-  constructor(public navService: NavService, public router: Router) {}
+  constructor(
+    public navService: NavService,
+    public router: Router,
+    public core: CoreService,
+  ) {}
+
+  /** Returns true if the item should be visible based on its permission */
+  isVisible(item: NavItem): boolean {
+    if (!item.permission) return true;
+    return this.core.hasPermission(item.permission);
+  }
+
+  /** Filter children to only those the user has permission to see */
+  visibleChildren(item: NavItem): NavItem[] {
+    if (!item.children) return [];
+    return item.children.filter(c => this.isVisible(c));
+  }
 
   private normalizeRoute(route?: string): string {
     if (!route) return '';
@@ -59,11 +76,7 @@ export class AppNavItemComponent implements OnChanges {
       this.expanded = !this.expanded;
     }
 
-    window.scroll({
-      top: 0,
-      left: 0,
-      behavior: 'smooth',
-    });
+    window.scroll({ top: 0, left: 0, behavior: 'smooth' });
 
     if (!this.expanded) {
       if (window.innerWidth < 1024) {
@@ -73,9 +86,7 @@ export class AppNavItemComponent implements OnChanges {
   }
 
   openExternalLink(url: string): void {
-    if (url) {
-      window.open(url, '_blank');
-    }
+    if (url) window.open(url, '_blank');
   }
 
   onSubItemSelected(item: NavItem) {

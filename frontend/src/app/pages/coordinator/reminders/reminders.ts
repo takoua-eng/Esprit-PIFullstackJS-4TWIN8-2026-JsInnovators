@@ -12,6 +12,7 @@ import {
   buildReminderMessages,
 } from 'src/app/services/coordinator.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { CoreService } from 'src/app/services/core.service';
 
 @Component({
   selector: 'app-reminders',
@@ -22,9 +23,10 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class RemindersComponent implements OnInit {
   private coordinatorService = inject(CoordinatorService);
+  private coreService = inject(CoreService);
   private fb = inject(FormBuilder);
 
-  coordinatorId = '69c32545a5201407afd209cf';
+  coordinatorId = '';
 
   reminders: ReminderRow[] = [];
   patients: CoordinatorPatientRow[] = [];
@@ -32,17 +34,12 @@ export class RemindersComponent implements OnInit {
 
   showForm = false;
   editingReminder: ReminderRow | null = null;
-
   selectedMessage = '';
   messageOptions: { value: string; label: string }[] = [];
-
-  // Recherche
   searchQuery = '';
-
-  // Pagination par jour
-  allDays: string[] = [];       // liste des jours uniques triés décroissants
-  currentDayIndex = 0;          // index du jour affiché
-  pageSize = 10;                // reminders par page dans un jour
+  allDays: string[] = [];
+  currentDayIndex = 0;
+  pageSize = 10;
   currentPage = 0;
 
   reminderForm: FormGroup = this.fb.group({
@@ -61,6 +58,16 @@ export class RemindersComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    const user = this.coreService.currentUser();
+    if (user?._id) {
+      this.coordinatorId = user._id;
+    } else {
+      const raw = localStorage.getItem('medi_follow_user_data');
+      if (raw) {
+        try { this.coordinatorId = JSON.parse(raw)._id || ''; } catch { }
+      }
+    }
+    if (!this.coordinatorId) { console.error('No coordinator ID'); return; }
     this.loadReminders();
     this.loadPatients();
     this.loadCompliance();
@@ -68,12 +75,7 @@ export class RemindersComponent implements OnInit {
 
   loadReminders(): void {
     this.coordinatorService.getReminders(this.coordinatorId).subscribe({
-      next: (data) => {
-        this.reminders = data;
-        this.buildDays();
-        this.currentDayIndex = 0;
-        this.currentPage = 0;
-      },
+      next: (data) => { this.reminders = data; this.buildDays(); this.currentDayIndex = 0; this.currentPage = 0; },
       error: (err) => console.error('Reminders error', err),
     });
   }
@@ -92,95 +94,55 @@ export class RemindersComponent implements OnInit {
     });
   }
 
-  // ── Jours uniques extraits des scheduledAt ────────────────
   buildDays(): void {
     const daySet = new Set<string>();
     for (const r of this.reminders) {
       const d = r.scheduledAt || r.createdAt;
-      if (d) {
-        daySet.add(this.toDateKey(new Date(d)));
-      }
+      if (d) daySet.add(this.toDateKey(new Date(d)));
     }
-    this.allDays = Array.from(daySet).sort((a, b) => b.localeCompare(a)); // décroissant
+    this.allDays = Array.from(daySet).sort((a, b) => b.localeCompare(a));
   }
 
-  toDateKey(date: Date): string {
-    return date.toISOString().split('T')[0]; // 'YYYY-MM-DD'
-  }
+  toDateKey(date: Date): string { return date.toISOString().split('T')[0]; }
 
   formatDay(dayKey: string): string {
     const d = new Date(dayKey + 'T00:00:00');
     return d.toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   }
 
-  get currentDay(): string {
-    return this.allDays[this.currentDayIndex] || '';
-  }
+  get currentDay(): string { return this.allDays[this.currentDayIndex] || ''; }
 
-  prevDay(): void {
-    if (this.currentDayIndex < this.allDays.length - 1) {
-      this.currentDayIndex++;
-      this.currentPage = 0;
-    }
-  }
+  prevDay(): void { if (this.currentDayIndex < this.allDays.length - 1) { this.currentDayIndex++; this.currentPage = 0; } }
+  nextDay(): void { if (this.currentDayIndex > 0) { this.currentDayIndex--; this.currentPage = 0; } }
 
-  nextDay(): void {
-    if (this.currentDayIndex > 0) {
-      this.currentDayIndex--;
-      this.currentPage = 0;
-    }
-  }
-
-  // ── Filtrage recherche + jour ─────────────────────────────
   get filteredReminders(): ReminderRow[] {
     let result = this.reminders;
-
-    // Filtre par jour
     if (this.currentDay) {
       result = result.filter((r) => {
         const d = r.scheduledAt || r.createdAt;
         return d ? this.toDateKey(new Date(d)) === this.currentDay : false;
       });
     }
-
-    // Filtre recherche par nom de patient
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase();
-      result = result.filter((r) =>
-        this.getPatientName(r.patientId).toLowerCase().includes(q)
-      );
+      result = result.filter((r) => this.getPatientName(r.patientId).toLowerCase().includes(q));
     }
-
     return result;
   }
 
-  // ── Pagination dans le jour filtré ───────────────────────
-  get totalPages(): number {
-    return Math.ceil(this.filteredReminders.length / this.pageSize);
-  }
+  get totalPages(): number { return Math.ceil(this.filteredReminders.length / this.pageSize); }
 
   get paginatedReminders(): ReminderRow[] {
     const start = this.currentPage * this.pageSize;
     return this.filteredReminders.slice(start, start + this.pageSize);
   }
 
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-    }
-  }
+  goToPage(page: number): void { if (page >= 0 && page < this.totalPages) this.currentPage = page; }
+  onSearchChange(): void { this.currentPage = 0; }
 
-  onSearchChange(): void {
-    this.currentPage = 0;
-  }
-
-  // ── Formulaire create / edit ──────────────────────────────
   onPatientChange(patientId: string): void {
     const compliance = this.complianceData.find((c) => c._id === patientId);
-    this.messageOptions = buildReminderMessages(
-      compliance?.missingVitalFields ?? [],
-      compliance?.missingSymptomFields ?? [],
-    );
+    this.messageOptions = buildReminderMessages(compliance?.missingVitalFields ?? [], compliance?.missingSymptomFields ?? []);
     this.selectedMessage = this.messageOptions[0]?.value || '';
     this.reminderForm.get('message')?.setValue(this.selectedMessage);
   }
@@ -193,93 +155,62 @@ export class RemindersComponent implements OnInit {
   toggleForm(): void {
     this.showForm = !this.showForm;
     this.editingReminder = null;
-    if (!this.showForm) {
-      this.reminderForm.reset({ type: 'follow_up' });
-      this.messageOptions = [];
-      this.selectedMessage = '';
-    }
+    if (!this.showForm) { this.reminderForm.reset({ type: 'follow_up' }); this.messageOptions = []; this.selectedMessage = ''; }
   }
 
   startEdit(reminder: ReminderRow): void {
     this.editingReminder = reminder;
     this.showForm = true;
-
-    // Récupérer l'id patient
-    const patientId = typeof reminder.patientId === 'object'
-      ? reminder.patientId._id
-      : reminder.patientId;
-
+    const patientId = typeof reminder.patientId === 'object' ? reminder.patientId._id : reminder.patientId;
     this.reminderForm.patchValue({
-      patientId: patientId,
+      patientId,
       type: reminder.type,
       message: reminder.message,
-      scheduledAt: reminder.scheduledAt
-        ? new Date(reminder.scheduledAt).toISOString().slice(0, 16)
-        : '',
+      scheduledAt: reminder.scheduledAt ? new Date(reminder.scheduledAt).toISOString().slice(0, 16) : '',
     });
-
     this.onPatientChange(patientId);
     this.selectedMessage = reminder.message;
   }
 
   submitReminder(): void {
-    if (this.reminderForm.invalid) {
-      this.reminderForm.markAllAsTouched();
-      return;
-    }
-
+    if (this.reminderForm.invalid) { this.reminderForm.markAllAsTouched(); return; }
     const { patientId, type, message, scheduledAt } = this.reminderForm.value;
 
     if (this.editingReminder?._id) {
-      // MODE EDIT — update via PUT
-      this.coordinatorService
-        .updateReminder(this.editingReminder._id, { type, message, scheduledAt })
-        .subscribe({
-          next: () => {
-            this.loadReminders();
-            this.toggleForm();
-          },
-          error: (err) => console.error('Update reminder error', err),
-        });
+      this.coordinatorService.updateReminder(this.editingReminder._id, { type, message, scheduledAt }).subscribe({
+        next: () => { this.loadReminders(); this.toggleForm(); },
+        error: (err) => console.error('Update error', err),
+      });
     } else {
-      // MODE CREATE
-      this.coordinatorService
-        .createReminder(this.coordinatorId, { patientId, type, message, scheduledAt })
-        .subscribe({
-          next: () => {
-            this.loadReminders();
-            this.toggleForm();
-          },
-          error: (err) => console.error('Create reminder error', err),
-        });
+      this.coordinatorService.createReminder(this.coordinatorId, { patientId, type, message, scheduledAt }).subscribe({
+        next: (reminder) => {
+          this.coordinatorService.sendReminder(reminder._id).subscribe({
+            next: () => { this.loadReminders(); this.toggleForm(); },
+            error: () => { this.loadReminders(); this.toggleForm(); },
+          });
+        },
+        error: (err) => console.error('Create error', err),
+      });
     }
   }
 
   sendReminder(reminder: ReminderRow): void {
     if (!reminder._id) return;
-    this.coordinatorService.sendReminder(reminder._id).subscribe({
-      next: () => this.loadReminders(),
-    });
+    this.coordinatorService.sendReminder(reminder._id).subscribe({ next: () => this.loadReminders() });
   }
 
   cancelReminder(reminder: ReminderRow): void {
     if (!reminder._id) return;
-    this.coordinatorService.cancelReminder(reminder._id).subscribe({
-      next: () => this.loadReminders(),
-    });
+    this.coordinatorService.cancelReminder(reminder._id).subscribe({ next: () => this.loadReminders() });
   }
 
   deleteReminder(reminder: ReminderRow): void {
     if (!reminder._id || !window.confirm('Delete this reminder?')) return;
-    this.coordinatorService.deleteReminder(reminder._id).subscribe({
-      next: () => this.loadReminders(),
-    });
+    this.coordinatorService.deleteReminder(reminder._id).subscribe({ next: () => this.loadReminders() });
   }
 
   getPatientName(patientId: any): string {
-    if (patientId && typeof patientId === 'object') {
-      return `${patientId.firstName} ${patientId.lastName}`;
-    }
+    if (patientId && typeof patientId === 'object') return `${patientId.firstName} ${patientId.lastName}`;
     const patient = this.patients.find((p) => p._id === patientId);
     return patient ? patient.name : 'Unknown';
   }
@@ -290,7 +221,5 @@ export class RemindersComponent implements OnInit {
     return 'pending';
   }
 
-  get pageNumbers(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i);
-  }
+  get pageNumbers(): number[] { return Array.from({ length: this.totalPages }, (_, i) => i); }
 }

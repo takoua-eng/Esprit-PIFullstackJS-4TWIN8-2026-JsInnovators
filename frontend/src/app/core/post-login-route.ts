@@ -17,7 +17,7 @@ export function getPostLoginPath(roleFromApi: string | null | undefined): string
     nurse: '/dashboard/nurse',
     doctor: '/dashboard/doctor',
     physician: '/dashboard/doctor',
-    auditor: '/dashboard/admin/auditors',
+    auditor: '/auditor/dashboard',
   };
 
   return map[r] ?? '/dashboard/admin';

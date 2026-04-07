@@ -255,4 +255,17 @@ export class QuestionnaireResponseService {
     });
     return count > 0;
   }
+
+  async hasCompletedInstance(instanceId: string): Promise<boolean> {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    const count = await this.responseModel.countDocuments({
+      questionnaireInstanceId: new Types.ObjectId(instanceId),
+      createdAt: { $gte: start, $lte: end },
+    });
+    return count > 0;
+  }
 }

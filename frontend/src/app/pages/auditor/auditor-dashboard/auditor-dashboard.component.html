@@ -1,0 +1,91 @@
+<div class="auditor-dashboard p-24">
+
+  <!-- BANNER -->
+  <div class="aud-banner m-b-24">
+    <div class="d-flex align-items-center gap-12">
+      <i-tabler name="shield-check" class="banner-ico"></i-tabler>
+      <div>
+        <h2 class="m-0">Auditor Dashboard</h2>
+        <p class="m-0 text-muted f-s-13">System audit monitoring — real-time</p>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-8">
+      <span class="live-dot"></span>
+      <span class="live-lbl">LIVE</span>
+      <span class="text-muted f-s-12">{{ lastRefresh | date:"HH:mm:ss" }}</span>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="row m-b-24">
+    <div class="col-md-3 col-6 m-b-16">
+      <mat-card class="kpi-card kpi-indigo">
+        <mat-card-content>
+          <i-tabler name="database" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalEvents }}</div>
+          <div class="kpi-lbl">Total Events</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-md-3 col-6 m-b-16">
+      <mat-card class="kpi-card kpi-blue">
+        <mat-card-content>
+          <i-tabler name="calendar-today" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ todayEvents }}</div>
+          <div class="kpi-lbl">Today</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-md-3 col-6 m-b-16">
+      <mat-card class="kpi-card kpi-purple">
+        <mat-card-content>
+          <i-tabler name="login" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ loginEvents }}</div>
+          <div class="kpi-lbl">Logins</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-md-3 col-6 m-b-16">
+      <mat-card class="kpi-card kpi-red">
+        <mat-card-content>
+          <i-tabler name="trash" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ deleteEvents }}</div>
+          <div class="kpi-lbl">Deletions</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- RECENT LOGS -->
+  <mat-card class="cardWithShadow">
+    <mat-card-content class="p-20">
+      <div class="d-flex align-items-center justify-content-between m-b-16">
+        <div class="d-flex align-items-center gap-8">
+          <i-tabler name="camera" style="color:#6c5ce7"></i-tabler>
+          <span class="f-w-600">Recent System Events</span>
+        </div>
+        <a mat-stroked-button color="primary" routerLink="/auditor/logs">View all</a>
+      </div>
+
+      <div class="log-list">
+        <div *ngFor="let log of recentLogs" class="log-row">
+          <div class="log-icon" [style.background]="actionColor(log.action) + '18'">
+            <i-tabler [name]="actionIcon(log.action)" [style.color]="actionColor(log.action)" class="icon-16"></i-tabler>
+          </div>
+          <span class="log-badge" [style.background]="actionColor(log.action) + '18'" [style.color]="actionColor(log.action)">
+            {{ log.action }}
+          </span>
+          <span class="log-entity">{{ log.entityType }}</span>
+          <span class="log-user">{{ log.userEmail }}</span>
+          <span class="log-time">{{ log.createdAt | date:"dd/MM HH:mm" }}</span>
+          <span class="log-ip">{{ log.ipAddress }}</span>
+        </div>
+        <div *ngIf="recentLogs.length === 0" class="text-center p-24 text-muted">
+          <i-tabler name="camera-off" class="icon-32"></i-tabler>
+          <p>No events yet</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+</div>

@@ -1,0 +1,229 @@
+<div class="dialog-container">
+  <!-- HEADER -->
+  <div class="dialog-header">
+    <h2 class="dialog-title">
+      <mat-icon class="header-icon">edit</mat-icon>
+      Edit Admin
+    </h2>
+    <p class="dialog-subtitle">Update admin account information</p>
+  </div>
+
+  <form [formGroup]="adminForm" (ngSubmit)="onSubmit()" class="admin-form">
+    <!-- PHOTO -->
+    <div class="form-section center">
+      <h3 class="section-title">
+        <mat-icon>photo_camera</mat-icon>
+        Profile Photo
+      </h3>
+
+      <div class="photo-wrapper">
+        <img
+          *ngIf="photoPreview; else defaultImg"
+          [src]="photoPreview"
+          class="photo-preview"
+          (error)="onImageError($event)"
+        />
+
+        <ng-template #defaultImg>
+          <div class="photo-placeholder">
+            <mat-icon>person</mat-icon>
+          </div>
+        </ng-template>
+
+        <input
+          type="file"
+          (change)="onFileSelected($event)"
+          accept="image/*"
+          hidden
+          #fileInput
+        />
+
+        <button
+          type="button"
+          mat-mini-fab
+          color="primary"
+          class="upload-btn"
+          (click)="fileInput.click()"
+        >
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- PERSONAL INFO -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <mat-icon>person</mat-icon>
+        Personal Information
+      </h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>First Name</mat-label>
+          <input matInput formControlName="firstName" />
+          <mat-error *ngIf="hasError('firstName')"
+            >{{ getErrorMessage('firstName') }}</mat-error
+          >
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Last Name</mat-label>
+          <input matInput formControlName="lastName" />
+          <mat-error *ngIf="hasError('lastName')"
+            >{{ getErrorMessage('lastName') }}</mat-error
+          >
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" />
+          <mat-error *ngIf="hasError('email')"
+            >{{ getErrorMessage('email') }}</mat-error
+          >
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label
+            >Password <span class="optional">(optional)</span></mat-label
+          >
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            formControlName="password"
+            placeholder="Leave blank to keep current"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            (click)="hidePassword = !hidePassword"
+            type="button"
+          >
+            <mat-icon
+              >{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon
+            >
+          </button>
+          <mat-hint
+            >Min 8 chars with uppercase, lowercase, number & symbol</mat-hint
+          >
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Phone</mat-label>
+          <input matInput formControlName="phone" />
+          <mat-error *ngIf="hasError('phone')"
+            >{{ getErrorMessage('phone') }}</mat-error
+          >
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>National ID</mat-label>
+          <input matInput formControlName="nationalId" />
+          <mat-error *ngIf="hasError('nationalId')"
+            >{{ getErrorMessage('nationalId') }}</mat-error
+          >
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field full-width">
+          <mat-label>Address</mat-label>
+          <input matInput formControlName="address" />
+          <mat-error *ngIf="hasError('address')"
+            >{{ getErrorMessage('address') }}</mat-error
+          >
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Gender</mat-label>
+          <mat-select formControlName="gender">
+            <mat-option value="">Select</mat-option>
+            <mat-option value="male">Male</mat-option>
+            <mat-option value="female">Female</mat-option>
+            <mat-option value="other">Other</mat-option>
+          </mat-select>
+          <mat-error *ngIf="hasError('gender')"
+            >{{ getErrorMessage('gender') }}</mat-error
+          >
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- SERVICE -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <mat-icon>local_hospital</mat-icon>
+        Service Assignment
+      </h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field full-width">
+          <mat-label>Select Service</mat-label>
+          <mat-select formControlName="serviceId">
+            <mat-option value="">Choose a service</mat-option>
+            <mat-option *ngFor="let s of services" [value]="s._id">
+              {{ s.name }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="hasError('serviceId')"
+            >{{ getErrorMessage('serviceId') }}</mat-error
+          >
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- STATUS -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <mat-icon>verified_user</mat-icon>
+        Account Status
+      </h3>
+
+      <div class="status-wrapper">
+        <mat-slide-toggle
+          formControlName="isActive"
+          [disabled]="data._id === currentUserId"
+          color="primary"
+        >
+          <span class="status-label">
+            {{ adminForm.get('isActive')?.value ? 'Active Account' : 'Inactive
+            Account' }}
+          </span>
+        </mat-slide-toggle>
+
+        <p class="status-hint" *ngIf="data._id === currentUserId">
+          <mat-icon class="hint-icon">info</mat-icon>
+          You cannot change your own account status
+        </p>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="dialog-actions">
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="onCancel()"
+        class="cancel-button"
+      >
+        Cancel
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        class="submit-button"
+        [disabled]="adminForm.invalid || loading"
+      >
+        <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+        <mat-icon *ngIf="!loading">save</mat-icon>
+        {{ loading ? 'Saving...' : 'Save Changes' }}
+      </button>
+    </div>
+  </form>
+</div>
