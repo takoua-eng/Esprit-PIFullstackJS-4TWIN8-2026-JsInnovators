@@ -102,6 +102,8 @@
   "CANCEL": "Cancel",
   "DELETE": "Delete",
   "MY_ASSIGNED_PATIENTS": "My Assigned Patients",
+  "SAVE_SCHEDULED": "Save as Scheduled",
+"SEND_NOW": "Send Now",
   "PATIENTS_COMPLIANCE_DESC": "Patient compliance is based on today's vital signs and symptoms submissions.",
   "UP_TO_DATE": "Up to date",
   "UP_TO_DATE_DESC": "vitals & symptoms submitted today",
