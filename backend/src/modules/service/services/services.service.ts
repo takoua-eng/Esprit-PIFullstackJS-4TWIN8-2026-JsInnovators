@@ -37,8 +37,15 @@ export class ServicesService {
 
   async findAll() {
     return this.serviceModel
-      .find({ isArchived: false })
+      .find({ isArchived: { $ne: true } })
       .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findActiveOnly() {
+    return this.serviceModel
+      .find({ isArchived: { $ne: true }, isActive: { $ne: false } })
+      .sort({ name: 1 })
       .exec();
   }
 

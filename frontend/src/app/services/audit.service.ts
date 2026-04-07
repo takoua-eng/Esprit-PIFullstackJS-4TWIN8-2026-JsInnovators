@@ -4,14 +4,22 @@ import { Observable } from 'rxjs';
 
 export interface AuditLog {
   _id: string;
-  userId: string;
+  // QUI
+  userId:    string;
   userEmail: string;
-  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN';
+  userRole:  string;
+  userName:  string;
+  // QUOI
+  action: string;
+  // SUR QUOI
   entityType: string;
-  entityId: string;
+  entityId:   string;
+  // CHANGEMENTS
   before: any;
-  after: any;
+  after:  any;
+  // OÙ + QUAND
   ipAddress: string;
+  userAgent: string;
   createdAt: string;
 }
 
@@ -22,6 +30,12 @@ export interface AuditStats {
   byUser: { _id: string; count: number }[];
   last24h: { _id: number; count: number }[];
   last7days: { _id: string; count: number }[];
+  // Pre-computed
+  criticalChanges: number;
+  loginCount: number;
+  patientModifications: number;
+  alertsGenerated: number;
+  totalLast7days: number;
 }
 
 @Injectable({ providedIn: 'root' })

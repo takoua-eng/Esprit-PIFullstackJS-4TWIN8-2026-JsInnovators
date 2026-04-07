@@ -474,12 +474,16 @@
 
 
   "EDIT_REMINDER": "Modifier le rappel",
-"SAVE_CHANGES": "Enregistrer",
-"SEARCH_PATIENT": "Rechercher par patient",
-"EDIT": "Modifier"
-=======
+  "SAVE_CHANGES": "Enregistrer",
+  "SEARCH_PATIENT": "Rechercher par patient",
+  "EDIT": "Modifier",
   "RETRY": "Réessayer",
   "AUDIT_LOGS": "Journaux d'audit",
-  "AUDITOR_MENU": "Auditeur"
->>>>>>> superadmin
+  "AUDITOR_MENU": "Auditeur",
+  "AUDITOR_DASHBOARD": "Tableau de bord",
+  "AUDITOR_PATIENTS": "Patients",
+  "AUDITOR_COORDINATORS": "Coordinateurs",
+  "AUDITOR_REMINDERS": "Rappels",
+  "AUDITOR_ANOMALIES": "Anomalies",
+  "AUDITOR_VERIFY": "Vérifier les logs"
 }

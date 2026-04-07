@@ -1,0 +1,50 @@
+<div class="p-24">
+  <div class="d-flex justify-content-between align-items-center m-b-20">
+    <div>
+      <h2 class="m-0 d-flex align-items-center gap-8">
+        <i-tabler name="alert-triangle" style="color:#d63031" class="icon-24"></i-tabler>
+        Anomalies & Alerts
+      </h2>
+      <p class="text-muted f-s-13 m-0">Patients with missing data — {{ lastRefresh | date:"HH:mm:ss" }}</p>
+    </div>
+    <div class="d-flex gap-8 align-items-center">
+      <span class="chip chip-red">{{ highCount }} High</span>
+      <span class="chip chip-yellow">{{ mediumCount }} Medium</span>
+      <button mat-stroked-button (click)="load()">
+        <i-tabler name="refresh" class="icon-16 m-r-4"></i-tabler> Refresh
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center p-24">
+    <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+  </div>
+
+  <div *ngIf="!loading && anomalies.length === 0" class="text-center p-40">
+    <i-tabler name="circle-check" style="color:#00b894;font-size:3rem;width:3rem;height:3rem"></i-tabler>
+    <h3 class="m-t-12" style="color:#00b894">No anomalies detected</h3>
+    <p class="text-muted">All patients have submitted their data today.</p>
+  </div>
+
+  <div *ngIf="!loading && anomalies.length > 0" class="anomaly-list">
+    <mat-card *ngFor="let a of anomalies" class="anomaly-card m-b-12"
+      [class.high]="a.severity === 'HIGH'" [class.medium]="a.severity === 'MEDIUM'">
+      <mat-card-content class="d-flex align-items-center gap-16 p-16">
+        <div class="sev-icon" [style.background]="severityColor(a.severity) + '18'">
+          <i-tabler [name]="a.severity === 'HIGH' ? 'alert-octagon' : 'alert-circle'"
+            [style.color]="severityColor(a.severity)" class="icon-22"></i-tabler>
+        </div>
+        <div class="flex-1-auto">
+          <div class="f-w-600 f-s-14">{{ a.name }}</div>
+          <div class="text-muted f-s-12">{{ a.email }}</div>
+          <div class="issue-text m-t-4">{{ a.issue }}</div>
+        </div>
+        <span class="sev-badge"
+          [style.background]="severityColor(a.severity) + '18'"
+          [style.color]="severityColor(a.severity)">
+          {{ a.severity }}
+        </span>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

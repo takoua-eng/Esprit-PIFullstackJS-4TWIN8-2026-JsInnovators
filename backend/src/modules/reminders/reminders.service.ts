@@ -149,6 +149,36 @@ export class RemindersService implements OnModuleInit {
     return docs.map((d) => this.toListItem(d as ReminderDocument));
   }
 
+  async findByPatient(patientId: string): Promise<ReminderListItem[]> {
+    if (!Types.ObjectId.isValid(patientId)) return [];
+    const docs = await this.reminderModel
+      .find({ patientId: new Types.ObjectId(patientId) })
+      .sort({ createdAt: -1 })
+      .populate('patientId', 'firstName lastName')
+      .exec();
+    return docs.map((d) => this.toListItem(d as ReminderDocument));
+  }
+
+  async groupByPatient(): Promise<{ patientId: string; patientName: string; total: number; pending: number; sent: number; lastStatus: string }[]> {
+    const all = await this.findAll();
+    const map = new Map<string, typeof all>();
+
+    for (const r of all) {
+      const key = r.patientId;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(r);
+    }
+
+    return Array.from(map.entries()).map(([patientId, rems]) => ({
+      patientId,
+      patientName: rems[0].patientName,
+      total:       rems.length,
+      pending:     rems.filter(r => r.status === 'pending' || r.status === 'scheduled').length,
+      sent:        rems.filter(r => r.status === 'sent').length,
+      lastStatus:  rems[0].status,
+    }));
+  }
+
   async findPendingCount(): Promise<number> {
     const patientIds = await this.getPatientUserObjectIds();
     if (patientIds.length === 0) return 0;

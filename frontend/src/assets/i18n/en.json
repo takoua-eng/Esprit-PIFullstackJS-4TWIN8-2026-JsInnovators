@@ -502,11 +502,13 @@
   "FIELD_REQUIRED_ERROR": "This field is required",
   "SUBMIT_SUCCESS": "Questionnaire submitted successfully!",
   "ENTER_VALUE": "Enter a value",
-  "TYPE_ANSWER": "Type your answer..."
-=======
+  "TYPE_ANSWER": "Type your answer...",
   "AUDIT_LOGS": "Audit Logs",
   "AUDITOR_MENU": "Auditor",
   "AUDITOR_DASHBOARD": "Dashboard",
+  "AUDITOR_PATIENTS": "Patients",
+  "AUDITOR_COORDINATORS": "Coordinators",
+  "AUDITOR_REMINDERS": "Reminders",
+  "AUDITOR_ANOMALIES": "Anomalies",
   "AUDITOR_VERIFY": "Verify Logs"
->>>>>>> superadmin
 }

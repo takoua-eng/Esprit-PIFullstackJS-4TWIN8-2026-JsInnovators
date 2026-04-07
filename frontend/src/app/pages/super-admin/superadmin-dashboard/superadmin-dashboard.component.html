@@ -92,8 +92,26 @@
         </mat-card-content>
       </mat-card>
     </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi kpi-purple" style="background:linear-gradient(135deg,#a29bfe,#6c5ce7)">
+        <mat-card-content>
+          <i-tabler name="clipboard-list" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalQuestionnaires }}</div>
+          <div class="kpi-lbl">Questionnaires</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi" style="background:linear-gradient(135deg,#00b894,#00cec9);color:#fff">
+        <mat-card-content>
+          <i-tabler name="heart-rate-monitor" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ vitalsSubmittedToday }}</div>
+          <div class="kpi-sub">{{ complianceRate }}% compliance</div>
+          <div class="kpi-lbl">Vitals Today</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
   </div>
-
   <!-- ROW 2 : Charts -->
   <div class="row m-b-20">
 
@@ -158,6 +176,99 @@
       </mat-card>
     </div>
 
+  </div>
+
+  <!-- ROW 2b : Reminders Charts -->
+  <div class="row m-b-20">
+
+    <!-- Reminders par Coordinator -->
+    <div class="col-lg-6 m-b-16">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="users-group" class="sec-ico purple"></i-tabler>
+              Reminders par Coordinateur
+            </div>
+          </div>
+          <apx-chart *ngIf="remindersByCoordChart.series"
+            [series]="remindersByCoordChart.series"
+            [chart]="remindersByCoordChart.chart"
+            [plotOptions]="remindersByCoordChart.plotOptions"
+            [colors]="remindersByCoordChart.colors"
+            [xaxis]="remindersByCoordChart.xaxis"
+            [dataLabels]="remindersByCoordChart.dataLabels"
+            [grid]="remindersByCoordChart.grid"
+            [tooltip]="remindersByCoordChart.tooltip">
+          </apx-chart>
+          <div *ngIf="!remindersByCoordChart.series" class="empty-sec">
+            <i-tabler name="bell-off" class="icon-32"></i-tabler>
+            <p>Aucune donnée</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Reminders par Patient -->
+    <div class="col-lg-6 m-b-16">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="heart-rate-monitor" class="sec-ico blue"></i-tabler>
+              Reminders par Patient (Top 8)
+            </div>
+          </div>
+          <apx-chart *ngIf="remindersByPatientChart.series"
+            [series]="remindersByPatientChart.series"
+            [chart]="remindersByPatientChart.chart"
+            [plotOptions]="remindersByPatientChart.plotOptions"
+            [colors]="remindersByPatientChart.colors"
+            [xaxis]="remindersByPatientChart.xaxis"
+            [yaxis]="remindersByPatientChart.yaxis"
+            [dataLabels]="remindersByPatientChart.dataLabels"
+            [grid]="remindersByPatientChart.grid"
+            [tooltip]="remindersByPatientChart.tooltip">
+          </apx-chart>
+          <div *ngIf="!remindersByPatientChart.series" class="empty-sec">
+            <i-tabler name="bell-off" class="icon-32"></i-tabler>
+            <p>Aucune donnée</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+  </div>
+
+  <!-- ROW 2c : Staff par Service -->
+  <div class="row m-b-20">
+    <div class="col-12">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="building-hospital" class="sec-ico orange"></i-tabler>
+              Doctors / Nurses / Patients par Service
+            </div>
+          </div>
+          <apx-chart *ngIf="serviceStaffChart.series"
+            [series]="serviceStaffChart.series"
+            [chart]="serviceStaffChart.chart"
+            [plotOptions]="serviceStaffChart.plotOptions"
+            [colors]="serviceStaffChart.colors"
+            [xaxis]="serviceStaffChart.xaxis"
+            [legend]="serviceStaffChart.legend"
+            [dataLabels]="serviceStaffChart.dataLabels"
+            [grid]="serviceStaffChart.grid"
+            [tooltip]="serviceStaffChart.tooltip">
+          </apx-chart>
+          <div *ngIf="!serviceStaffChart.series" class="empty-sec">
+            <i-tabler name="building-off" class="icon-32"></i-tabler>
+            <p>Aucune donnée de service</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
   </div>
 
   <!-- ROW 3 : Alerts + Services + Users by role list -->

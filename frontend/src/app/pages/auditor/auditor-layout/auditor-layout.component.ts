@@ -16,32 +16,39 @@ import { AppTopstripComponent } from 'src/app/layouts/full/top-strip/topstrip.co
 import { NavItem } from 'src/app/layouts/full/sidebar/nav-item/nav-item';
 
 const auditorNav: NavItem[] = [
-  { navCap: 'AUDITOR_MENU' },
   {
-    displayName: 'AUDITOR_DASHBOARD',
+    displayName: 'Dashboard',
     iconName: 'gauge',
     route: '/auditor/dashboard',
     bgcolor: 'primary',
   },
   {
-    displayName: 'AUDIT_LOGS',
-    iconName: 'camera',
-    route: '/auditor/logs',
+    displayName: 'Patients',
+    iconName: 'users',
+    route: '/auditor/patients',
+    bgcolor: 'primary',
+    permission: 'audit:read',
+  },
+  {
+    displayName: 'Coordinateurs',
+    iconName: 'users-group',
+    route: '/auditor/coordinators',
+    bgcolor: 'accent',
+    permission: 'audit:read',
+  },
+  {
+    displayName: 'Reminders',
+    iconName: 'bell',
+    route: '/auditor/reminders',
+    bgcolor: 'warning',
+    permission: 'audit:read',
+  },
+  {
+    displayName: 'Anomalies',
+    iconName: 'alert-triangle',
+    route: '/auditor/anomalies',
     bgcolor: 'error',
     permission: 'audit:read',
-  },
-  {
-    displayName: 'AUDITOR_VERIFY',
-    iconName: 'shield-check',
-    route: '/auditor/verify',
-    bgcolor: 'success',
-    permission: 'audit:read',
-  },
-  {
-    displayName: 'PROFILE',
-    iconName: 'user',
-    route: '/auditor/profile',
-    bgcolor: 'secondary',
   },
 ];
 

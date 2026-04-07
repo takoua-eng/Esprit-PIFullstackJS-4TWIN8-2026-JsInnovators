@@ -359,6 +359,47 @@ export class UsersController {
   }*/
 
   // =========================
+  // ✅ UPDATE USER (general — all roles)
+  // =========================
+  @UseInterceptors(FileInterceptor('file', multerConfig))
+  @Put(':id')
+  @Permissions('users:update', 'profile:update', 'patients:update', 'nurses:update', 'doctors:update', 'coordinators:update', 'auditors:update')
+  updateUsers(
+    @Param('id') id: string,
+    @Body() dto: any,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req,
+  ) {
+    const user = req.user;
+    const perms: string[] = user?.permissions ?? [];
+    const isSuperAdmin = perms.includes('*');
+
+    // Patient: can only update own profile, limited fields
+    if (user.role === 'patient' && perms.includes('profile:update')) {
+      if (user._id !== id) {
+        throw new ForbiddenException('Access denied: you can only edit your own profile');
+      }
+      const allowed = ['firstName', 'lastName', 'phone', 'address', 'photo'];
+      const filtered = Object.keys(dto)
+        .filter(k => allowed.includes(k))
+        .reduce((o: any, k) => { o[k] = dto[k]; return o; }, {});
+      return this.usersService.updateUsers(id, filtered, file);
+    }
+
+    const canUpdate = isSuperAdmin
+      || perms.includes('users:update')
+      || perms.includes('patients:update')
+      || perms.includes('nurses:update')
+      || perms.includes('doctors:update')
+      || perms.includes('coordinators:update')
+      || perms.includes('auditors:update');
+
+    if (!canUpdate) throw new ForbiddenException('Insufficient permission');
+
+    return this.usersService.updateUsers(id, dto, file);
+  }
+
+  // =========================
   // ❌ DELETE - Jamais pour patient
   // =========================
 

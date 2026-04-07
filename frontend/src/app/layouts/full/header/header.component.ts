@@ -15,6 +15,8 @@ import { NotificationBellService, AppNotification } from 'src/app/services/notif
 import { interval, Subscription } from 'rxjs';
 import { startWith, switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from 'src/app/core/api.config';
 
 @Component({
   selector: 'app-header',
@@ -44,6 +46,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     readonly core: CoreService,
     private patientService: PatientService,
     private notifService: NotificationBellService,
+    private http: HttpClient,
   ) {}
 
   ngOnInit(): void {
@@ -119,8 +122,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    clearAuthLocalStorage();
-    this.core.clearRole();
-    this.router.navigate(['/authentication/login']);
+    // Call backend to log the LOGOUT event in audit
+    this.http.post(`${API_BASE_URL}/auth/logout`, {}).pipe(
+      catchError(() => of(null))
+    ).subscribe(() => {
+      clearAuthLocalStorage();
+      this.core.clearRole();
+      this.router.navigate(['/authentication/login']);
+    });
   }
 }

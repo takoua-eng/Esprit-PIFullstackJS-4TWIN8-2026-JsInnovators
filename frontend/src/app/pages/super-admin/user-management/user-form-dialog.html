@@ -55,9 +55,9 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Email *</mat-label>
-          <input matInput formControlName="email" type="email" />
+          <input matInput formControlName="email" type="email" placeholder="example@gmail.com" />
           <mat-error *ngIf="form.get('email')?.hasError('required')">Required</mat-error>
-          <mat-error *ngIf="form.get('email')?.hasError('email')">Invalid email</mat-error>
+          <mat-error *ngIf="form.get('email')?.hasError('pattern')">Invalid email format (e.g. name@gmail.com)</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" *ngIf="!isEdit">
@@ -67,7 +67,9 @@
             <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
           <mat-error *ngIf="form.get('password')?.hasError('required')">Required</mat-error>
-          <mat-error *ngIf="form.get('password')?.hasError('minlength')">Min 6 characters</mat-error>
+          <mat-error *ngIf="form.get('password')?.hasError('minlength')">Min 8 characters</mat-error>
+          <mat-error *ngIf="form.get('password')?.hasError('pattern')">Must contain uppercase, number and special character</mat-error>
+          <mat-hint>Min 8 chars · 1 uppercase · 1 number · 1 special char</mat-hint>
         </mat-form-field>
 
         <!-- Password optional on edit -->
@@ -85,7 +87,8 @@
         <mat-form-field appearance="outline">
           <mat-label>Phone</mat-label>
           <input matInput formControlName="phone" placeholder="+216 XX XXX XXX" />
-          <mat-error *ngIf="form.get('phone')?.hasError('pattern')">Invalid phone format</mat-error>
+          <mat-error *ngIf="form.get('phone')?.hasError('pattern')">Invalid phone (e.g. +21620123456 or 20123456)</mat-error>
+          <mat-hint>Tunisian: 2X/5X/9X XXXXXXX or international +XXX...</mat-hint>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -97,8 +100,10 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>National ID</mat-label>
-          <input matInput formControlName="nationalId" />
+          <mat-label>National ID (CIN)</mat-label>
+          <input matInput formControlName="nationalId" placeholder="12345678" maxlength="8" />
+          <mat-error *ngIf="form.get('nationalId')?.hasError('pattern')">CIN must be exactly 8 digits</mat-error>
+          <mat-hint>8 digits exactly</mat-hint>
         </mat-form-field>
 
         <!-- Marital Status — common to all -->

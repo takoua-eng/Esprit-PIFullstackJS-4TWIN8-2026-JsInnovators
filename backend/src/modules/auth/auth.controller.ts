@@ -54,6 +54,14 @@ export class AuthController {
     };
   }
 
+  // ================= LOGOUT =================
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Request() req: any) {
+    // Interceptor will auto-log this as LOGOUT action
+    return { message: 'Logged out successfully' };
+  }
+
   // ================= FORGOT PASSWORD =================
   @Post('forgot-password')
   forgotPassword(@Body() body: ForgotPasswordDto) {

@@ -206,6 +206,10 @@ export class QuestionnaireResponseService {
     return response.save();
   }
 
+  async findAll(): Promise<QuestionnaireResponse[]> {
+    return this.responseModel.find().sort({ createdAt: -1 }).lean().exec();
+  }
+
   async getByPatient(patientId: string): Promise<QuestionnaireResponse[]> {
     return this.responseModel
       .find({ patientId: new Types.ObjectId(patientId) })

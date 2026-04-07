@@ -14,6 +14,10 @@ export class ServiceService {
     return this.http.get<any[]>(this.apiUrl);
   }
 
+  getActiveServices(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/active`);
+  }
+
   getServiceById(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}`);
   }

@@ -16,6 +16,8 @@ import { NotificationBellService, AppNotification } from 'src/app/services/notif
 import { interval, Subscription } from 'rxjs';
 import { startWith, switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from 'src/app/core/api.config';
 
 @Component({
   selector: 'app-super-header',
@@ -51,6 +53,7 @@ export class SuperHeaderComponent implements OnInit, OnDestroy {
     readonly core: CoreService,
     readonly hcService: HighContrastService,
     private notifService: NotificationBellService,
+    private http: HttpClient,
   ) {
     const saved = localStorage.getItem('app-lang') || 'en';
     this.currentLang = saved;

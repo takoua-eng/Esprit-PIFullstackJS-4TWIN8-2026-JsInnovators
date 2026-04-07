@@ -13,6 +13,9 @@ import { AlertsApiService, AlertDto } from '../../../services/alerts-api.service
 import { ServiceService } from '../../../services/superadmin/service.service';
 import { PatientService } from '../../../services/superadmin/patient.service';
 import { RemindersApiService } from '../../../services/reminders-api.service';
+import { VitalsApiService } from '../../../services/vitals-api.service';
+import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from '../../../core/api.config';
 
 @Component({
   selector: 'app-superadmin-dashboard',
@@ -34,6 +37,10 @@ export class SuperAdminDashboardComponent implements OnInit, OnDestroy {
   criticalAlerts = 0;
   totalServices = 0;
   totalAuditEvents = 0;
+  // New
+  totalQuestionnaires = 0;
+  vitalsSubmittedToday = 0;
+  complianceRate = 0;
   lastRefresh = new Date();
 
   // Alerts
@@ -51,6 +58,14 @@ export class SuperAdminDashboardComponent implements OnInit, OnDestroy {
   usersRoleChart: any = {};
   activityChart: any = {};
 
+  // Reminders charts
+  remindersByCoordChart: any = {};
+  remindersByPatientChart: any = {};
+
+  // Service staff chart
+  serviceStaffChart: any = {};
+  serviceStaffData: { serviceId: string; doctorCount: number; nurseCount: number; patientCount: number }[] = [];
+
   // AI Insights (simulated from real data)
   aiInsights: { icon: string; color: string; text: string }[] = [];
 
@@ -66,22 +81,26 @@ export class SuperAdminDashboardComponent implements OnInit, OnDestroy {
     private serviceService: ServiceService,
     private patientService: PatientService,
     private remindersService: RemindersApiService,
+    private vitalsService: VitalsApiService,
+    private http: HttpClient,
   ) {}
 
   ngOnInit(): void {
     this.sub = interval(20000).pipe(
       startWith(0),
       switchMap(() => forkJoin({
-        users:     this.usersService.getAllUsers().pipe(catchError(() => of([]))),
-        alerts:    this.alertsService.getAlerts().pipe(catchError(() => of([]))),
-        services:  this.serviceService.getServices().pipe(catchError(() => of([]))),
-        patients:  this.patientService.getPatients().pipe(catchError(() => of([]))),
-        stats:     this.auditService.getStats().pipe(catchError(() => of(null))),
-        logs:      this.auditService.getLogs().pipe(catchError(() => of([]))),
-        reminders: this.remindersService.getReminders().pipe(catchError(() => of([]))),
+        users:          this.usersService.getAllUsers().pipe(catchError(() => of([]))),
+        alerts:         this.alertsService.getAlerts().pipe(catchError(() => of([]))),
+        services:       this.serviceService.getServices().pipe(catchError(() => of([]))),
+        patients:       this.patientService.getPatients().pipe(catchError(() => of([]))),
+        stats:          this.auditService.getStats().pipe(catchError(() => of(null))),
+        logs:           this.auditService.getLogs().pipe(catchError(() => of([]))),
+        reminders:      this.http.get<any>(`${API_BASE_URL}/coordinator/auditor/reminders-overview`).pipe(catchError(() => of({ stats: {}, reminders: [] }))),
+        questionnaires: this.http.get<any[]>(`${API_BASE_URL}/questionnaire-responses`).pipe(catchError(() => of([]))),
+        serviceStaff:   this.http.get<any[]>(`${API_BASE_URL}/coordinator/auditor/service-staff`).pipe(catchError(() => of([]))),
       })),
     ).subscribe({
-      next: ({ users, alerts, services, patients, stats, logs, reminders }) => {
+      next: ({ users, alerts, services, patients, stats, logs, reminders, questionnaires, serviceStaff }) => {
         this.lastRefresh = new Date();
         this.applyUsers(users as any[]);
         this.applyAlerts(alerts as AlertDto[]);
@@ -90,10 +109,30 @@ export class SuperAdminDashboardComponent implements OnInit, OnDestroy {
         if (stats) this.applyAuditStats(stats as AuditStats);
         this.recentLogs = (logs as AuditLog[]).slice(0, 6);
         this.generateAiInsights(alerts as AlertDto[], patients as any[]);
-        // Reminders
-        const rems = reminders as any[];
-        this.totalReminders   = rems.length;
-        this.pendingReminders = rems.filter(r => r.status === 'pending' || r.status === 'scheduled').length;
+
+        // Reminders — from auditor overview endpoint
+        const remStats = (reminders as any).stats ?? {};
+        const remRows  = (reminders as any).reminders ?? [];
+        this.totalReminders   = remStats.total ?? 0;
+        this.pendingReminders = remStats.scheduledCount ?? 0;
+        this.buildRemindersByCoordChart(remRows);
+        this.buildRemindersByPatientChart(remRows);
+
+        // Questionnaires
+        this.totalQuestionnaires = (questionnaires as any[]).length;
+
+        // Service staff chart
+        this.serviceStaffData = serviceStaff as any[];
+        this.buildServiceStaffChart(serviceStaff as any[], services as any[]);
+        this.http.get<any[]>(`${API_BASE_URL}/coordinator/auditor/patients-overview`)
+          .pipe(catchError(() => of([])))
+          .subscribe(pts => {
+            this.vitalsSubmittedToday = pts.filter((p: any) => p.vitalsToday).length;
+            const total = pts.length;
+            this.complianceRate = total > 0
+              ? Math.round(pts.filter((p: any) => p.status === 'OK').length / total * 100)
+              : 0;
+          });
       },
     });
   }
@@ -178,6 +217,76 @@ export class SuperAdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   // ── Chart builders ────────────────────────────────────────────────
+
+  private buildServiceStaffChart(staffData: any[], services: any[]): void {
+    // Map serviceId → service name (use all services including those without isArchived)
+    const nameMap = new Map(services.map((s: any) => [s._id?.toString(), s.name]));
+
+    const items = staffData
+      .map(d => ({
+        name: nameMap.get(d.serviceId) || d.serviceId?.slice(-4) || 'Unknown',
+        doctors:  d.doctorCount,
+        nurses:   d.nurseCount,
+        patients: d.patientCount,
+      }))
+      .sort((a, b) => (b.doctors + b.nurses + b.patients) - (a.doctors + a.nurses + a.patients))
+      .slice(0, 8);
+
+    this.serviceStaffChart = {
+      series: [
+        { name: 'Doctors',  data: items.map(i => i.doctors)  },
+        { name: 'Nurses',   data: items.map(i => i.nurses)   },
+        { name: 'Patients', data: items.map(i => i.patients) },
+      ],
+      chart: { type: 'bar', height: 240, toolbar: { show: false }, stacked: false },
+      plotOptions: { bar: { borderRadius: 3, columnWidth: '60%', grouped: true } },
+      colors: ['#0984e3', '#00b894', '#e17055'],
+      xaxis: { categories: items.map(i => i.name), labels: { style: { fontSize: '10px' }, rotate: -30 } },
+      legend: { position: 'top', fontSize: '11px' },
+      dataLabels: { enabled: false },
+      grid: { borderColor: 'rgba(0,0,0,0.05)', strokeDashArray: 3 },
+      tooltip: { theme: 'light', shared: true, intersect: false },
+    };
+  }
+
+  private buildRemindersByCoordChart(reminders: any[]): void {
+    const map: Record<string, number> = {};
+    reminders.forEach(r => {
+      const name = r.coordinatorName || 'Unknown';
+      map[name] = (map[name] ?? 0) + 1;
+    });
+    const sorted = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    this.remindersByCoordChart = {
+      series: [{ name: 'Reminders', data: sorted.map(e => e[1]) }],
+      chart: { type: 'bar', height: 220, toolbar: { show: false } },
+      plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
+      colors: ['#6c5ce7'],
+      xaxis: { categories: sorted.map(e => e[0].split(' ')[0]), labels: { style: { fontSize: '10px' } } },
+      dataLabels: { enabled: true, style: { fontSize: '10px' } },
+      grid: { borderColor: 'rgba(0,0,0,0.05)', strokeDashArray: 3 },
+      tooltip: { theme: 'light' },
+    };
+  }
+
+  private buildRemindersByPatientChart(reminders: any[]): void {
+    const map: Record<string, number> = {};
+    reminders.forEach(r => {
+      const name = r.patientName || 'Unknown';
+      map[name] = (map[name] ?? 0) + 1;
+    });
+    const sorted = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    this.remindersByPatientChart = {
+      series: [{ name: 'Reminders reçus', data: sorted.map(e => e[1]) }],
+      chart: { type: 'bar', height: 220, toolbar: { show: false } },
+      plotOptions: { bar: { borderRadius: 4, horizontal: true, barHeight: '55%' } },
+      colors: ['#0984e3'],
+      xaxis: { labels: { style: { fontSize: '10px' } } },
+      yaxis: { categories: sorted.map(e => e[0].split(' ')[0]), labels: { style: { fontSize: '10px' } } },
+      dataLabels: { enabled: true, style: { fontSize: '10px' } },
+      grid: { borderColor: 'rgba(0,0,0,0.05)', strokeDashArray: 3 },
+      tooltip: { theme: 'light' },
+    };
+  }
 
   private buildAlertsChart(alerts: AlertDto[]): void {
     const last7 = this.last7DayLabels();

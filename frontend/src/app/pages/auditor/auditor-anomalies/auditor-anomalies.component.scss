@@ -1,0 +1,13 @@
+.chip { padding:4px 12px; border-radius:20px; font-size:.8rem; font-weight:600;
+  &.chip-red    { background:#ffebee; color:#c62828; }
+  &.chip-yellow { background:#fff8e1; color:#f57f17; }
+}
+.anomaly-card {
+  border-radius:12px !important;
+  border-left:4px solid transparent !important;
+  &.high   { border-left-color:#d63031 !important; }
+  &.medium { border-left-color:#fdcb6e !important; }
+}
+.sev-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.sev-badge { font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:8px; white-space:nowrap; }
+.issue-text { font-size:.82rem; color:#555; }

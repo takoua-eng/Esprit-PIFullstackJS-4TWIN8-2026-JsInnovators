@@ -32,6 +32,10 @@ import { AuditorsComponent as SuperAuditors } from './super-admin/auditors/audit
 // Auditor Components
 import { AuditorDashboardComponent } from './auditor/auditor-dashboard/auditor-dashboard.component';
 import { AuditorVerifyComponent } from './auditor/auditor-verify/auditor-verify.component';
+import { AuditorPatientsComponent } from './auditor/auditor-patients/auditor-patients.component';
+import { AuditorCoordinatorsComponent } from './auditor/auditor-coordinators/auditor-coordinators.component';
+import { AuditorRemindersComponent } from './auditor/auditor-reminders/auditor-reminders.component';
+import { AuditorAnomaliesComponent } from './auditor/auditor-anomalies/auditor-anomalies.component';
 
 // Patient Components (from main)
 import { DashboardComponent } from './patient/dashboard/dashboard.component';
@@ -347,18 +351,12 @@ export const PagesRoutes: Routes = [
 // ✅ AUDITOR ROUTES
 export const AuditorRoutes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'dashboard', component: AuditorDashboardComponent },
-  {
-    path: 'logs',
-    component: AuditLogsComponent,
-    canActivate: [PermissionGuard],
-    data: { permission: 'audit:read' },
-  },
-  {
-    path: 'verify',
-    component: AuditorVerifyComponent,
-    canActivate: [PermissionGuard],
-    data: { permission: 'audit:read' },
-  },
-  { path: 'profile', component: SuperAdminProfileComponent },
+  { path: 'dashboard',    component: AuditorDashboardComponent },
+  { path: 'patients',     component: AuditorPatientsComponent,     canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'coordinators', component: AuditorCoordinatorsComponent, canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'reminders',    component: AuditorRemindersComponent,    canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'anomalies',    component: AuditorAnomaliesComponent,    canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'logs',         component: AuditLogsComponent,           canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'verify',       component: AuditorVerifyComponent,       canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'profile',      component: SuperAdminProfileComponent },
 ];

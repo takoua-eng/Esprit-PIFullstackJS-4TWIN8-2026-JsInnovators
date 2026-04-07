@@ -1,0 +1,173 @@
+<div class="p-24">
+
+  <!-- Header -->
+  <div class="m-b-24">
+    <h2 class="m-0 f-w-700">Reminder History</h2>
+    <p class="text-muted f-s-13 m-0">All patient communications — read-only</p>
+  </div>
+
+  <!-- Stats cards -->
+  <div class="row m-b-24">
+    <div class="col-3">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20 d-flex align-items-center gap-16">
+          <div class="kpi-icon" style="background:#0984e318;color:#0984e3">
+            <i-tabler name="bell" class="icon-24"></i-tabler>
+          </div>
+          <div>
+            <div class="f-s-24 f-w-700">{{ stats.total }}</div>
+            <div class="text-muted f-s-12">Total Reminders</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-3">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20 d-flex align-items-center gap-16">
+          <div class="kpi-icon" style="background:#00b89418;color:#00b894">
+            <i-tabler name="circle-check" class="icon-24"></i-tabler>
+          </div>
+          <div>
+            <div class="f-s-24 f-w-700">{{ stats.successRate }}%</div>
+            <div class="text-muted f-s-12">Success Rate</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-3">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20 d-flex align-items-center gap-16">
+          <div class="kpi-icon" style="background:#fdcb6e18;color:#e17055">
+            <i-tabler name="clock" class="icon-24"></i-tabler>
+          </div>
+          <div>
+            <div class="f-s-24 f-w-700">{{ delayLabel(stats.avgDelayMin) }}</div>
+            <div class="text-muted f-s-12">Avg Send Delay</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-3">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20">
+          <div class="f-s-12 text-muted m-b-8">Breakdown</div>
+          <div class="d-flex flex-column gap-4">
+            <div class="d-flex justify-content-between">
+              <span class="f-s-13" style="color:#00b894">Sent</span>
+              <strong>{{ stats.sentCount }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="f-s-13" style="color:#0984e3">Scheduled</span>
+              <strong>{{ stats.scheduledCount }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="f-s-13" style="color:#d63031">Cancelled</span>
+              <strong>{{ stats.cancelledCount }}</strong>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <mat-card class="cardWithShadow">
+    <mat-card-content class="p-20">
+
+      <!-- Filters -->
+      <div class="d-flex gap-12 align-items-center m-b-16 flex-wrap">
+        <mat-form-field appearance="outline" style="width:280px;margin:0">
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput placeholder="Search patient, coordinator..." (keyup)="onSearch($event)" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" style="width:160px;margin:0">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()">
+            <mat-option *ngFor="let s of statuses" [value]="s">{{ s | titlecase }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-stroked-button color="primary" (click)="load()">
+          <i-tabler name="refresh" class="icon-16 m-r-4"></i-tabler> Refresh
+        </button>
+      </div>
+
+      <div *ngIf="loading" class="text-center p-40">
+        <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+      </div>
+
+      <div *ngIf="!loading" class="table-responsive">
+        <table mat-table [dataSource]="dataSource" matSort class="w-100">
+
+          <ng-container matColumnDef="createdAt">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+            <td mat-cell *matCellDef="let r" class="f-s-12 text-muted">
+              {{ r.createdAt | date:'dd/MM/yy HH:mm' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="patientName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Patient</th>
+            <td mat-cell *matCellDef="let r">
+              <strong>{{ r.patientName }}</strong>
+              <div class="text-muted f-s-12">{{ r.patientEmail }}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="coordinatorName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Coordinator</th>
+            <td mat-cell *matCellDef="let r" class="f-s-13">{{ r.coordinatorName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let r">
+              <span class="type-chip">{{ r.type }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="message">
+            <th mat-header-cell *matHeaderCellDef>Message</th>
+            <td mat-cell *matCellDef="let r" class="f-s-13">
+              {{ r.message | slice:0:55 }}{{ r.message?.length > 55 ? '...' : '' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef class="text-center">Status</th>
+            <td mat-cell *matCellDef="let r" class="text-center">
+              <span class="status-badge"
+                [style.background]="statusColor(r.status) + '18'"
+                [style.color]="statusColor(r.status)">
+                {{ r.status | uppercase }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="channels">
+            <th mat-header-cell *matHeaderCellDef class="text-center">Channels</th>
+            <td mat-cell *matCellDef="let r" class="text-center">
+              <span class="channel-icon" [title]="'Email: ' + (r.emailSent ? 'sent' : 'not sent')">
+                <i-tabler name="mail" class="icon-16"
+                  [style.color]="r.emailSent ? '#00b894' : '#b2bec3'"></i-tabler>
+              </span>
+              <span class="channel-icon m-l-4" [title]="'SMS: ' + (r.smsSent ? 'sent' : 'not sent')">
+                <i-tabler name="device-mobile" class="icon-16"
+                  [style.color]="r.smsSent ? '#00b894' : '#b2bec3'"></i-tabler>
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let r; columns: displayedColumns" class="hover-row"></tr>
+        </table>
+
+        <div *ngIf="dataSource.data.length === 0" class="text-center p-40 text-muted">
+          <i-tabler name="bell-off" class="icon-48 m-b-8" style="opacity:.3"></i-tabler>
+          <p>No reminders found</p>
+        </div>
+      </div>
+
+      <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+    </mat-card-content>
+  </mat-card>
+</div>

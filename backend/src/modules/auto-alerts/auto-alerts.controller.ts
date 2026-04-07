@@ -1,6 +1,9 @@
-import { Controller, Get, Param, Patch } from '@nestjs/common';
+﻿import { Controller, Get, Param, Patch } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AutoAlertsService } from './auto-alerts.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('auto-alerts')
 export class AutoAlertsController {
   constructor(private readonly autoAlertsService: AutoAlertsService) {}

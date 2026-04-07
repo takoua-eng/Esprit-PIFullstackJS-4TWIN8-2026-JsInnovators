@@ -1,91 +1,234 @@
-<div class="auditor-dashboard p-24">
+<div class="aud-page p-24">
 
   <!-- BANNER -->
-  <div class="aud-banner m-b-24">
+  <div class="aud-banner m-b-28">
     <div class="d-flex align-items-center gap-12">
       <i-tabler name="shield-check" class="banner-ico"></i-tabler>
       <div>
         <h2 class="m-0">Auditor Dashboard</h2>
-        <p class="m-0 text-muted f-s-13">System audit monitoring — real-time</p>
+        <p class="m-0 f-s-13" style="opacity:.7">Real-time monitoring overview</p>
       </div>
     </div>
     <div class="d-flex align-items-center gap-8">
       <span class="live-dot"></span>
       <span class="live-lbl">LIVE</span>
-      <span class="text-muted f-s-12">{{ lastRefresh | date:"HH:mm:ss" }}</span>
+      <span class="f-s-12" style="opacity:.7">{{ lastRefresh | date:"HH:mm:ss" }}</span>
     </div>
   </div>
 
-  <!-- KPI CARDS -->
-  <div class="row m-b-24">
-    <div class="col-md-3 col-6 m-b-16">
-      <mat-card class="kpi-card kpi-indigo">
-        <mat-card-content>
-          <i-tabler name="database" class="kpi-ico"></i-tabler>
-          <div class="kpi-val">{{ totalEvents }}</div>
-          <div class="kpi-lbl">Total Events</div>
-        </mat-card-content>
-      </mat-card>
-    </div>
+  <!-- ── AI INSIGHTS ───────────────────────────────────────── -->
+  <mat-card class="cardWithShadow m-b-28">
+    <mat-card-content class="p-20">
+      <div class="d-flex align-items-center justify-content-between m-b-16">
+        <div class="d-flex align-items-center gap-8">
+          <div style="background:#6c5ce718;border-radius:10px;padding:8px;display:flex">
+            <i-tabler name="brain" class="icon-22" style="color:#6c5ce7"></i-tabler>
+          </div>
+          <div>
+            <div class="f-s-15 f-w-700">AI Insights</div>
+            <div class="f-s-11 text-muted" *ngIf="insightsGeneratedAt">Généré à {{ insightsGeneratedAt | date:'HH:mm:ss' }}</div>
+          </div>
+        </div>
+        <button mat-stroked-button color="primary" (click)="loadInsights()" [disabled]="insightsLoading">
+          <i-tabler name="refresh" class="icon-16 m-r-4"></i-tabler>
+          {{ insightsLoading ? 'Analyse...' : 'Actualiser' }}
+        </button>
+      </div>
+
+      <div *ngIf="insightsLoading" class="text-center p-24">
+        <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+        <p class="text-muted f-s-12 m-t-8">Analyse des données en cours...</p>
+      </div>
+
+      <div *ngIf="!insightsLoading" class="insights-grid">
+        <div *ngFor="let ins of aiInsights" class="insight-card"
+          [style.border-left]="'4px solid ' + insightColor(ins.level)">
+          <div class="insight-icon" [style.background]="insightColor(ins.level) + '18'">
+            <i-tabler [name]="ins.icon" [style.color]="insightColor(ins.level)" class="icon-20"></i-tabler>
+          </div>
+          <div class="insight-body">
+            <div class="f-s-13 f-w-700" [style.color]="insightColor(ins.level)">{{ ins.title }}</div>
+            <div class="f-s-12 text-muted m-t-2">{{ ins.detail }}</div>
+          </div>
+          <span class="insight-badge" [style.background]="insightColor(ins.level) + '18'" [style.color]="insightColor(ins.level)">
+            {{ ins.level | uppercase }}
+          </span>
+        </div>
+
+        <div *ngIf="aiInsights.length === 0" class="text-center p-24 text-muted">
+          <i-tabler name="brain" class="icon-40" style="opacity:.3"></i-tabler>
+          <p>Aucun insight disponible</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- ── ROW 1: Patient KPIs ─────────────────────────────── -->
+  <p class="section-title">Patients</p>
+  <div class="row m-b-8">
     <div class="col-md-3 col-6 m-b-16">
       <mat-card class="kpi-card kpi-blue">
         <mat-card-content>
-          <i-tabler name="calendar-today" class="kpi-ico"></i-tabler>
-          <div class="kpi-val">{{ todayEvents }}</div>
-          <div class="kpi-lbl">Today</div>
+          <i-tabler name="users" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalPatients }}</div>
+          <div class="kpi-lbl">Total Patients</div>
         </mat-card-content>
       </mat-card>
     </div>
     <div class="col-md-3 col-6 m-b-16">
-      <mat-card class="kpi-card kpi-purple">
+      <mat-card class="kpi-card kpi-green">
         <mat-card-content>
-          <i-tabler name="login" class="kpi-ico"></i-tabler>
-          <div class="kpi-val">{{ loginEvents }}</div>
-          <div class="kpi-lbl">Logins</div>
+          <i-tabler name="circle-check" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ okPatients }}</div>
+          <div class="kpi-lbl">Compliant Today</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-md-3 col-6 m-b-16">
+      <mat-card class="kpi-card kpi-orange">
+        <mat-card-content>
+          <i-tabler name="alert-circle" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ incompletePatients }}</div>
+          <div class="kpi-lbl">Incomplete</div>
         </mat-card-content>
       </mat-card>
     </div>
     <div class="col-md-3 col-6 m-b-16">
       <mat-card class="kpi-card kpi-red">
         <mat-card-content>
-          <i-tabler name="trash" class="kpi-ico"></i-tabler>
-          <div class="kpi-val">{{ deleteEvents }}</div>
-          <div class="kpi-lbl">Deletions</div>
+          <i-tabler name="circle-x" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ noDataPatients }}</div>
+          <div class="kpi-lbl">No Data Today</div>
         </mat-card-content>
       </mat-card>
     </div>
   </div>
 
-  <!-- RECENT LOGS -->
-  <mat-card class="cardWithShadow">
+  <!-- Compliance bar -->
+  <mat-card class="cardWithShadow m-b-28">
     <mat-card-content class="p-20">
-      <div class="d-flex align-items-center justify-content-between m-b-16">
-        <div class="d-flex align-items-center gap-8">
-          <i-tabler name="camera" style="color:#6c5ce7"></i-tabler>
-          <span class="f-w-600">Recent System Events</span>
-        </div>
-        <a mat-stroked-button color="primary" routerLink="/auditor/logs">View all</a>
+      <div class="d-flex justify-content-between align-items-center m-b-10">
+        <span class="f-s-14 f-w-600">Daily Compliance Rate</span>
+        <span class="f-s-20 f-w-700" [style.color]="complianceRate >= 70 ? '#00b894' : complianceRate >= 40 ? '#fdcb6e' : '#d63031'">
+          {{ complianceRate }}%
+        </span>
       </div>
-
-      <div class="log-list">
-        <div *ngFor="let log of recentLogs" class="log-row">
-          <div class="log-icon" [style.background]="actionColor(log.action) + '18'">
-            <i-tabler [name]="actionIcon(log.action)" [style.color]="actionColor(log.action)" class="icon-16"></i-tabler>
-          </div>
-          <span class="log-badge" [style.background]="actionColor(log.action) + '18'" [style.color]="actionColor(log.action)">
-            {{ log.action }}
-          </span>
-          <span class="log-entity">{{ log.entityType }}</span>
-          <span class="log-user">{{ log.userEmail }}</span>
-          <span class="log-time">{{ log.createdAt | date:"dd/MM HH:mm" }}</span>
-          <span class="log-ip">{{ log.ipAddress }}</span>
-        </div>
-        <div *ngIf="recentLogs.length === 0" class="text-center p-24 text-muted">
-          <i-tabler name="camera-off" class="icon-32"></i-tabler>
-          <p>No events yet</p>
-        </div>
+      <div class="compliance-bar">
+        <div class="bar-ok"         [style.width.%]="okPct"         title="OK: {{okPatients}}"></div>
+        <div class="bar-incomplete" [style.width.%]="incompletePct" title="Incomplete: {{incompletePatients}}"></div>
+        <div class="bar-nodata"     [style.width.%]="noDataPct"     title="No Data: {{noDataPatients}}"></div>
+      </div>
+      <div class="d-flex gap-16 m-t-10 f-s-12">
+        <span><span class="dot dot-green"></span> OK ({{ okPct }}%)</span>
+        <span><span class="dot dot-yellow"></span> Incomplete ({{ incompletePct }}%)</span>
+        <span><span class="dot dot-red"></span> No Data ({{ noDataPct }}%)</span>
       </div>
     </mat-card-content>
   </mat-card>
+
+  <!-- ── ROW 2: Coordinator + Reminder stats ─────────────── -->
+  <div class="row m-b-28">
+
+    <!-- Coordinator stats -->
+    <div class="col-md-6 m-b-16">
+      <mat-card class="cardWithShadow h-100">
+        <mat-card-content class="p-20">
+          <div class="d-flex align-items-center gap-8 m-b-16">
+            <i-tabler name="users-group" class="icon-20" style="color:#6c5ce7"></i-tabler>
+            <span class="f-s-15 f-w-600">Coordinateurs</span>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-val" style="color:#6c5ce7">{{ totalCoordinators }}</div>
+              <div class="stat-lbl">Total</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">{{ avgPatientsPerCoord }}</div>
+              <div class="stat-lbl">Avg Patients</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" [style.color]="avgCompleteness >= 70 ? '#00b894' : '#fdcb6e'">{{ avgCompleteness }}%</div>
+              <div class="stat-lbl">Avg Completeness</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" style="color:#e17055">{{ remindersToday }}</div>
+              <div class="stat-lbl">Reminders Today</div>
+            </div>
+          </div>
+
+          <!-- Top 3 coordinators -->
+          <div class="m-t-16" *ngIf="topCoordinators.length">
+            <div class="f-s-12 text-muted m-b-8">Top coordinateurs (reminders envoyés)</div>
+            <div *ngFor="let c of topCoordinators; let i = index" class="top-coord-row">
+              <span class="rank-badge">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
+              <span class="f-s-13 f-w-600 flex-1">{{ c.name }}</span>
+              <span class="f-s-12 text-muted">{{ c.patientCount }} pts</span>
+              <span class="f-s-13 f-w-700" style="color:#6c5ce7">{{ c.remindersSent }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Reminder stats -->
+    <div class="col-md-6 m-b-16">
+      <mat-card class="cardWithShadow h-100">
+        <mat-card-content class="p-20">
+          <div class="d-flex align-items-center gap-8 m-b-16">
+            <i-tabler name="bell" class="icon-20" style="color:#e17055"></i-tabler>
+            <span class="f-s-15 f-w-600">Reminders</span>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-val" style="color:#0984e3">{{ totalReminders }}</div>
+              <div class="stat-lbl">Total</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" style="color:#00b894">{{ sentReminders }}</div>
+              <div class="stat-lbl">Envoyés</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" [style.color]="successRate >= 70 ? '#00b894' : '#fdcb6e'">{{ successRate }}%</div>
+              <div class="stat-lbl">Taux succès</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">{{ delayLabel(avgDelayMin) }}</div>
+              <div class="stat-lbl">Délai moyen</div>
+            </div>
+          </div>
+
+          <!-- Success rate bar -->
+          <div class="m-t-20">
+            <div class="d-flex justify-content-between f-s-12 m-b-6">
+              <span class="text-muted">Taux de succès global</span>
+              <span class="f-w-600">{{ successRate }}%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="successRate"
+                [style.background]="successRate >= 70 ? '#00b894' : successRate >= 40 ? '#fdcb6e' : '#d63031'">
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- ── Quick links ─────────────────────────────────────── -->
+  <div class="row">
+    <div class="col-md-3 col-6 m-b-16" *ngFor="let link of quickLinks">
+      <mat-card class="quick-card" [routerLink]="link.route" style="cursor:pointer">
+        <mat-card-content class="d-flex align-items-center gap-12 p-16">
+          <div class="quick-ico" [style.background]="link.color + '18'">
+            <i-tabler [name]="link.icon" [style.color]="link.color" class="icon-22"></i-tabler>
+          </div>
+          <div>
+            <div class="f-w-600 f-s-14">{{ link.label }}</div>
+            <div class="text-muted f-s-12">{{ link.desc }}</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
 
 </div>

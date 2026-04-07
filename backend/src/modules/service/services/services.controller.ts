@@ -6,12 +6,15 @@ import {
   Param,
   Put,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @Controller('services')
+@UseGuards(JwtAuthGuard)
 export class ServicesController {
   constructor(private readonly service: ServicesService) {}
 
@@ -25,6 +28,12 @@ export class ServicesController {
   @Get()
   findAll() {
     return this.service.findAll();
+  }
+
+  // GET ACTIVE ONLY (not archived + active)
+  @Get('active')
+  findActiveOnly() {
+    return this.service.findActiveOnly();
   }
 
   // GET ONE

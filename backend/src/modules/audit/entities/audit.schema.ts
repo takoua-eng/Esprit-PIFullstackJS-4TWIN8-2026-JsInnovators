@@ -5,29 +5,26 @@ export type AuditLogDocument = AuditLog & Document;
 
 @Schema({ timestamps: true })
 export class AuditLog {
-  @Prop()
-  userId: string;
+  // QUI
+  @Prop() userId:    string;
+  @Prop() userEmail: string;
+  @Prop() userRole:  string;   // doctor, nurse, admin...
+  @Prop() userName:  string;   // firstName + lastName
 
-  @Prop()
-  userEmail: string;
+  // QUOI
+  @Prop() action: string;      // CREATE, UPDATE, DELETE, LOGIN...
 
-  @Prop()
-  action: string;
+  // SUR QUOI
+  @Prop() entityType: string;  // USERS_PATIENTS, VITALS...
+  @Prop() entityId:   string;
 
-  @Prop()
-  entityType: string;
+  // CHANGEMENTS
+  @Prop({ type: Object }) before: any;
+  @Prop({ type: Object }) after:  any;
 
-  @Prop()
-  entityId: string;
-
-  @Prop({ type: Object })
-  before: any;
-
-  @Prop({ type: Object })
-  after: any;
-
-  @Prop()
-  ipAddress: string;
+  // OÙ
+  @Prop() ipAddress:  string;
+  @Prop() userAgent:  string;  // browser/device info
 }
 
 export const AuditLogSchema = SchemaFactory.createForClass(AuditLog);

@@ -1,6 +1,9 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+﻿import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { VitalParametersService } from './vital-parameters.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('vital-parameters')
 export class VitalParametersController {
   constructor(private readonly vitalService: VitalParametersService) {}

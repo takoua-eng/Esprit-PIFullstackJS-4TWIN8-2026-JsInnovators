@@ -30,7 +30,7 @@ export interface UserFormData {
  * Roles that show the Service dropdown
  * admin aussi a besoin de serviceId (requis par le backend)
  */
-const ROLES_WITH_SERVICE = new Set(['patient','doctor','nurse','admin']);
+const ROLES_WITH_SERVICE = new Set(['patient','doctor','nurse','admin','coordinator']);
 
 /**
  * Extra fields shown only for specific roles (beyond common + service)
@@ -98,7 +98,7 @@ export class UserFormDialog implements OnInit {
     this.buildForm();
 
     forkJoin({
-      services:     this.serviceSvc.getServices(),
+      services:     this.serviceSvc.getActiveServices(),
       roles:        this.roleSvc.getRoles(),
       doctors:      this.doctorSvc.getDoctors(),
       coordinators: this.coordSvc.getCoordinators(),
@@ -189,18 +189,26 @@ export class UserFormDialog implements OnInit {
   // ── Form build ────────────────────────────────────────────────────
   private buildForm(): void {
     const c = (val: any, v: any[] = []) => [val, v];
+
+    const emailPattern = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    const passwordPattern = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+    const cinPattern = /^\d{8}$/;
+    const phonePattern = /^(\+216)?[2-9]\d{7}$|^\+?[1-9]\d{7,14}$/;
+
     this.form = this.fb.group({
       roleId:              c(''),
       // Common — required
-      firstName:           c('', [Validators.required, Validators.minLength(2)]),
-      lastName:            c('', [Validators.required, Validators.minLength(2)]),
-      email:               c('', [Validators.required, Validators.email]),
+      firstName:           c('', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]),
+      lastName:            c('', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]),
+      email:               c('', [Validators.required, Validators.pattern(emailPattern)]),
       // Password: required on create, optional on edit
-      password:            c('', this.isEdit ? [Validators.minLength(6)] : [Validators.required, Validators.minLength(6)]),
+      password:            c('', this.isEdit
+        ? [Validators.minLength(8), Validators.pattern(passwordPattern)]
+        : [Validators.required, Validators.minLength(8), Validators.pattern(passwordPattern)]),
       // Common — optional
-      phone:               c('', [Validators.pattern(/^[+\d\s\-()]{6,20}$/)]),
+      phone:               c('', [Validators.pattern(phonePattern)]),
       gender:              c(''),
-      nationalId:          c(''),
+      nationalId:          c('', [Validators.pattern(cinPattern)]),
       address:             c(''),
       maritalStatus:       c(''),
       isActive:            c(true),
@@ -210,7 +218,7 @@ export class UserFormDialog implements OnInit {
       doctorId:            c(''),
       coordinatorId:       c(''),
       dateOfBirth:         c(null),
-      emergencyContact:    c('', [Validators.pattern(/^[+\d\s\-()]{6,20}$/)]),
+      emergencyContact:    c('', [Validators.pattern(phonePattern)]),
       medicalRecordNumber: c({ value: this.generateMRN(), disabled: true }),
       // Doctor-specific
       specialization:      c(''),
@@ -287,6 +295,12 @@ export class UserFormDialog implements OnInit {
 
     // ── 2. Service (patient / doctor / nurse / coordinator / admin) ─
     if (this.showService && v['serviceId']) fd.append('serviceId', v['serviceId']);
+
+    // Coordinator-specific: assignedService alias + responsibilities
+    if (this.currentRoleName === 'coordinator') {
+      if (v['serviceId']) fd.append('assignedService', v['serviceId']);
+      fd.append('responsibilities', 'Coordination');
+    }
 
     // ── 3. Patient-specific ───────────────────────────────────────
     if (this.showPatient) {

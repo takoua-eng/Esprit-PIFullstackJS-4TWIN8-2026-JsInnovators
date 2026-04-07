@@ -866,4 +866,40 @@ export class UsersService {
       },
     ]);
   }
+//superadmin edit 
+  async updateUsers(id: string, dto: any, file?: Express.Multer.File) {
+    const user = await this.userModel.findById(id);
+    if (!user) throw new NotFoundException('User not found');
+
+    // Hash password if provided
+    if (dto.password && dto.password.trim() !== '') {
+      dto.password = await bcrypt.hash(dto.password, 10);
+    } else {
+      delete dto.password;
+    }
+
+    // Clean all ObjectId reference fields
+    for (const field of ['serviceId', 'doctorId', 'coordinatorId', 'nurseId', 'roleId']) {
+      if (dto[field] !== undefined) {
+        if (!dto[field] || !Types.ObjectId.isValid(dto[field])) {
+          delete dto[field];
+        }
+      }
+    }
+
+    // Handle role update
+    if (dto.roleId) {
+      user.role = new Types.ObjectId(dto.roleId) as any;
+      delete dto.roleId;
+    }
+
+    // Apply fields
+    Object.assign(user, dto);
+
+    if (file) {
+      user.photo = file.filename;
+    }
+
+    return user.save();
+  }
 }
