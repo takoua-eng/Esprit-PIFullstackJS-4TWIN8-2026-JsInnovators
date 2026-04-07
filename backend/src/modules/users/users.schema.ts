@@ -32,7 +32,6 @@ export class User {
   @Prop()
   address: string;
 
-  // 🔥 photo لكل users
   @Prop()
   photo: string;
 
@@ -40,7 +39,7 @@ export class User {
   @Prop({ type: Types.ObjectId, ref: 'Role', required: true })
   role: Types.ObjectId;
 
-  // 🔹 RELATIONS
+  // 🔹 CARE TEAM RELATIONS
   @Prop({ type: Types.ObjectId, ref: 'User' })
   doctorId: Types.ObjectId;
 
@@ -50,11 +49,24 @@ export class User {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   coordinatorId: Types.ObjectId;
 
+  // 🔹 ASSIGNED CARE TEAM (depuis le formulaire patient)
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  assignedDoctor: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  assignedNurse: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  assignedCoordinator: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Service' })
+  assignedService: Types.ObjectId;
+
   // =========================
   // 🔴 PATIENT
   // =========================
   @Prop()
-  dateOfBirth: Date; // 🔥 added
+  dateOfBirth: Date;
 
   @Prop()
   medicalRecordNumber: string;
@@ -63,10 +75,13 @@ export class User {
   emergencyContact: string;
 
   @Prop()
-  insuranceProvider: string;
+  nationalId: string;
 
   @Prop()
-  insuranceNumber: string;
+  age: number;
+
+  @Prop({ enum: ['single', 'married', 'divorced'] })
+  maritalStatus: string;
 
   // =========================
   // 🔵 DOCTOR
@@ -93,9 +108,6 @@ export class User {
   // 🟣 COORDINATOR
   // =========================
   @Prop()
-  assignedService: string;
-
-  @Prop()
   responsibilities: string;
 
   // =========================
@@ -105,39 +117,38 @@ export class User {
   isSuperAdmin: boolean;
 
   @Prop()
-  adminLevel: string; // 🔥 new (level1, level2...)
+  adminLevel: string;
 
   // =========================
   // ⚪ AUDITOR
   // =========================
   @Prop()
   auditLevel: string;
+
+  // =========================
+  // 🔹 STATUS & FLAGS
+  // =========================
   @Prop({ default: false })
   isArchived: boolean;
-  @Prop()
-  nationalId: string; // CIN
-  @Prop()
-  age: number;
-
-  @Prop({ enum: ['single', 'married', 'divorced'] })
-  maritalStatus: string;
-
-  @Prop({ type: Types.ObjectId, ref: 'Service' })
-  serviceId: Types.ObjectId;
 
   @Prop({ default: true })
   isActive: boolean;
+
+  // 🔹 SERVICE
+  @Prop({ type: Types.ObjectId, ref: 'Service' })
+  serviceId: Types.ObjectId;
+
+  // 🔹 ASSIGNED PATIENTS (pour doctor/nurse/coordinator)
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] })
   assignedPatients: mongoose.Types.ObjectId[];
 
-  /** Nurse medical dossier (globals); per-visit diagnoses live in `patientdiagnoses`. */
+  // 🔹 NURSE DOSSIER
   @Prop({ type: mongoose.Schema.Types.Mixed })
   nurseDossier?: Record<string, unknown>;
 
-
-  //face recognition
-@Prop({ type: [Number], default: [] })
-faceDescriptor: number[];
+  // 🔹 FACE RECOGNITION
+  @Prop({ type: [Number], default: [] })
+  faceDescriptor: number[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

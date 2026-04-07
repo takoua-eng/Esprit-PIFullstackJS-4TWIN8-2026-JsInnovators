@@ -11,7 +11,7 @@ import { Patients } from './admin/patients/patients';
 import { MedecinsComponent } from './admin/medecins/medecins';
 import { CoordinateursComponent } from './admin/coordinateurs/coordinateurs';
 import { NursesComponent } from './admin/nurses/nurses';
-import { AuditorsComponent } from './admin/auditors/auditors';
+import { AuditorsAComponent } from './admin/auditorsA/auditorsA';
 import { CoordinatorDashboardComponent } from './coordinator/coordinator-dashboard/coordinator-dashboard.component';
 import { RemindersComponent } from './coordinator/reminders/reminders';
 import { CoordinatorPatientsComponent } from './coordinator/coordinator-patients/coordinator-patients';
@@ -84,7 +84,7 @@ export const AdminRoutes: Routes = [
   },
   {
     path: 'auditors',
-    component: AuditorsComponent,
+    component: AuditorsAComponent,
     canActivate: staffAdminGuard,
   },
 

@@ -298,4 +298,3 @@ export class AdminDashboardComponent implements OnInit {
     return 'Impossible de mettre à jour les statistiques. Les valeurs affichées restent celles du dernier chargement réussi.';
   }
 }
-
