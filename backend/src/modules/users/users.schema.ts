@@ -80,8 +80,6 @@ export class User {
   @Prop()
   age: number;
 
-  @Prop({ enum: ['single', 'married', 'divorced'] })
-  maritalStatus: string;
 
   @Prop()
   specialization: string;
@@ -98,8 +96,6 @@ export class User {
   @Prop()
   shift: string;
 
-    @Prop()
-  assignedService: string;
 
   @Prop()
   responsibilities: string;
@@ -116,11 +112,8 @@ export class User {
   @Prop({ default: false })
   isArchived: boolean;
 
-  @Prop()
-  nationalId: string;
 
-  @Prop()
-  age: number;
+
 
   @Prop({ enum: ['single', 'married', 'divorced'] })
   maritalStatus: string;
