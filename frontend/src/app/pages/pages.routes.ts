@@ -8,23 +8,34 @@ import { roleGuard } from '../core/role.guard';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { AdminProfileComponent } from './admin-profile/admin-profile.component';
 import { Patients } from './admin/patients/patients';
-import { MedecinsComponent } from './admin/medecins/medecins';
+//import { MedecinsComponent } from './admin/medecins/medecins';
 import { CoordinateursComponent } from './admin/coordinateurs/coordinateurs';
 import { NursesComponent } from './admin/nurses/nurses';
-import { AuditorsComponent } from './admin/auditors/auditors';
+import { AuditorsAComponent } from './admin/auditorsA/auditorsA';
 import { CoordinatorDashboardComponent } from './coordinator/coordinator-dashboard/coordinator-dashboard.component';
 import { RemindersComponent } from './coordinator/reminders/reminders';
 import { CoordinatorPatientsComponent } from './coordinator/coordinator-patients/coordinator-patients';
 
-// Super Admin Components
+import { AuditLogsComponent } from './super-admin/audit-logs/audit-logs';
+
+import { UserManagementComponent } from './super-admin/user-management/user-management.component';
+
 import { SuperAdminDashboardComponent } from './super-admin/superadmin-dashboard/superadmin-dashboard.component';
 import { SuperAdminProfileComponent } from './super-admin/superadmin-profile/superadmin-profile.component';
-import { AdminUsersComponent } from './super-admin/admin-users/admin-users';
+import { AdminsComponent } from './super-admin/admins/admins';
 import { Patients as SuperPatients } from './super-admin/patients/patients';
-import { MedecinsComponent as SuperMedecins } from './super-admin/medecins/medecins';
+
 import { NursesComponent as SuperNurses } from './super-admin/nurses/nurses';
-import { CoordinateursComponent as SuperCoordinateurs } from './super-admin/coordinateurs/coordinateurs';
+
 import { AuditorsComponent as SuperAuditors } from './super-admin/auditors/auditors';
+
+// Auditor Components
+import { AuditorDashboardComponent } from './auditor/auditor-dashboard/auditor-dashboard.component';
+import { AuditorVerifyComponent } from './auditor/auditor-verify/auditor-verify.component';
+import { AuditorPatientsComponent } from './auditor/auditor-patients/auditor-patients.component';
+import { AuditorCoordinatorsComponent } from './auditor/auditor-coordinators/auditor-coordinators.component';
+import { AuditorRemindersComponent } from './auditor/auditor-reminders/auditor-reminders.component';
+import { AuditorAnomaliesComponent } from './auditor/auditor-anomalies/auditor-anomalies.component';
 
 // Patient Components (from main)
 import { DashboardComponent } from './patient/dashboard/dashboard.component';
@@ -48,6 +59,10 @@ import { MessagesDoctorComponent } from './doctor/messages-doctor/messages-docto
 import { MessagesPatientComponent } from './patient/messages-patient/messages-patient.component';
 import { AiChatComponent } from './patient/ai-chat/ai-chat.component';
 import { AiPredictionComponent } from './coordinator/ai-prediction/ai-prediction.component';
+import { ServiceComponent } from './super-admin/service/service';
+import { RoleComponent } from './super-admin/role/role';
+import { PermissionGuard } from '../permission.guard';
+import { MedecinsComponent } from './admin/medecins/medecins';
 
 /** Roles allowed to use the sub-admin `/dashboard/admin/...` area (not patients, not coordinators). */
 const staffAdminGuard = [
@@ -61,15 +76,16 @@ export const AdminRoutes: Routes = [
   {
     path: '',
     component: AdminDashboardComponent,
-    canActivate: staffAdminGuard,
     pathMatch: 'full',
+    canActivate: [...staffAdminGuard],
+
   },
   {
     path: 'patients',
     component: Patients,
     canActivate: staffAdminGuard,
   },
-  {
+    {
     path: 'physicians',
     component: MedecinsComponent,
     canActivate: staffAdminGuard,
@@ -86,7 +102,7 @@ export const AdminRoutes: Routes = [
   },
   {
     path: 'auditors',
-    component: AuditorsComponent,
+    component: AuditorsAComponent,
     canActivate: staffAdminGuard,
   },
 
@@ -105,7 +121,8 @@ export const AdminRoutes: Routes = [
   {
     path: 'profile',
     component: AdminProfileComponent,
-    canActivate: staffAdminGuard,
+    canActivate: [...staffAdminGuard],
+
   },
 ];
 // ✅ COORDINATOR ROUTES — loaded only from `/admin/coordinator` (see `app.routes.ts`)
@@ -126,7 +143,11 @@ export const CoordinatorRoutes: Routes = [
     data: { title: 'Reminders' },
   },
 
-  { path: 'prediction', component: AiPredictionComponent, data: { title: 'AI Prediction' } },
+  {
+    path: 'prediction',
+    component: AiPredictionComponent,
+    data: { title: 'AI Prediction' },
+  },
 ];
 
 const nurseOnlyGuard = [authGuard, roleGuard(['nurse'])];
@@ -203,30 +224,64 @@ const superAdminOnlyGuard = [authGuard, roleGuard(['superadmin'])];
 export const SuperAdminRoutes: Routes = [
   {
     path: '',
-    component: SuperAdminDashboardComponent,
-    canActivate: superAdminOnlyGuard,
+    redirectTo: 'dashboard',
     pathMatch: 'full',
   },
   {
     path: 'dashboard',
     component: SuperAdminDashboardComponent,
-    canActivate: superAdminOnlyGuard,
   },
   {
     path: 'profile',
     component: SuperAdminProfileComponent,
-    canActivate: superAdminOnlyGuard,
   },
-  { path: 'patients', component: SuperPatients, canActivate: superAdminOnlyGuard },
-  { path: 'medecins', component: SuperMedecins, canActivate: superAdminOnlyGuard },
-  { path: 'nurses', component: SuperNurses, canActivate: superAdminOnlyGuard },
   {
-    path: 'coordinateurs',
-    component: SuperCoordinateurs,
-    canActivate: superAdminOnlyGuard,
+    path: 'admin-users',
+    component: AdminsComponent,
+  
+  
   },
-  { path: 'auditors', component: SuperAuditors, canActivate: superAdminOnlyGuard },
-  { path: 'admin-users', component: AdminUsersComponent, canActivate: superAdminOnlyGuard },
+  {
+    path: 'users',
+    component: UserManagementComponent,
+    canActivate: [PermissionGuard],
+  },
+  {
+    path: 'patients',
+    component: SuperPatients,
+    canActivate: [PermissionGuard],
+    
+  },
+
+  {
+    path: 'nurses',
+    component: SuperNurses,
+    canActivate: [PermissionGuard],
+
+  },
+  {
+    path: 'auditors',
+    component: SuperAuditors,
+    canActivate: [PermissionGuard],
+
+  },
+  {
+    path: 'services',
+    component: ServiceComponent,
+    canActivate: [PermissionGuard],
+
+  },
+  {
+    path: 'role',
+    component: RoleComponent,
+    canActivate: [PermissionGuard],
+
+  },
+{
+  path: 'audit-logs',
+  component: AuditLogsComponent,
+  canActivate: [PermissionGuard],
+},
 ];
 
 const patientOnlyGuard = [authGuard, roleGuard(['patient'])];
@@ -259,4 +314,17 @@ export const PagesRoutes: Routes = [
   ...DoctorRoutes,
   ...AdminRoutes,
   ...SuperAdminRoutes,
+];
+
+// ✅ AUDITOR ROUTES
+export const AuditorRoutes: Routes = [
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: 'dashboard',    component: AuditorDashboardComponent },
+  { path: 'patients',     component: AuditorPatientsComponent,     canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'coordinators', component: AuditorCoordinatorsComponent, canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'reminders',    component: AuditorRemindersComponent,    canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'anomalies',    component: AuditorAnomaliesComponent,    canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'logs',         component: AuditLogsComponent,           canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'verify',       component: AuditorVerifyComponent,       canActivate: [PermissionGuard], data: { permission: 'audit:read' } },
+  { path: 'profile',      component: SuperAdminProfileComponent },
 ];

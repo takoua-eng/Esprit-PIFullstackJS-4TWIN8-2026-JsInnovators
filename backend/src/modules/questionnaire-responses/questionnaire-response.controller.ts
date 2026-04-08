@@ -28,6 +28,10 @@ export class QuestionnaireResponseController {
     return this.service.create(dto);
   }
 
+  @Get()
+  findAll() {
+    return this.service.findAll();
+  }
   @Get('patient/:patientId')
   getByPatient(@Param('patientId') patientId: string) {
     return this.service.getByPatient(patientId);

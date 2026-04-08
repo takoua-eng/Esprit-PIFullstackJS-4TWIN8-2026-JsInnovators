@@ -5,10 +5,10 @@ $font-family: "Plus Jakarta Sans", sans-serif;
 
 // light color variable
 
-// Sidenav
-$sidenav-desktop: 270px !default;
-$sidenav-mini: 80px !default;
-$header-height: 70px !default;
+// Sidenav - WCAG 2.1 Accessible Units (rem)
+$sidenav-desktop: 16.875rem !default;  // 270px ÷ 16
+$sidenav-mini: 5rem !default;           // 80px ÷ 16
+$header-height: 4.375rem !default;      // 70px ÷ 16
 
 //BorderColor
 $borderColor: var(--mat-sys-outline-variant);
@@ -32,12 +32,12 @@ $light-warning: rgba(248, 192, 118, 0.15);
 $light-success: rgba(75, 208, 139, 0.15);
 $dark: #111c2d;
 
-// layout
-$boxedWidth: 1200px;
-$border-radius: 18px;
-$layout-padding: 20px;
+// layout - WCAG 2.1 Accessible Units (rem)
+$boxedWidth: 75rem;              // 1200px ÷ 16
+$border-radius: 1.125rem;        // 18px ÷ 16
+$layout-padding: 1.25rem;        // 20px ÷ 16
 
-$card-spacer: 30px;
+$card-spacer: 1.875rem;          // 30px ÷ 16
 
 $text-color: var(--mat-sys-on-background);
 

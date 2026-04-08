@@ -1,4 +1,4 @@
-import {
+﻿import {
   Controller,
   Get,
   Post,
@@ -7,15 +7,43 @@ import {
   Param,
   Body,
 } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CoordinatorService } from './coordinator.service';
 import { NotificationService } from '../notifications/notification.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('coordinator')
 export class CoordinatorController {
   constructor(
     private readonly coordinatorService: CoordinatorService,
     private readonly notificationService: NotificationService,
   ) {}
+
+  @Get('auditor/ai-insights')
+  getAiInsights() {
+    return this.coordinatorService.getAiInsights();
+  }
+
+  @Get('auditor/service-staff')
+  getServiceStaffOverview() {
+    return this.coordinatorService.getServiceStaffOverview();
+  }
+
+  @Get('auditor/patients-overview')
+  getPatientsOverview() {
+    return this.coordinatorService.getPatientsOverview();
+  }
+
+  @Get('auditor/reminders-overview')
+  getAllRemindersOverview() {
+    return this.coordinatorService.getAllRemindersOverview();
+  }
+
+  @Get('all/performance')
+  getAllPerformance() {
+    return this.coordinatorService.getAllPerformance();
+  }
 
   @Get(':id/dashboard')
   getDashboard(@Param('id') id: string) {

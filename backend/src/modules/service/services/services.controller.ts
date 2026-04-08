@@ -6,12 +6,15 @@ import {
   Param,
   Put,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @Controller('services')
+@UseGuards(JwtAuthGuard)
 export class ServicesController {
   constructor(private readonly service: ServicesService) {}
 
@@ -21,10 +24,16 @@ export class ServicesController {
     return this.service.create(dto);
   }
 
-  // GET ALL
+  // GET ALL (only not archived)
   @Get()
   findAll() {
     return this.service.findAll();
+  }
+
+  // GET ACTIVE ONLY (not archived + active)
+  @Get('active')
+  findActiveOnly() {
+    return this.service.findActiveOnly();
   }
 
   // GET ONE
@@ -39,9 +48,21 @@ export class ServicesController {
     return this.service.update(id, dto);
   }
 
-  // DELETE
+  // ARCHIVE (soft delete)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  archive(@Param('id') id: string) {
+    return this.service.archive(id);
+  }
+
+  // ACTIVATE
+  @Put(':id/activate')
+  activate(@Param('id') id: string) {
+    return this.service.activate(id);
+  }
+
+  // DEACTIVATE
+  @Put(':id/deactivate')
+  deactivate(@Param('id') id: string) {
+    return this.service.deactivate(id);
   }
 }

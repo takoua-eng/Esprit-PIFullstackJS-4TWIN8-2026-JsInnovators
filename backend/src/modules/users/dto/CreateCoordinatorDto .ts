@@ -4,8 +4,8 @@ export class CreateCoordinatorDto {
   email: string;
   password: string;
 
-  assignedService: string;
-  responsibilities: string;
+  assignedService?: string;
+  responsibilities?: string;
 
   photo?: string;
 }

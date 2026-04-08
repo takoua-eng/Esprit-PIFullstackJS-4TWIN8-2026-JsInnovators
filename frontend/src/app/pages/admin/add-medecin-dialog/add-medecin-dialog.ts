@@ -7,7 +7,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DoctorService } from 'src/app/services/superadmin/doctor.service';
+import { DoctorService } from 'src/app/services/admin/doctor.service';
 
 // Angular Material Imports
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,7 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatOptionModule } from '@angular/material/core';
-import { ServiceService } from 'src/app/services/superadmin/service.service';
+import { ServiceService } from 'src/app/services/admin/service.service';
 
 export interface DoctorData {
   _id?: string; // seulement pour update

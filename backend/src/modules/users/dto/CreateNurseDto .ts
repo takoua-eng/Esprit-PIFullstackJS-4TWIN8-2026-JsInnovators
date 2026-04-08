@@ -4,8 +4,11 @@ export class CreateNurseDto {
   email: string;
   password: string;
 
-  department: string;
-  shift: string;
+  serviceId: string;
 
-  photo?: string;
+  address: string;
+  nationalId: string;
+  gender: string;
+  phone: string;
+  isActive?: boolean;
 }

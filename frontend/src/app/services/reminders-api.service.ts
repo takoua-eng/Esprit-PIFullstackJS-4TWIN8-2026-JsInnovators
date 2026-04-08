@@ -25,6 +25,17 @@ export class RemindersApiService {
     return this.http.get<ReminderDto[]>(this.base);
   }
 
+  getRemindersGroupedByPatient(): Observable<{
+    patientId: string; patientName: string;
+    total: number; pending: number; sent: number; lastStatus: string;
+  }[]> {
+    return this.http.get<any[]>(`${this.base}/by-patient`);
+  }
+
+  getRemindersByPatient(patientId: string): Observable<ReminderDto[]> {
+    return this.http.get<ReminderDto[]>(`${this.base}/patient/${patientId}`);
+  }
+
   createReminder(payload: {
     patientId: string;
     message: string;

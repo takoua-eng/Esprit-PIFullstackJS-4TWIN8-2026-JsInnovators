@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -8,9 +8,14 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { PatientService } from 'src/app/services/admin/patient.service';
+import { DoctorService } from 'src/app/services/admin/doctor.service';
+import { NurseService } from 'src/app/services/admin/nurse.service';
+import { CoordinateurService } from 'src/app/services/admin/coordinateur.service';
+import { ServiceService } from 'src/app/services/admin/service.service';
 
-// 🎨 Angular Material Imports
+// Angular Material Imports
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -19,10 +24,30 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatOptionModule } from '@angular/material/core';
-import { MatError, MatHint } from '@angular/material/form-field';
+
+export interface PatientData {
+  _id?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  gender?: string;
+  nationalId?: string;
+  address?: string;
+  dateOfBirth?: Date | string;
+  maritalStatus?: string;
+  medicalRecordNumber?: string;
+  emergencyContact?: string;
+  photo?: File | string;
+  // Care team
+  assignedDoctor?: string;
+  assignedNurse?: string;
+  assignedCoordinator?: string;
+  assignedService?: string;
+}
 
 @Component({
-  selector: 'app-super-add-patient-dialog',
+  selector: 'app-add-patient-dialog',
   standalone: true,
   imports: [
     CommonModule,
@@ -35,8 +60,6 @@ import { MatError, MatHint } from '@angular/material/form-field';
     MatNativeDateModule,
     MatButtonModule,
     MatIconModule,
-    MatError,
-    MatHint,
   ],
   templateUrl: './add-patient-dialog.html',
   styleUrls: ['./add-patient-dialog.scss'],
@@ -46,77 +69,75 @@ export class AddPatientDialog implements OnInit {
   photoPreview: string | null = null;
   selectedFile: File | null = null;
   isSubmitted = false;
-
-  // ✅ AJOUT: Propriété 'today' pour le datepicker
+  isEditMode = false;
   today: Date = new Date();
+
+  // Listes pour les selects
+  doctorsList: any[] = [];
+  nursesList: any[] = [];
+  coordinatorsList: any[] = [];
+  servicesList: any[] = [];
+  filteredDoctorsList: any[] = [];
+  filteredNursesList: any[] = [];
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<AddPatientDialog>,
+    private patientService: PatientService,
+    private doctorService: DoctorService,
+    private nurseService: NurseService,
+    private coordinateurService: CoordinateurService,
+    private serviceService: ServiceService,
+    @Inject(MAT_DIALOG_DATA) public data: { patient?: PatientData }
   ) {
     this.patientForm = this.fb.group({
-      firstName: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(2),
-          Validators.maxLength(50),
-          Validators.pattern(/^[a-zA-Z\u0600-\u06FF\s]+$/),
-        ],
-      ],
-      lastName: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(2),
-          Validators.maxLength(50),
-          Validators.pattern(/^[a-zA-Z\u0600-\u06FF\s]+$/),
-        ],
-      ],
+      firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50),
+      Validators.pattern(/^[a-zA-Z\u0600-\u06FF\s]+$/)]],
+      lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50),
+      Validators.pattern(/^[a-zA-Z\u0600-\u06FF\s]+$/)]],
       email: ['', [Validators.required, Validators.email]],
-      password: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(8),
-          Validators.pattern(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
-          ),
-        ],
-      ],
-      phone: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(/^(\+216|00216|0)?[2-9]\d{7}$/),
-        ],
-      ],
+      password: ['', [Validators.minLength(8),
+      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/)]],
+      phone: ['', [Validators.required, Validators.pattern(/^(\+216|00216|0)?[2-9]\d{7}$/)]],
       nationalId: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
-      address: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(10),
-          Validators.maxLength(200),
-        ],
-      ],
+      address: ['', [Validators.minLength(10), Validators.maxLength(200)]],
       dateOfBirth: [null, [Validators.required, this.minAgeValidator(18)]],
       age: [{ value: '', disabled: true }],
       gender: ['', Validators.required],
       maritalStatus: ['', Validators.required],
       medicalRecordNumber: [{ value: this.generateMRN(), disabled: true }],
-      emergencyContact: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(/^(\+216|00216|0)?[2-9]\d{7}$/),
-        ],
-      ],
-      insuranceProvider: [''],
-      insuranceNumber: [''],
+      emergencyContact: ['', [Validators.required,
+      Validators.pattern(/^(\+216|00216|0)?[2-9]\d{7}$/)]],
+      // Care team
+      assignedDoctor: [''],
+      assignedNurse: [''],
+      assignedCoordinator: [''],
+      assignedService: [''],
+
     });
+
+    // Mode édition
+    if (data?.patient) {
+      this.isEditMode = true;
+      this.patientForm.patchValue({
+        ...data.patient,
+        password: '',
+      });
+      this.patientForm.get('password')?.clearValidators();
+      this.patientForm.get('password')?.updateValueAndValidity();
+
+      if (data.patient.photo) {
+        this.photoPreview =
+          typeof data.patient.photo === 'string'
+            ? data.patient.photo
+            : URL.createObjectURL(data.patient.photo);
+      }
+    }
   }
 
+
+
+  // Dans ngOnInit, remplacer le chargement doctors/nurses par :
   ngOnInit(): void {
     this.patientForm.get('dateOfBirth')?.valueChanges.subscribe((date) => {
       if (date) {
@@ -124,9 +145,66 @@ export class AddPatientDialog implements OnInit {
         this.patientForm.patchValue({ age }, { emitEvent: false });
       }
     });
+
+    // Écouter le changement de service
+    this.patientForm.get('assignedService')?.valueChanges.subscribe((serviceId) => {
+      if (serviceId) {
+        this.filterByService(serviceId);
+      } else {
+        // Si aucun service sélectionné, afficher tout
+        this.filteredDoctorsList = this.doctorsList;
+        this.filteredNursesList = this.nursesList;
+      }
+      // Reset les selects doctor/nurse/coordinator quand le service change
+      this.patientForm.patchValue({
+        assignedDoctor: '',
+        assignedNurse: '',
+        assignedCoordinator: '',
+      }, { emitEvent: false });
+    });
+
+    // Charger toutes les listes
+    this.doctorService.getDoctors().subscribe({
+      next: (res) => {
+        this.doctorsList = res;
+        this.filteredDoctorsList = res;
+      },
+      error: (err) => console.error('Erreur doctors:', err),
+    });
+
+    this.nurseService.getNurses().subscribe({
+      next: (res) => {
+        this.nursesList = res;
+        this.filteredNursesList = res;
+      },
+      error: (err) => console.error('Erreur nurses:', err),
+    });
+
+    this.coordinateurService.getCoordinators().subscribe({
+      next: (res) => (this.coordinatorsList = res),
+      error: (err) => console.error('Erreur coordinators:', err),
+    });
+
+    this.serviceService.getServices().subscribe({
+      next: (res) => (this.servicesList = res),
+      error: (err) => console.error('Erreur services:', err),
+    });
   }
 
-  // 🎯 Custom Validator: Âge minimum
+  // Méthode de filtrage
+  private filterByService(serviceId: string): void {
+    this.filteredDoctorsList = this.doctorsList.filter(
+      (d) => d.assignedService === serviceId || d.serviceId === serviceId
+    );
+    this.filteredNursesList = this.nursesList.filter(
+      (n) => n.assignedService === serviceId || n.serviceId === serviceId
+    );
+  }
+
+  // =============================
+  // VALIDATORS
+  // =============================
+
   minAgeValidator(minAge: number) {
     return (control: AbstractControl): ValidationErrors | null => {
       if (!control.value) return { required: true };
@@ -135,19 +213,18 @@ export class AddPatientDialog implements OnInit {
       let age = today.getFullYear() - birthDate.getFullYear();
       const m = today.getMonth() - birthDate.getMonth();
       if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-      return age < minAge
-        ? { minAge: { required: minAge, actual: age } }
-        : null;
+      return age < minAge ? { minAge: { required: minAge, actual: age } } : null;
     };
   }
 
-  // 📸 Gestion photo
+  // =============================
+  // PHOTO
+  // =============================
+
   removePhoto(): void {
     this.photoPreview = null;
     this.selectedFile = null;
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (input) input.value = '';
   }
 
@@ -167,117 +244,86 @@ export class AddPatientDialog implements OnInit {
       }
       this.selectedFile = file;
       const reader = new FileReader();
-      reader.onload = () => {
-        this.photoPreview = reader.result as string;
-      };
+      reader.onload = () => (this.photoPreview = reader.result as string);
       reader.readAsDataURL(file);
     }
   }
 
-  // 🔢 Génération MRN unique
+  // =============================
+  // SUBMIT
+  // =============================
+
+  onSubmit(): void {
+    this.isSubmitted = true;
+    Object.keys(this.patientForm.controls).forEach((key) =>
+      this.patientForm.get(key)?.markAsTouched()
+    );
+
+    if (!this.patientForm.valid) {
+      alert('Veuillez remplir tous les champs obligatoires correctement.');
+      return;
+    }
+
+    const values = this.patientForm.getRawValue();
+    const formData = new FormData();
+
+    Object.keys(values).forEach((key) => {
+      if (this.isEditMode && key === 'password' && !values[key]) return;
+
+      let value = values[key];
+
+      if (key === 'dateOfBirth' && value) {
+        value = new Date(value).toISOString();
+      }
+
+      if (value !== null && value !== undefined && value !== '') {
+        formData.append(key, value);
+      }
+    });
+
+    if (this.selectedFile) formData.append('file', this.selectedFile);
+
+    if (!this.isEditMode) {
+      this.patientService.checkEmail(values.email).subscribe({
+        next: (exists) => {
+          if (exists) {
+            alert(`L'email ${values.email} est déjà utilisé.`);
+            return;
+          }
+          this.patientService.createPatient(formData).subscribe({
+            next: (res) => this.dialogRef.close(res),
+            error: (err) => alert(err.error?.message || 'Erreur création patient.'),
+          });
+        },
+      });
+    } else if (this.data.patient?._id) {
+      this.patientService.updatePatient(this.data.patient._id, formData).subscribe({
+        next: (res) => this.dialogRef.close(res),
+        error: (err) => alert(err.error?.message || 'Erreur mise à jour patient.'),
+      });
+    }
+  }
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+
+  // =============================
+  // HELPERS
+  // =============================
+
   private generateMRN(): string {
     const prefix = 'MRN';
     const timestamp = Date.now().toString().slice(-6);
-    const random = Math.floor(Math.random() * 1000)
-      .toString()
-      .padStart(3, '0');
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
     return `${prefix}-${timestamp}-${random}`;
   }
 
-  // 🎂 Calcul âge
   private calculateAge(birthDate: Date): number {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const m = today.getMonth() - birthDate.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
     return age;
-  }
-
-  // 📝 Messages d'erreur personnalisés
-  getErrorMessage(fieldName: string): string {
-    const control = this.patientForm.get(fieldName);
-    if (!control?.errors) return '';
-
-    const errors: Record<string, string> = {
-      required: 'Ce champ est obligatoire',
-      email: 'Adresse email invalide',
-      minlength: `Minimum ${control.errors['minlength'].requiredLength} caractères`,
-      maxlength: `Maximum ${control.errors['maxlength']?.requiredLength || 50} caractères`,
-      pattern: this.getPatternMessage(fieldName),
-      minAge: `Âge minimum requis: ${control.errors['minAge']?.required} ans`,
-    };
-
-    for (const key of Object.keys(control.errors)) {
-      if (errors[key]) return errors[key];
-    }
-    return 'Champ invalide';
-  }
-
-  private getPatternMessage(field: string): string {
-    const messages: Record<string, string> = {
-      firstName: 'Uniquement des lettres (a-z, A-Z)',
-      lastName: 'Uniquement des lettres (a-z, A-Z)',
-      phone: 'Format: 22123456 ou +21622123456',
-      nationalId: '8 chiffres requis (ex: 12345678)',
-      password: 'Min 8 car. avec maj, min, chiffre et symbole',
-      emergencyContact: 'Format téléphone invalide',
-    };
-    return messages[field] || 'Format invalide';
-  }
-
-  // ✅ CORRECTION: Retourne boolean strict (pas undefined)
-  isValidField(field: string): boolean {
-    const control = this.patientForm.get(field);
-    return (
-      control?.valid === true && (control?.touched === true || this.isSubmitted)
-    );
-  }
-
-  // ✅ CORRECTION: Retourne boolean strict (pas undefined)
-  hasError(field: string): boolean {
-    const control = this.patientForm.get(field);
-    return (
-      control?.invalid === true &&
-      (control?.touched === true || this.isSubmitted)
-    );
-  }
-
-  onSubmit(): void {
-    this.isSubmitted = true;
-
-    Object.keys(this.patientForm.controls).forEach((key) => {
-      this.patientForm.get(key)?.markAsTouched();
-    });
-
-    if (this.patientForm.valid) {
-      const formData = new FormData();
-
-      const values = this.patientForm.getRawValue();
-
-      // 🔥 envoyer tous les champs
-      Object.keys(values).forEach((key) => {
-        let value = values[key];
-
-        if (key === 'dateOfBirth' && value) {
-          value = new Date(value).toISOString();
-        }
-
-        formData.append(key, value);
-      });
-
-      // 🔥 IMPORTANT: envoyer le fichier avec le nom "file"
-      if (this.selectedFile) {
-        formData.append('file', this.selectedFile);
-      }
-
-      // 🔥 TEST
-      console.log('FORM DATA READY');
-
-      this.dialogRef.close(formData); // 👈 envoyer au parent
-    }
-  }
-
-  onCancel(): void {
-    this.dialogRef.close();
   }
 }

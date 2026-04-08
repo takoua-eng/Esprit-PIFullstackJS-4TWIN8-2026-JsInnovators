@@ -7,6 +7,7 @@ export const ALLOWED_LOCAL_STORAGE_KEYS = new Set([
   'user_role',
   'medi_follow_user_data',
   'medi_follow_user_role',
+  'userId',
   'app_language',
   'high_contrast',
 ]);
@@ -34,4 +35,8 @@ export function clearAuthLocalStorage(): void {
   localStorage.removeItem('medi_follow_user_data');
   localStorage.removeItem('medi_follow_user_role');
   // We keep UI preferences like language and contrast unless explicitly asked to clear them.
+  localStorage.removeItem('permissions');
+  localStorage.removeItem('userId');
+  localStorage.removeItem('app_language');
+  localStorage.removeItem('high_contrast');
 }

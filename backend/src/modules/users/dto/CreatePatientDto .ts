@@ -5,14 +5,14 @@ export class CreatePatientDto {
   password: string;
   phone: string;
   gender: string;
-  dateOfBirth: string; // 🔥 ajouté
+  dateOfBirth: string;
   medicalRecordNumber: string;
   emergencyContact: string;
   nationalId?: string;
-
   address?: string;
-
   maritalStatus?: string;
-
   photo?: string;
+  doctorId?: string;
+  serviceId?: string;
+  coordinatorId?: string;
 }

@@ -1,132 +1,455 @@
-<!-- Top KPI cards -->
-<div class="row m-b-24">
-  <div class="col-md-3 m-b-16">
-    <mat-card
-      class="cardWithShadow"
-      style="background-color: #6c5ce7; color: #fff; border-radius: 18px"
-    >
-      <mat-card-content class="p-16">
-        <i-tabler name="users-group" class="icon-24 d-block m-b-8"></i-tabler>
-        <div class="f-w-700 f-s-22 m-b-4">120</div>
-        <div class="f-s-14 f-w-600 m-b-2">Patients</div>
-        <div class="f-s-12" style="opacity: 0.85">All registered patients</div>
-      </mat-card-content>
-    </mat-card>
+<div class="sa-dashboard">
+
+  <!-- BANNER -->
+  <div class="sa-banner">
+    <div class="sa-banner-left">
+      <i-tabler name="layout-dashboard" class="banner-ico"></i-tabler>
+      <div>
+        <h2>Super Admin Dashboard</h2>
+        <p>Real-time enterprise overview</p>
+      </div>
+    </div>
+    <div class="sa-banner-right">
+      <span class="live-dot"></span>
+      <span class="live-lbl">LIVE</span>
+      <span class="refresh-lbl">{{ lastRefresh | date:"HH:mm:ss" }}</span>
+    </div>
   </div>
 
-  <div class="col-md-3 m-b-16">
-    <mat-card
-      class="cardWithShadow"
-      style="background-color: #0984e3; color: #fff; border-radius: 18px"
-    >
-      <mat-card-content class="p-16">
-        <i-tabler name="stethoscope" class="icon-24 d-block m-b-8"></i-tabler>
-        <div class="f-w-700 f-s-22 m-b-4">45</div>
-        <div class="f-s-14 f-w-600 m-b-2">Doctors</div>
-        <div class="f-s-12" style="opacity: 0.85">All specialists</div>
-      </mat-card-content>
-    </mat-card>
+  <!-- ROW 1 : KPI CARDS -->
+  <div class="row m-b-20">
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi kpi-purple">
+        <mat-card-content>
+          <i-tabler name="users" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalUsers }}</div>
+          <div class="kpi-lbl">Total Users</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi kpi-blue">
+        <mat-card-content>
+          <i-tabler name="heart-rate-monitor" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalPatients }}</div>
+          <div class="kpi-lbl">Patients</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi kpi-teal">
+        <mat-card-content>
+          <i-tabler name="stethoscope" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalDoctors }}</div>
+          <div class="kpi-lbl">Doctors</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi kpi-green">
+        <mat-card-content>
+          <i-tabler name="nurse" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalNurses }}</div>
+          <div class="kpi-lbl">Nurses</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi kpi-red">
+        <mat-card-content>
+          <i-tabler name="bell-ringing" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ activeAlerts }}</div>
+          <div class="kpi-sub" *ngIf="criticalAlerts > 0">{{ criticalAlerts }} critical</div>
+          <div class="kpi-lbl">Active Alerts</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi kpi-orange">
+        <mat-card-content>
+          <i-tabler name="building-hospital" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalServices }}</div>
+          <div class="kpi-lbl">Services</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi kpi-indigo">
+        <mat-card-content>
+          <i-tabler name="database" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalAuditEvents }}</div>
+          <div class="kpi-lbl">Audit Events</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi kpi-cyan">
+        <mat-card-content>
+          <i-tabler name="bell-ringing" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalReminders }}</div>
+          <div class="kpi-sub" *ngIf="pendingReminders > 0">{{ pendingReminders }} pending</div>
+          <div class="kpi-lbl">Reminders</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi kpi-purple" style="background:linear-gradient(135deg,#a29bfe,#6c5ce7)">
+        <mat-card-content>
+          <i-tabler name="clipboard-list" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ totalQuestionnaires }}</div>
+          <div class="kpi-lbl">Questionnaires</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-xl col-md-4 col-6 m-b-16">
+      <mat-card class="kpi" style="background:linear-gradient(135deg,#00b894,#00cec9);color:#fff">
+        <mat-card-content>
+          <i-tabler name="heart-rate-monitor" class="kpi-ico"></i-tabler>
+          <div class="kpi-val">{{ vitalsSubmittedToday }}</div>
+          <div class="kpi-sub">{{ complianceRate }}% compliance</div>
+          <div class="kpi-lbl">Vitals Today</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+  <!-- ROW 2 : Charts -->
+  <div class="row m-b-20">
+
+    <!-- Alerts per day -->
+    <div class="col-lg-4 m-b-16">
+      <mat-card class="cardWithShadow h-100">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="bell" class="sec-ico red"></i-tabler>
+              Alertes / 7 jours
+            </div>
+          </div>
+          <apx-chart *ngIf="alertsChart.series"
+            [series]="alertsChart.series" [chart]="alertsChart.chart"
+            [plotOptions]="alertsChart.plotOptions" [colors]="alertsChart.colors"
+            [xaxis]="alertsChart.xaxis" [dataLabels]="alertsChart.dataLabels"
+            [grid]="alertsChart.grid" [tooltip]="alertsChart.tooltip">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Users by role donut -->
+    <div class="col-lg-4 m-b-16">
+      <mat-card class="cardWithShadow h-100">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="users-group" class="sec-ico purple"></i-tabler>
+              Utilisateurs par role
+            </div>
+          </div>
+          <apx-chart *ngIf="usersRoleChart.series"
+            [series]="usersRoleChart.series" [labels]="usersRoleChart.labels"
+            [chart]="usersRoleChart.chart" [colors]="usersRoleChart.colors"
+            [legend]="usersRoleChart.legend" [dataLabels]="usersRoleChart.dataLabels"
+            [plotOptions]="usersRoleChart.plotOptions" [tooltip]="usersRoleChart.tooltip">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Audit activity -->
+    <div class="col-lg-4 m-b-16">
+      <mat-card class="cardWithShadow h-100">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="activity" class="sec-ico indigo"></i-tabler>
+              Activite systeme / 7 jours
+            </div>
+          </div>
+          <apx-chart *ngIf="activityChart.series"
+            [series]="activityChart.series" [chart]="activityChart.chart"
+            [stroke]="activityChart.stroke" [fill]="activityChart.fill"
+            [colors]="activityChart.colors" [xaxis]="activityChart.xaxis"
+            [dataLabels]="activityChart.dataLabels" [grid]="activityChart.grid"
+            [tooltip]="activityChart.tooltip">
+          </apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
   </div>
 
-  <div class="col-md-3 m-b-16">
-    <mat-card
-      class="cardWithShadow"
-      style="background-color: #fdcb6e; color: #fff; border-radius: 18px"
-    >
-      <mat-card-content class="p-16">
-        <i-tabler name="nurse" class="icon-24 d-block m-b-8"></i-tabler>
-        <div class="f-w-700 f-s-22 m-b-4">30</div>
-        <div class="f-s-14 f-w-600 m-b-2">Nurses</div>
-        <div class="f-s-12" style="opacity: 0.9">Medical staff</div>
-      </mat-card-content>
-    </mat-card>
+  <!-- ROW 2b : Reminders Charts -->
+  <div class="row m-b-20">
+
+    <!-- Reminders par Coordinator -->
+    <div class="col-lg-6 m-b-16">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="users-group" class="sec-ico purple"></i-tabler>
+              Reminders par Coordinateur
+            </div>
+          </div>
+          <apx-chart *ngIf="remindersByCoordChart.series"
+            [series]="remindersByCoordChart.series"
+            [chart]="remindersByCoordChart.chart"
+            [plotOptions]="remindersByCoordChart.plotOptions"
+            [colors]="remindersByCoordChart.colors"
+            [xaxis]="remindersByCoordChart.xaxis"
+            [dataLabels]="remindersByCoordChart.dataLabels"
+            [grid]="remindersByCoordChart.grid"
+            [tooltip]="remindersByCoordChart.tooltip">
+          </apx-chart>
+          <div *ngIf="!remindersByCoordChart.series" class="empty-sec">
+            <i-tabler name="bell-off" class="icon-32"></i-tabler>
+            <p>Aucune donnée</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Reminders par Patient -->
+    <div class="col-lg-6 m-b-16">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="heart-rate-monitor" class="sec-ico blue"></i-tabler>
+              Reminders par Patient (Top 8)
+            </div>
+          </div>
+          <apx-chart *ngIf="remindersByPatientChart.series"
+            [series]="remindersByPatientChart.series"
+            [chart]="remindersByPatientChart.chart"
+            [plotOptions]="remindersByPatientChart.plotOptions"
+            [colors]="remindersByPatientChart.colors"
+            [xaxis]="remindersByPatientChart.xaxis"
+            [yaxis]="remindersByPatientChart.yaxis"
+            [dataLabels]="remindersByPatientChart.dataLabels"
+            [grid]="remindersByPatientChart.grid"
+            [tooltip]="remindersByPatientChart.tooltip">
+          </apx-chart>
+          <div *ngIf="!remindersByPatientChart.series" class="empty-sec">
+            <i-tabler name="bell-off" class="icon-32"></i-tabler>
+            <p>Aucune donnée</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
   </div>
 
-  <div class="col-md-3 m-b-16">
-    <mat-card
-      class="cardWithShadow"
-      style="background-color: #e17055; color: #fff; border-radius: 18px"
-    >
-      <mat-card-content class="p-16">
-        <i-tabler name="shield-lock" class="icon-24 d-block m-b-8"></i-tabler>
-        <div class="f-w-700 f-s-22 m-b-4">10</div>
-        <div class="f-s-14 f-w-600 m-b-2">Admins</div>
-        <div class="f-s-12" style="opacity: 0.9">System administrators</div>
-      </mat-card-content>
-    </mat-card>
+  <!-- ROW 2c : Staff par Service -->
+  <div class="row m-b-20">
+    <div class="col-12">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="building-hospital" class="sec-ico orange"></i-tabler>
+              Doctors / Nurses / Patients par Service
+            </div>
+          </div>
+          <apx-chart *ngIf="serviceStaffChart.series"
+            [series]="serviceStaffChart.series"
+            [chart]="serviceStaffChart.chart"
+            [plotOptions]="serviceStaffChart.plotOptions"
+            [colors]="serviceStaffChart.colors"
+            [xaxis]="serviceStaffChart.xaxis"
+            [legend]="serviceStaffChart.legend"
+            [dataLabels]="serviceStaffChart.dataLabels"
+            [grid]="serviceStaffChart.grid"
+            [tooltip]="serviceStaffChart.tooltip">
+          </apx-chart>
+          <div *ngIf="!serviceStaffChart.series" class="empty-sec">
+            <i-tabler name="building-off" class="icon-32"></i-tabler>
+            <p>Aucune donnée de service</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
   </div>
-</div>
 
-<!-- Super Admin Dashboard -->
-<div class="row">
-  <div class="col-12">
-    <mat-card class="cardWithShadow">
-      <mat-card-content>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <mat-card-title>Super Admin Dashboard</mat-card-title>
-            <mat-card-subtitle class="f-s-13 text-muted">
-              Global platform analytics
-            </mat-card-subtitle>
+  <!-- ROW 3 : Alerts + Services + Users by role list -->
+  <div class="row m-b-20">
+
+    <!-- Critical Alerts -->
+    <div class="col-lg-4 m-b-16">
+      <mat-card class="cardWithShadow h-100">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="alert-octagon" class="sec-ico red"></i-tabler>
+              Alertes recentes
+            </div>
+            <a mat-button color="warn" routerLink="/dashboard/admin">Voir tout</a>
           </div>
 
-          <div class="btn-group">
-            <button
-              mat-stroked-button
-              class="m-r-4"
-              [ngClass]="{ 'bg-primary text-white': viewMode === 'day' }"
-              (click)="viewMode = 'day'"
-            >
-              Day
-            </button>
+          <div class="alert-list">
+            <div *ngFor="let a of recentAlerts" class="alert-row" [routerLink]="['/dashboard/admin']">
+              <div class="alert-sev-dot" [style.background]="severityColor(a.severity)"></div>
+              <div class="alert-body">
+                <div class="alert-msg">{{ a.message | slice:0:55 }}{{ (a.message?.length ?? 0) > 55 ? '...' : '' }}</div>
+                <div class="alert-meta">{{ a.patientName }} &bull; {{ a.createdAt | date:"dd/MM HH:mm" }}</div>
+              </div>
+              <span class="sev-badge" [style.background]="severityColor(a.severity) + '20'" [style.color]="severityColor(a.severity)">
+                {{ a.severity }}
+              </span>
+            </div>
+            <div *ngIf="recentAlerts.length === 0" class="empty-sec">
+              <i-tabler name="bell-off" class="icon-32"></i-tabler>
+              <p>Aucune alerte</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
 
-            <button
-              mat-stroked-button
-              class="m-r-4"
-              [ngClass]="{ 'bg-primary text-white': viewMode === 'month' }"
-              (click)="viewMode = 'month'"
-            >
-              Month
-            </button>
+    <!-- Services Overview -->
+    <div class="col-lg-4 m-b-16">
+      <mat-card class="cardWithShadow h-100">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="building-hospital" class="sec-ico orange"></i-tabler>
+              Services
+            </div>
+            <a mat-button color="primary" routerLink="/super-admin/services">Gerer</a>
+          </div>
 
-            <button
-              mat-stroked-button
-              [ngClass]="{ 'bg-primary text-white': viewMode === 'year' }"
-              (click)="viewMode = 'year'"
-            >
-              Year
-            </button>
+          <div class="service-list">
+            <div *ngFor="let s of services" class="service-row">
+              <div class="service-icon">
+                <i-tabler name="building-hospital" class="icon-18"></i-tabler>
+              </div>
+              <div class="service-body">
+                <div class="service-name">{{ s.name }}</div>
+                <div class="service-code">{{ s.code }}</div>
+              </div>
+              <span class="service-badge" [class.active]="s.isActive" [class.inactive]="!s.isActive">
+                {{ s.isActive ? "Actif" : "Inactif" }}
+              </span>
+            </div>
+            <div *ngIf="services.length === 0" class="empty-sec">
+              <i-tabler name="building-off" class="icon-32"></i-tabler>
+              <p>Aucun service</p>
+            </div>
           </div>
-        </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
 
-        <div class="m-t-16">
-          <app-profit-expenses [mode]="viewMode"></app-profit-expenses>
-        </div>
+    <!-- Users by role breakdown -->
+    <div class="col-lg-4 m-b-16">
+      <mat-card class="cardWithShadow h-100">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="users" class="sec-ico purple"></i-tabler>
+              Repartition utilisateurs
+            </div>
+            <a mat-button color="primary" routerLink="/super-admin/admin-users">Gerer</a>
+          </div>
 
-        <!-- Metrics -->
-        <div class="row m-t-16">
-          <div class="col-md-2 m-b-8">
-            <div class="f-s-12 text-muted">Total Visits</div>
-            <div class="f-w-600 f-s-14">50,000 sessions</div>
+          <div class="role-list">
+            <div *ngFor="let r of usersByRole" class="role-row">
+              <div class="role-icon" [style.background]="r.color + '20'">
+                <i-tabler [name]="r.icon" [style.color]="r.color" class="icon-18"></i-tabler>
+              </div>
+              <div class="role-name">{{ r.role | titlecase }}</div>
+              <div class="role-bar-wrap">
+                <div class="role-bar" [style.width]="(r.count / totalUsers * 100) + '%'" [style.background]="r.color"></div>
+              </div>
+              <div class="role-count" [style.color]="r.color">{{ r.count }}</div>
+            </div>
           </div>
-          <div class="col-md-2 m-b-8">
-            <div class="f-s-12 text-muted">Users</div>
-            <div class="f-w-600 f-s-14">35,000 users</div>
-          </div>
-          <div class="col-md-2 m-b-8">
-            <div class="f-s-12 text-muted">Page Views</div>
-            <div class="f-w-600 f-s-14">120,000 views</div>
-          </div>
-          <div class="col-md-2 m-b-8">
-            <div class="f-s-12 text-muted">New Patients</div>
-            <div class="f-w-600 f-s-14">10,000 patients</div>
-          </div>
-          <div class="col-md-2 m-b-8">
-            <div class="f-s-12 text-muted">Growth Rate</div>
-            <div class="f-w-600 f-s-14">+45%</div>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
   </div>
+
+  <!-- ROW 4 : AI Insights + Audit Logs + Quick Actions -->
+  <div class="row">
+
+    <!-- AI Insights -->
+    <div class="col-lg-4 m-b-16">
+      <mat-card class="cardWithShadow h-100">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="brain" class="sec-ico purple"></i-tabler>
+              AI Insights
+            </div>
+          </div>
+          <div class="insight-list">
+            <div *ngFor="let ins of aiInsights" class="insight-row" [style.border-left-color]="ins.color">
+              <div class="insight-icon" [style.background]="ins.color + '18'">
+                <i-tabler [name]="ins.icon" [style.color]="ins.color" class="icon-18"></i-tabler>
+              </div>
+              <p class="insight-text">{{ ins.text }}</p>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="sec-title m-t-20 m-b-12">
+            <i-tabler name="bolt" class="sec-ico orange"></i-tabler>
+            Actions rapides
+          </div>
+          <div class="quick-actions">
+            <a mat-stroked-button routerLink="/super-admin/patients" class="qa-btn">
+              <i-tabler name="user-plus" class="icon-16"></i-tabler> Patient
+            </a>
+            <a mat-stroked-button routerLink="/super-admin/services" class="qa-btn">
+              <i-tabler name="building-plus" class="icon-16"></i-tabler> Service
+            </a>
+            <a mat-stroked-button routerLink="/super-admin/role" class="qa-btn">
+              <i-tabler name="shield-plus" class="icon-16"></i-tabler> Role
+            </a>
+            <a mat-stroked-button routerLink="/super-admin/audit-logs" class="qa-btn">
+              <i-tabler name="camera" class="icon-16"></i-tabler> Audit
+            </a>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Recent Audit Logs -->
+    <div class="col-lg-8 m-b-16">
+      <mat-card class="cardWithShadow h-100">
+        <mat-card-content class="p-20">
+          <div class="sec-header">
+            <div class="sec-title">
+              <i-tabler name="camera" class="sec-ico indigo"></i-tabler>
+              Derniers evenements systeme
+            </div>
+            <a mat-stroked-button color="primary" routerLink="/super-admin/audit-logs">
+              <i-tabler name="external-link" class="icon-14"></i-tabler>
+              Voir tout
+            </a>
+          </div>
+
+          <div class="log-list">
+            <div *ngFor="let log of recentLogs" class="log-row">
+              <div class="log-icon" [style.background]="auditActionColor(log.action) + '18'">
+                <i-tabler [name]="auditActionIcon(log.action)" [style.color]="auditActionColor(log.action)" class="icon-16"></i-tabler>
+              </div>
+              <span class="log-action-badge" [style.background]="auditActionColor(log.action) + '18'" [style.color]="auditActionColor(log.action)">{{ log.action }}</span>
+              <span class="log-entity">{{ log.entityType }}</span>
+              <span class="log-user">{{ log.userEmail }}</span>
+              <span class="log-time">{{ log.createdAt | date:"dd/MM HH:mm" }}</span>
+              <span class="log-ip">{{ log.ipAddress }}</span>
+            </div>
+            <div *ngIf="recentLogs.length === 0" class="empty-sec">
+              <i-tabler name="camera-off" class="icon-32"></i-tabler>
+              <p>No events yet</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+  </div>
+
 </div>

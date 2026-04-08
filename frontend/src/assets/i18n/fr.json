@@ -469,6 +469,7 @@
   "NURSE_RECORDS_HINT_TAGS": "500 caract├¿res max",
   "NURSE_RECORDS_HINT_PAIN": "0ÔÇô10, entier si renseign├®",
   "NURSE_RECORDS_HINT_DESCRIPTION": "1000 caract├¿res max",
+<<<<<<< HEAD
   "RETRY": "R├®essayer",
   "GOOD_DAY": "Bonjour,",
   "MY_HEALTH_DASHBOARD": "Mon tableau de santé",
@@ -500,7 +501,16 @@
 
 
   "EDIT_REMINDER": "Modifier le rappel",
-"SAVE_CHANGES": "Enregistrer",
-"SEARCH_PATIENT": "Rechercher par patient",
-"EDIT": "Modifier"
+  "SAVE_CHANGES": "Enregistrer",
+  "SEARCH_PATIENT": "Rechercher par patient",
+  "EDIT": "Modifier",
+  "RETRY": "Réessayer",
+  "AUDIT_LOGS": "Journaux d'audit",
+  "AUDITOR_MENU": "Auditeur",
+  "AUDITOR_DASHBOARD": "Tableau de bord",
+  "AUDITOR_PATIENTS": "Patients",
+  "AUDITOR_COORDINATORS": "Coordinateurs",
+  "AUDITOR_REMINDERS": "Rappels",
+  "AUDITOR_ANOMALIES": "Anomalies",
+  "AUDITOR_VERIFY": "Vérifier les logs"
 }

@@ -1,0 +1,281 @@
+<div class="user-form-dialog">
+
+  <h2 mat-dialog-title>
+    <mat-icon>{{ isEdit ? 'edit' : 'person_add' }}</mat-icon>
+    {{ isEdit ? 'Edit' : 'Add' }} {{ roleLabel }}
+  </h2>
+
+  <mat-dialog-content>
+    <form [formGroup]="form" class="form-body">
+
+      <!-- ── PHOTO ─────────────────────────────────────────────── -->
+      <div class="photo-row">
+        <div class="avatar-preview" (click)="fileInput.click()">
+          <img *ngIf="photoPreview" [src]="photoPreview" alt="photo" />
+          <div *ngIf="!photoPreview" class="avatar-placeholder">
+            <mat-icon>add_a_photo</mat-icon>
+            <span>Photo</span>
+          </div>
+        </div>
+        <input #fileInput type="file" accept="image/*" hidden (change)="onFileSelected($event)" />
+        <button *ngIf="photoPreview" mat-icon-button color="warn" type="button" (click)="removePhoto()">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+
+      <!-- ── ROLE SELECTOR (create only) ───────────────────────── -->
+      <ng-container *ngIf="!isEdit">
+        <div class="section-label">Select Role</div>
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Role *</mat-label>
+          <mat-select formControlName="roleId" (selectionChange)="onRoleChange($event.value)">
+            <mat-option *ngFor="let r of roles" [value]="r._id">
+              {{ r.name | titlecase }}
+            </mat-option>
+          </mat-select>
+          <mat-hint>Choose a role — specific fields will appear below</mat-hint>
+        </mat-form-field>
+      </ng-container>
+
+      <!-- ── COMMON FIELDS ─────────────────────────────────────── -->
+      <div class="section-label">Common Information</div>
+      <div class="grid-2">
+
+        <mat-form-field appearance="outline">
+          <mat-label>First Name *</mat-label>
+          <input matInput formControlName="firstName" />
+          <mat-error *ngIf="form.get('firstName')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Last Name *</mat-label>
+          <input matInput formControlName="lastName" />
+          <mat-error *ngIf="form.get('lastName')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email *</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="example@gmail.com" />
+          <mat-error *ngIf="form.get('email')?.hasError('required')">Required</mat-error>
+          <mat-error *ngIf="form.get('email')?.hasError('pattern')">Invalid email format (e.g. name@gmail.com)</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" *ngIf="!isEdit">
+          <mat-label>Password *</mat-label>
+          <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" />
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="form.get('password')?.hasError('required')">Required</mat-error>
+          <mat-error *ngIf="form.get('password')?.hasError('minlength')">Min 8 characters</mat-error>
+          <mat-error *ngIf="form.get('password')?.hasError('pattern')">Must contain uppercase, number and special character</mat-error>
+          <mat-hint>Min 8 chars · 1 uppercase · 1 number · 1 special char</mat-hint>
+        </mat-form-field>
+
+        <!-- Password optional on edit -->
+        <mat-form-field appearance="outline" *ngIf="isEdit">
+          <mat-label>New Password (optional)</mat-label>
+          <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'"
+            placeholder="Leave empty to keep current" />
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-hint>Leave empty to keep current password</mat-hint>
+          <mat-error *ngIf="form.get('password')?.hasError('minlength')">Min 6 characters</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Phone</mat-label>
+          <input matInput formControlName="phone" placeholder="+216 XX XXX XXX" />
+          <mat-error *ngIf="form.get('phone')?.hasError('pattern')">Invalid phone (e.g. +21620123456 or 20123456)</mat-error>
+          <mat-hint>Tunisian: 2X/5X/9X XXXXXXX or international +XXX...</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Gender</mat-label>
+          <mat-select formControlName="gender">
+            <mat-option value="male">Male</mat-option>
+            <mat-option value="female">Female</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>National ID (CIN)</mat-label>
+          <input matInput formControlName="nationalId" placeholder="12345678" maxlength="8" />
+          <mat-error *ngIf="form.get('nationalId')?.hasError('pattern')">CIN must be exactly 8 digits</mat-error>
+          <mat-hint>8 digits exactly</mat-hint>
+        </mat-form-field>
+
+        <!-- Marital Status — common to all -->
+        <mat-form-field appearance="outline">
+          <mat-label>Marital Status</mat-label>
+          <mat-select formControlName="maritalStatus">
+            <mat-option value="single">Single</mat-option>
+            <mat-option value="married">Married</mat-option>
+            <mat-option value="divorced">Divorced</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="span-2">
+          <mat-label>Address</mat-label>
+          <textarea matInput formControlName="address" rows="2"></textarea>
+        </mat-form-field>
+
+      </div>
+
+      <!-- ── ROLE-SPECIFIC FIELDS (appear after role selection) ── -->
+      <ng-container *ngIf="hasRole">
+        <mat-divider class="my-divider"></mat-divider>
+
+        <!-- PATIENT SPECIFIC -->
+        <ng-container *ngIf="showPatient">
+          <div class="section-label role-label">
+            <mat-icon class="s-ico">favorite</mat-icon>
+            Patient Information
+          </div>
+          <div class="grid-2">
+
+            <!-- Assigned Doctor FIRST — triggers service auto-fill -->
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Assigned Doctor</mat-label>
+              <mat-select formControlName="doctorId"
+                (selectionChange)="onDoctorChange($event.value)">
+                <mat-option value="">-- No doctor assigned --</mat-option>
+                <mat-option *ngFor="let d of doctors" [value]="d._id">
+                  {{ doctorFullName(d) }}
+                </mat-option>
+              </mat-select>
+              <mat-hint>Selecting a doctor will auto-fill the service</mat-hint>
+            </mat-form-field>
+
+            <!-- Assigned Coordinator -->
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Assigned Coordinator</mat-label>
+              <mat-select formControlName="coordinatorId">
+                <mat-option value="">-- No coordinator assigned --</mat-option>
+                <mat-option *ngFor="let c of coordinators" [value]="c._id">
+                  {{ c.firstName }} {{ c.lastName }}
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix>supervisor_account</mat-icon>
+            </mat-form-field>
+
+            <!-- Date of Birth -->
+            <mat-form-field appearance="outline">
+              <mat-label>Date of Birth</mat-label>
+              <input matInput [matDatepicker]="dob" formControlName="dateOfBirth" [max]="today" />
+              <mat-datepicker-toggle matSuffix [for]="dob"></mat-datepicker-toggle>
+              <mat-datepicker #dob></mat-datepicker>
+            </mat-form-field>
+
+            <!-- Age (auto-calculated) -->
+            <mat-form-field appearance="outline">
+              <mat-label>Age (auto)</mat-label>
+              <input matInput [value]="calculatedAge !== null ? calculatedAge + ' years' : '—'" readonly />
+              <mat-icon matSuffix>cake</mat-icon>
+            </mat-form-field>
+
+            <!-- Emergency Contact -->
+            <mat-form-field appearance="outline">
+              <mat-label>Emergency Contact</mat-label>
+              <input matInput formControlName="emergencyContact" placeholder="+216 XX XXX XXX" />
+              <mat-icon matSuffix>emergency</mat-icon>
+            </mat-form-field>
+
+            <!-- Medical Record # -->
+            <mat-form-field appearance="outline">
+              <mat-label>Medical Record #</mat-label>
+              <input matInput formControlName="medicalRecordNumber" readonly />
+              <mat-icon matSuffix>badge</mat-icon>
+            </mat-form-field>
+
+          </div>
+        </ng-container>
+
+        <!-- SERVICE — shown AFTER doctor for patient, so auto-fill works -->
+        <ng-container *ngIf="showService">
+          <div class="section-label role-label">
+            <mat-icon class="s-ico">business</mat-icon>
+            Service Assignment
+          </div>
+          <div class="grid-2">
+
+            <!-- Patient: service auto-filled from doctor — show as readonly text -->
+            <ng-container *ngIf="showPatient">
+              <mat-form-field appearance="outline" class="span-2">
+                <mat-label>Service (auto from doctor)</mat-label>
+                <input matInput
+                  [value]="autoServiceName || 'Select a doctor above'"
+                  readonly />
+                <mat-icon matSuffix>{{ autoServiceName ? 'check_circle' : 'lock' }}</mat-icon>
+                <mat-hint *ngIf="autoServiceName">Assigned from doctor's service</mat-hint>
+              </mat-form-field>
+            </ng-container>
+
+            <!-- Other roles: service editable dropdown -->
+            <mat-form-field appearance="outline" class="span-2" *ngIf="!showPatient">
+              <mat-label>Service</mat-label>
+              <mat-select formControlName="serviceId">
+                <mat-option value="">-- None --</mat-option>
+                <mat-option *ngFor="let s of services" [value]="s._id">{{ s.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+          </div>
+        </ng-container>
+
+        <!-- DOCTOR SPECIFIC -->
+        <ng-container *ngIf="showDoctor">
+          <div class="section-label role-label">
+            <mat-icon class="s-ico">medical_services</mat-icon>
+            Medical Expertise
+          </div>
+          <div class="grid-2">
+
+            <mat-form-field appearance="outline">
+              <mat-label>Specialization</mat-label>
+              <mat-select formControlName="specialization">
+                <mat-option *ngFor="let sp of specializations" [value]="sp">{{ sp }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Add custom specialization -->
+            <div class="add-spec-row">
+              <mat-form-field appearance="outline" class="spec-input">
+                <mat-label>Add specialization</mat-label>
+                <input matInput [(ngModel)]="newSpecialization" [ngModelOptions]="{standalone:true}"
+                  (keyup.enter)="addSpecialization()" placeholder="e.g. Endocrinology" />
+              </mat-form-field>
+              <button mat-icon-button color="primary" type="button"
+                (click)="addSpecialization()" matTooltip="Add to list">
+                <mat-icon>add_circle</mat-icon>
+              </button>
+            </div>
+
+          </div>
+        </ng-container>
+
+      </ng-container>
+
+      <!-- ── STATUS ─────────────────────────────────────────────── -->
+      <mat-divider class="my-divider"></mat-divider>
+      <div class="toggle-row">
+        <mat-slide-toggle formControlName="isActive" color="primary">
+          Active Account
+        </mat-slide-toggle>
+      </div>
+
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" type="button"
+      (click)="onSubmit()" [disabled]="loading || (!isEdit && !hasRole)">
+      <mat-spinner *ngIf="loading" diameter="18"
+        style="display:inline-block;margin-right:6px;vertical-align:middle"></mat-spinner>
+      {{ isEdit ? 'Save Changes' : 'Create ' + roleLabel }}
+    </button>
+  </mat-dialog-actions>
+
+</div>

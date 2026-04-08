@@ -10,4 +10,5 @@ export interface NavItem {
   external?: boolean;
   bgcolor?: string;
   disabled?: boolean;
+  permission?: string;   // hide item if user lacks this permission
 }

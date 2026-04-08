@@ -42,7 +42,12 @@ export class SuperTopstripComponent {
     this.selectedLanguage = lang;
     this.translate.use(lang);
     localStorage.setItem('app_language', lang);
+
+    const langMap: Record<string, string> = { en: 'en', fr: 'fr', ar: 'ar' };
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+    // Trigger Google Translate widget
+    (window as any).triggerGoogleTranslate?.(lang);
   }
 
   toggleHighContrast() {

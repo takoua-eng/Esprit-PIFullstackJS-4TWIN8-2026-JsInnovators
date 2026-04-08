@@ -87,14 +87,20 @@
         </mat-form-field>
 
         <div class="form-actions">
-          <button mat-flat-button color="primary" type="submit">
-            <i-tabler name="device-floppy" class="icon-16"></i-tabler>
-            {{ (editingReminder ? 'SAVE_CHANGES' : 'SEND_REMINDER') | translate }}
-          </button>
-          <button mat-stroked-button type="button" (click)="toggleForm()">
-            {{ 'CANCEL' | translate }}
-          </button>
-        </div>
+  <button mat-flat-button color="primary" type="submit">
+    <i-tabler name="device-floppy" class="icon-16"></i-tabler>
+    {{ (editingReminder ? 'SAVE_CHANGES' : 'SAVE_SCHEDULED') | translate }}
+  </button>
+  <button mat-flat-button color="accent" type="button"
+    *ngIf="!editingReminder"
+    (click)="submitAndSend()">
+    <i-tabler name="send" class="icon-16"></i-tabler>
+    {{ 'SEND_NOW' | translate }}
+  </button>
+  <button mat-stroked-button type="button" (click)="toggleForm()">
+    {{ 'CANCEL' | translate }}
+  </button>
+</div>
       </form>
     </mat-card-content>
   </mat-card>

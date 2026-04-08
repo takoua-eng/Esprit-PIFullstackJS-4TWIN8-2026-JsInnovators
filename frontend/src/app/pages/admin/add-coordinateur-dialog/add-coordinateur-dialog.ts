@@ -76,7 +76,7 @@ export class AddCoordinatorDialog implements OnInit {
       address: ['', [Validators.minLength(5), Validators.maxLength(200)]],
       licenseNumber: [{ value: this.generateLicenseNumber(), disabled: true }],
       yearsOfExperience: [0, [Validators.required, Validators.min(0)]],
-      assignedService: [''],
+      
     });
 
     // ✅ MODE EDIT

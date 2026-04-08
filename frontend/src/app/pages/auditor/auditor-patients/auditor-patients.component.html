@@ -1,0 +1,134 @@
+<div class="p-24">
+
+  <!-- Header + KPI chips -->
+  <div class="d-flex justify-content-between align-items-center m-b-24">
+    <div>
+      <h2 class="m-0 f-w-700">Patient Overview</h2>
+      <p class="text-muted f-s-13 m-0">Read-only — daily compliance status</p>
+    </div>
+    <div class="d-flex gap-8">
+      <span class="chip chip-green" (click)="filterStatus='OK'; applyFilters()" [class.active]="filterStatus==='OK'">
+        <i-tabler name="circle-check" class="icon-14"></i-tabler> {{ okCount }} OK
+      </span>
+      <span class="chip chip-yellow" (click)="filterStatus='INCOMPLETE'; applyFilters()" [class.active]="filterStatus==='INCOMPLETE'">
+        <i-tabler name="alert-circle" class="icon-14"></i-tabler> {{ incompleteCount }} Incomplete
+      </span>
+      <span class="chip chip-red" (click)="filterStatus='NO DATA'; applyFilters()" [class.active]="filterStatus==='NO DATA'">
+        <i-tabler name="circle-x" class="icon-14"></i-tabler> {{ noDataCount }} No Data
+      </span>
+      <span class="chip chip-grey" *ngIf="filterStatus !== 'ALL'" (click)="filterStatus='ALL'; applyFilters()">
+        <i-tabler name="x" class="icon-14"></i-tabler> Clear
+      </span>
+    </div>
+  </div>
+
+  <mat-card class="cardWithShadow">
+    <mat-card-content class="p-20">
+
+      <!-- Filters row -->
+      <div class="d-flex gap-12 align-items-center m-b-16 flex-wrap">
+
+        <!-- Search -->
+        <mat-form-field appearance="outline" style="width:260px;margin:0">
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput placeholder="Search name / MRN..." (keyup)="onSearch($event)" />
+        </mat-form-field>
+
+        <!-- Status filter -->
+        <mat-form-field appearance="outline" style="width:180px;margin:0">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()">
+            <mat-option value="ALL">All</mat-option>
+            <mat-option value="OK">OK</mat-option>
+            <mat-option value="INCOMPLETE">Incomplete</mat-option>
+            <mat-option value="NO DATA">No Data</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Service filter -->
+        <mat-form-field appearance="outline" style="width:200px;margin:0">
+          <mat-label>Service / Department</mat-label>
+          <mat-select [(ngModel)]="filterService" (ngModelChange)="applyFilters()">
+            <mat-option value="ALL">All</mat-option>
+            <mat-option *ngFor="let s of services" [value]="s">{{ s }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button color="primary" (click)="load()">
+          <i-tabler name="refresh" class="icon-16 m-r-4"></i-tabler> Refresh
+        </button>
+      </div>
+
+      <!-- Spinner -->
+      <div *ngIf="loading" class="text-center p-40">
+        <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+      </div>
+
+      <!-- Table -->
+      <div *ngIf="!loading" class="table-responsive">
+        <table mat-table [dataSource]="dataSource" matSort class="w-100">
+
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Patient</th>
+            <td mat-cell *matCellDef="let r">
+              <strong>{{ r.name }}</strong>
+              <div class="text-muted f-s-12">{{ r.email }}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="mrn">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>MRN</th>
+            <td mat-cell *matCellDef="let r" class="f-s-13 text-muted">{{ r.mrn || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="service">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Service</th>
+            <td mat-cell *matCellDef="let r" class="f-s-13">{{ r.service || r.department || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="coordinator">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Coordinator</th>
+            <td mat-cell *matCellDef="let r" class="f-s-13">{{ r.coordinatorName || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="vitals">
+            <th mat-header-cell *matHeaderCellDef class="text-center">Vitals Today</th>
+            <td mat-cell *matCellDef="let r" class="text-center">
+              <i-tabler [name]="r.vitalsToday ? 'circle-check' : 'circle-x'"
+                [style.color]="r.vitalsToday ? '#00b894' : '#d63031'" class="icon-20"></i-tabler>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="symptoms">
+            <th mat-header-cell *matHeaderCellDef class="text-center">Symptoms Today</th>
+            <td mat-cell *matCellDef="let r" class="text-center">
+              <i-tabler [name]="r.symptomsToday ? 'circle-check' : 'circle-x'"
+                [style.color]="r.symptomsToday ? '#00b894' : '#d63031'" class="icon-20"></i-tabler>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef class="text-center">Status</th>
+            <td mat-cell *matCellDef="let r" class="text-center">
+              <span class="status-badge"
+                [style.background]="statusColor(r.status) + '18'"
+                [style.color]="statusColor(r.status)">
+                {{ r.status }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let r; columns: displayedColumns" class="hover-row"></tr>
+        </table>
+
+        <div *ngIf="dataSource.data.length === 0" class="text-center p-40 text-muted">
+          <i-tabler name="users" class="icon-48 m-b-8" style="opacity:.3"></i-tabler>
+          <p>No patients match the current filters</p>
+        </div>
+      </div>
+
+      <mat-paginator [pageSizeOptions]="[8, 25, 50]" showFirstLastButtons></mat-paginator>
+    </mat-card-content>
+  </mat-card>
+</div>

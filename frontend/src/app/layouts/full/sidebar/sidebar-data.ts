@@ -11,21 +11,52 @@ export const adminNavItems: NavItem[] = [
     chip: true,
     chipClass: 'bg-primary text-white',
     chipContent: 'NEW',
+  
   },
   {
     displayName: 'USERS',
     iconName: 'users',
     route: '/dashboard/admin',
     bgcolor: 'secondary',
+  
     children: [
-      { displayName: 'PATIENTS', iconName: 'notes', route: '/dashboard/admin/patients', bgcolor: 'transparent' },
-      { displayName: 'DOCTORS', iconName: 'stethoscope', route: '/dashboard/admin/physicians', bgcolor: 'transparent' },
-      { displayName: 'NURSES', iconName: 'nurse', route: '/dashboard/admin/nurses', bgcolor: 'transparent' },
-      { displayName: 'COORDINATORS', iconName: 'users-group', route: '/dashboard/admin/coordinators', bgcolor: 'transparent' },
-      { displayName: 'AUDITORS', iconName: 'check', route: '/dashboard/admin/auditors', bgcolor: 'transparent' },
+      {
+        displayName: 'PATIENTS',
+        iconName: 'notes',
+        route: '/dashboard/admin/patients',
+        bgcolor: 'transparent',
+     
+      },
+      {
+        displayName: 'DOCTORS',
+        iconName: 'stethoscope',
+        route: '/dashboard/admin/physicians',
+        bgcolor: 'transparent',
+       
+      },
+      {
+        displayName: 'NURSES',
+        iconName: 'nurse',
+        route: '/dashboard/admin/nurses',
+        bgcolor: 'transparent',
+       
+      },
+      {
+        displayName: 'COORDINATORS',
+        iconName: 'users-group',
+        route: '/dashboard/admin/coordinators',
+        bgcolor: 'transparent',
+        
+      },
+      {
+        displayName: 'AUDITORS',
+        iconName: 'check',
+        route: '/dashboard/admin/auditors',
+        bgcolor: 'transparent',
+        
+      },
     ],
   },
-
   {
     displayName: 'QUESTIONNAIRE ',
     iconName: 'list',
@@ -35,10 +66,8 @@ export const adminNavItems: NavItem[] = [
 ];
 
 // Sidebar pour le coordinator
-
 export const coordinatorNavItems: NavItem[] = [
   { navCap: 'COORDINATOR' },
-
   {
     displayName: 'DASHBOARD',
     iconName: 'gauge',
@@ -48,37 +77,31 @@ export const coordinatorNavItems: NavItem[] = [
     chipClass: 'bg-primary text-white',
     chipContent: 'NEW',
   },
-
   {
     displayName: 'MY PATIENTS',
     iconName: 'users-group',
     route: '/admin/coordinator/patients',
     bgcolor: 'transparent',
+   
   },
-
   {
     displayName: 'REMINDERS',
     iconName: 'bell-ringing',
     route: '/admin/coordinator/reminders',
     bgcolor: 'transparent',
+   
   },
-
   {
-  displayName: 'AI PREDICTION',
-  iconName: 'brain',
-  route: '/admin/coordinator/prediction',
-  bgcolor: 'transparent',
-},
+    displayName: 'AI PREDICTION',
+    iconName: 'brain',
+    route: '/admin/coordinator/prediction',
+    bgcolor: 'transparent',
+  },
 ];
 
-
-
-
-
+// Sidebar pour le patient
 export const patientNavItems: NavItem[] = [
-  {
-    navCap: 'PATIENT',
-  },
+  { navCap: 'PATIENT' },
   {
     displayName: 'Dashboard',
     iconName: 'gauge',

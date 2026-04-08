@@ -13,11 +13,11 @@ export function getPostLoginPath(roleFromApi: string | null | undefined): string
     superadmin: '/super-admin',
     coordinator: '/admin/coordinator',
     admin: '/dashboard/admin',
-    patient: '/dashboard/patient',
+    patient: '/dashboard/patient/dashboard',
     nurse: '/dashboard/nurse',
     doctor: '/dashboard/doctor',
     physician: '/dashboard/doctor',
-    auditor: '/dashboard/admin/auditors',
+    auditor: '/auditor/dashboard',
   };
 
   return map[r] ?? '/dashboard/admin';

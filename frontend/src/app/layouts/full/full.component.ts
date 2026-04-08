@@ -11,12 +11,11 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { AppNavItemComponent } from './sidebar/nav-item/nav-item.component';
-import { navItems } from './sidebar/sidebar-data';
-import { patientNavItems } from './sidebar/sidebar-data';
 import { AppTopstripComponent } from './top-strip/topstrip.component';
 import { adminNavItems, coordinatorNavItems } from './sidebar/sidebar-data';
 import { nurseNavItems } from './sidebar/nurse-sidebar-data';
 import { doctorNavItems } from './sidebar/doctor-sidebar-data';
+import { patientNavItems } from './sidebar/sidebar-data';
 import { NavItem } from './sidebar/nav-item/nav-item';
 import { normalizeRoleKey } from 'src/app/core/post-login-route';
 import { VoiceAssistantComponent } from 'src/app/components/voice-assistant/voice-assistant.component';
@@ -126,7 +125,8 @@ export class FullComponent implements OnInit {
       this.navItems = patientNavItems;
     } else if (url.startsWith('/dashboard/profile')) {
       if (role === 'nurse') this.navItems = nurseNavItems;
-      else if (role === 'doctor' || role === 'physician') this.navItems = doctorNavItems;
+      else if (role === 'doctor' || role === 'physician')
+        this.navItems = doctorNavItems;
       else if (role === 'patient') this.navItems = patientNavItems;
       else this.navItems = adminNavItems;
     } else if (url.startsWith('/admin/coordinator')) {
@@ -137,7 +137,8 @@ export class FullComponent implements OnInit {
       // Final fallback based on role
       if (role === 'patient') this.navItems = patientNavItems;
       else if (role === 'nurse') this.navItems = nurseNavItems;
-      else if (role === 'doctor' || role === 'physician') this.navItems = doctorNavItems;
+      else if (role === 'doctor' || role === 'physician')
+        this.navItems = doctorNavItems;
       else if (role === 'coordinator') this.navItems = coordinatorNavItems;
       else this.navItems = adminNavItems;
     }

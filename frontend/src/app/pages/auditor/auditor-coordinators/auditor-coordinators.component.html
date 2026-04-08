@@ -1,0 +1,164 @@
+<div class="p-24">
+
+  <!-- Header -->
+  <div class="m-b-24">
+    <h2 class="m-0 f-w-700">Coordinator Performance</h2>
+    <p class="text-muted f-s-13 m-0">Activity and data quality overview for all coordinators</p>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row m-b-24">
+    <div class="col-3">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20 d-flex align-items-center gap-16">
+          <div class="kpi-icon" style="background:#6c5ce718;color:#6c5ce7">
+            <i-tabler name="users-group" class="icon-24"></i-tabler>
+          </div>
+          <div>
+            <div class="f-s-24 f-w-700">{{ totalCoordinators }}</div>
+            <div class="text-muted f-s-12">Total Coordinators</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-3">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20 d-flex align-items-center gap-16">
+          <div class="kpi-icon" style="background:#0984e318;color:#0984e3">
+            <i-tabler name="user-heart" class="icon-24"></i-tabler>
+          </div>
+          <div>
+            <div class="f-s-24 f-w-700">{{ avgPatients }}</div>
+            <div class="text-muted f-s-12">Avg Patients / Coordinator</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-3">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20 d-flex align-items-center gap-16">
+          <div class="kpi-icon" style="background:#00b89418;color:#00b894">
+            <i-tabler name="chart-bar" class="icon-24"></i-tabler>
+          </div>
+          <div>
+            <div class="f-s-24 f-w-700">{{ avgCompleteness }}%</div>
+            <div class="text-muted f-s-12">Avg Data Completeness</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="col-3">
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="p-20 d-flex align-items-center gap-16">
+          <div class="kpi-icon" style="background:#e1705518;color:#e17055">
+            <i-tabler name="bell-ringing" class="icon-24"></i-tabler>
+          </div>
+          <div>
+            <div class="f-s-24 f-w-700">{{ totalRemindersToday }}</div>
+            <div class="text-muted f-s-12">Reminders Sent Today</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <mat-card class="cardWithShadow">
+    <mat-card-content class="p-20">
+      <div class="d-flex align-items-center justify-content-between m-b-16">
+        <mat-form-field appearance="outline" style="width:300px;margin:0">
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput placeholder="Search coordinator..." (keyup)="applyFilter($event)" />
+        </mat-form-field>
+        <button mat-stroked-button color="primary" (click)="load()">
+          <i-tabler name="refresh" class="icon-16 m-r-4"></i-tabler> Refresh
+        </button>
+      </div>
+
+      <div *ngIf="loading" class="text-center p-40">
+        <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+      </div>
+
+      <div *ngIf="!loading" class="table-responsive">
+        <table mat-table [dataSource]="dataSource" matSort class="w-100">
+
+          <!-- Rank -->
+          <ng-container matColumnDef="rank">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center" style="width:60px">Rank</th>
+            <td mat-cell *matCellDef="let r" class="text-center f-s-16">{{ rankIcon(r.rank) }}</td>
+          </ng-container>
+
+          <!-- Name -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+            <td mat-cell *matCellDef="let r"><strong>{{ r.name }}</strong></td>
+          </ng-container>
+
+          <!-- Email -->
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let r" class="text-muted f-s-13">{{ r.email }}</td>
+          </ng-container>
+
+          <!-- Patients assigned -->
+          <ng-container matColumnDef="patientCount">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">Patients</th>
+            <td mat-cell *matCellDef="let r" class="text-center f-w-600">{{ r.patientCount }}</td>
+          </ng-container>
+
+          <!-- Data completeness -->
+          <ng-container matColumnDef="completenessRate">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">Data Completeness</th>
+            <td mat-cell *matCellDef="let r" class="text-center">
+              <div class="d-flex align-items-center justify-content-center gap-8">
+                <mat-progress-bar mode="determinate" [value]="r.completenessRate"
+                  style="width:60px;height:6px;border-radius:4px"
+                  [color]="r.completenessRate >= 80 ? 'primary' : r.completenessRate >= 50 ? 'accent' : 'warn'">
+                </mat-progress-bar>
+                <span class="f-s-13 f-w-600" [style.color]="completenessColor(r.completenessRate)">
+                  {{ r.completenessRate }}%
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Total reminders sent -->
+          <ng-container matColumnDef="remindersSent">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">Reminders Sent</th>
+            <td mat-cell *matCellDef="let r" class="text-center">{{ r.remindersSent }}</td>
+          </ng-container>
+
+          <!-- Reminders today -->
+          <ng-container matColumnDef="remindersToday">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">Today</th>
+            <td mat-cell *matCellDef="let r" class="text-center">
+              <span class="badge-pill"
+                [style.background]="r.remindersToday > 0 ? '#00b89420' : '#b2bec320'"
+                [style.color]="r.remindersToday > 0 ? '#00b894' : '#636e72'">
+                {{ r.remindersToday }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Avg response time -->
+          <ng-container matColumnDef="avgResponseMin">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">Avg Response Time</th>
+            <td mat-cell *matCellDef="let r" class="text-center f-s-13 text-muted">
+              {{ responseLabel(r.avgResponseMin) }}
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let r; columns: displayedColumns" class="hover-row"></tr>
+        </table>
+
+        <div *ngIf="dataSource.data.length === 0" class="text-center p-40 text-muted">
+          <i-tabler name="users-group" class="icon-48 m-b-8" style="opacity:.3"></i-tabler>
+          <p>No coordinators found</p>
+        </div>
+      </div>
+
+      <mat-paginator [pageSizeOptions]="[7, 14, 25]" showFirstLastButtons></mat-paginator>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,217 @@
+<div class="row">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-24">
+        <!-- HEADER -->
+        <div
+          class="header d-flex justify-content-between align-items-center mb-4"
+        >
+          <div>
+            <h2 class="title mb-1">
+              <mat-icon class="me-2">verified_user</mat-icon>
+              Add Auditor
+            </h2>
+            <p class="subtitle text-muted">Create new auditor account</p>
+          </div>
+        </div>
+
+        <form [formGroup]="auditorForm" (ngSubmit)="onSubmit()">
+          <!-- PHOTO SECTION -->
+          <div class="form-section text-center mb-4">
+            <h3 class="section-title">
+              <mat-icon>photo_camera</mat-icon>
+              Profile Photo
+            </h3>
+            <div class="photo-wrapper d-flex justify-content-center">
+              <div class="avatar-circle-large">
+                <img
+                  *ngIf="photoPreview"
+                  [src]="photoPreview"
+                  class="avatar-img"
+                />
+                <span *ngIf="!photoPreview" class="avatar-initials-large">
+                  {{ getInitials(auditorForm.value.firstName,
+                  auditorForm.value.lastName) }}
+                </span>
+              </div>
+              <input
+                type="file"
+                hidden
+                #fileInput
+                (change)="onFileSelected($event)"
+                accept="image/*"
+              />
+              <button
+                mat-mini-fab
+                color="primary"
+                class="edit-photo-btn"
+                (click)="fileInput.click()"
+                type="button"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- PERSONAL INFORMATION -->
+          <div class="form-section mb-4">
+            <h3 class="section-title">
+              <mat-icon>person</mat-icon>
+              Personal Information
+            </h3>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>First Name *</mat-label>
+                <input
+                  matInput
+                  formControlName="firstName"
+                  placeholder="Enter first name"
+                />
+                <mat-error
+                  *ngIf="auditorForm.get('firstName')?.hasError('required')"
+                  >Required</mat-error
+                >
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Last Name *</mat-label>
+                <input
+                  matInput
+                  formControlName="lastName"
+                  placeholder="Enter last name"
+                />
+                <mat-error
+                  *ngIf="auditorForm.get('lastName')?.hasError('required')"
+                  >Required</mat-error
+                >
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Email *</mat-label>
+                <input
+                  matInput
+                  formControlName="email"
+                  type="email"
+                  placeholder="Enter email"
+                />
+                <mat-error
+                  *ngIf="auditorForm.get('email')?.hasError('required')"
+                  >Required</mat-error
+                >
+                <mat-error *ngIf="auditorForm.get('email')?.hasError('email')"
+                  >Invalid format</mat-error
+                >
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Password *</mat-label>
+                <input
+                  matInput
+                  [type]="hidePassword ? 'password' : 'text'"
+                  formControlName="password"
+                  placeholder="Enter password"
+                />
+                <button
+                  mat-icon-button
+                  matSuffix
+                  (click)="hidePassword = !hidePassword"
+                  type="button"
+                >
+                  <mat-icon
+                    >{{hidePassword ? 'visibility_off' :
+                    'visibility'}}</mat-icon
+                  >
+                </button>
+                <mat-error
+                  *ngIf="auditorForm.get('password')?.hasError('required')"
+                  >Required</mat-error
+                >
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Phone</mat-label>
+                <input
+                  matInput
+                  formControlName="phone"
+                  placeholder="Enter phone number"
+                />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>National ID</mat-label>
+                <input
+                  matInput
+                  formControlName="nationalId"
+                  placeholder="Enter national ID"
+                />
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="form-field full-width">
+              <mat-label>Address</mat-label>
+              <input
+                matInput
+                formControlName="address"
+                placeholder="Enter address"
+              />
+            </mat-form-field>
+          </div>
+
+          <!-- PROFESSIONAL INFO -->
+          <div class="form-section mb-4">
+            <h3 class="section-title">
+              <mat-icon>work</mat-icon>
+              Professional Information
+            </h3>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Audit Level *</mat-label>
+                <mat-select formControlName="auditLevel">
+                  <mat-option value="">Select level</mat-option>
+                  <mat-option value="junior">Junior</mat-option>
+                  <mat-option value="senior">Senior</mat-option>
+                  <mat-option value="lead">Lead Auditor</mat-option>
+                  <mat-option value="chief">Chief Auditor</mat-option>
+                </mat-select>
+                <mat-error
+                  *ngIf="auditorForm.get('auditLevel')?.hasError('required')"
+                  >Required</mat-error
+                >
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div
+            class="dialog-actions d-flex justify-content-end gap-2 pt-3 border-top"
+          >
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="onCancel()"
+              color="warn"
+            >
+              <mat-icon>close</mat-icon> Cancel
+            </button>
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="auditorForm.invalid || loading"
+            >
+              <mat-icon *ngIf="!loading">save</mat-icon>
+              <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
+              {{ loading ? 'Creating...' : 'Create Auditor' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

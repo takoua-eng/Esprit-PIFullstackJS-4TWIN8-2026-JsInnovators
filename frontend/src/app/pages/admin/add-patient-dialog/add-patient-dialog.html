@@ -9,47 +9,28 @@
   </div>
 
   <form [formGroup]="patientForm" (ngSubmit)="onSubmit()" class="patient-form">
+
     <!-- PHOTO -->
     <div class="form-section center">
       <h3 class="section-title">
         <mat-icon>photo_camera</mat-icon>
         Profile Photo
       </h3>
-
       <div class="photo-wrapper">
-        <img
-          *ngIf="photoPreview; else defaultImg"
-          [src]="photoPreview"
-          class="photo-preview"
-        />
-
+        <img *ngIf="photoPreview; else defaultImg" [src]="photoPreview" class="photo-preview" />
         <ng-template #defaultImg>
           <div class="photo-placeholder">
             <mat-icon>person</mat-icon>
           </div>
         </ng-template>
-
-        <input
-          type="file"
-          (change)="onFileSelected($event)"
-          accept="image/*"
-          hidden
-          #fileInput
-        />
-
-        <button
-          type="button"
-          mat-mini-fab
-          color="primary"
-          class="upload-btn"
-          (click)="fileInput.click()"
-        >
+        <input type="file" (change)="onFileSelected($event)" accept="image/*" hidden #fileInput />
+        <button type="button" mat-mini-fab color="primary" class="upload-btn" (click)="fileInput.click()">
           <mat-icon>edit</mat-icon>
         </button>
       </div>
     </div>
 
-    <!-- PERSONAL -->
+    <!-- PERSONAL INFORMATION -->
     <div class="form-section">
       <h3 class="section-title">
         <mat-icon>person</mat-icon>
@@ -71,7 +52,7 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Email</mat-label>
-          <input matInput formControlName="email" />
+          <input matInput type="email" formControlName="email" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
@@ -87,56 +68,50 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
-          <mat-label>National ID</mat-label>
-          <input matInput formControlName="nationalId" />
-        </mat-form-field>
-      </div>
-
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field full-width">
-          <mat-label>Address</mat-label>
-          <input matInput formControlName="address" />
-        </mat-form-field>
-      </div>
-    </div>
-
-    <!-- MEDICAL -->
-    <div class="form-section">
-      <h3 class="section-title">
-        <mat-icon>medical_services</mat-icon>
-        Medical Information
-      </h3>
-
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Date of Birth</mat-label>
-          <input
-            matInput
-            [matDatepicker]="picker"
-            formControlName="dateOfBirth"
-          />
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="picker"
-          ></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Age</mat-label>
-          <input matInput formControlName="age" readonly />
-        </mat-form-field>
-      </div>
-
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
           <mat-label>Gender</mat-label>
           <mat-select formControlName="gender">
             <mat-option value="male">Male</mat-option>
             <mat-option value="female">Female</mat-option>
           </mat-select>
         </mat-form-field>
+      </div>
 
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>National ID</mat-label>
+          <input matInput formControlName="nationalId" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Address</mat-label>
+          <input matInput formControlName="address" />
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- MEDICAL INFORMATION -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <mat-icon>medical_information</mat-icon>
+        Medical Information
+      </h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Date of Birth</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="dateOfBirth" />
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Age</mat-label>
+          <input matInput formControlName="age" readonly />
+          <mat-hint>Calculated automatically</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Marital Status</mat-label>
           <mat-select formControlName="maritalStatus">
@@ -145,39 +120,95 @@
             <mat-option value="divorced">Divorced</mat-option>
           </mat-select>
         </mat-form-field>
-      </div>
 
-      <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Medical Record Number</mat-label>
           <input matInput formControlName="medicalRecordNumber" readonly />
+          <mat-hint>Generated automatically</mat-hint>
         </mat-form-field>
+      </div>
 
-        <mat-form-field appearance="outline" class="form-field">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field full-width">
           <mat-label>Emergency Contact</mat-label>
           <input matInput formControlName="emergencyContact" />
         </mat-form-field>
       </div>
     </div>
 
-    <!-- INSURANCE -->
+    <!-- CARE TEAM ASSIGNMENT -->
     <div class="form-section">
       <h3 class="section-title">
-        <mat-icon>verified_user</mat-icon>
-        Insurance
+        <mat-icon>groups</mat-icon>
+        Care Team Assignment
       </h3>
 
+      <!-- SERVICE EN PREMIER -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field full-width">
+          <mat-label>Assigned Service</mat-label>
+          <mat-select formControlName="assignedService">
+            <mat-option value="">-- None --</mat-option>
+            <mat-option *ngFor="let s of servicesList" [value]="s._id">
+              {{ s.name }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>local_hospital</mat-icon>
+          <mat-hint>Select a service first to filter doctors and nurses</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <!-- DOCTOR & NURSE (filtrés par service) -->
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Insurance Provider</mat-label>
-          <input matInput formControlName="insuranceProvider" />
+          <mat-label>Assigned Doctor</mat-label>
+          <mat-select formControlName="assignedDoctor"
+            [disabled]="!patientForm.get('assignedService')?.value">
+            <mat-option value="">-- None --</mat-option>
+            <ng-container *ngIf="filteredDoctorsList.length > 0; else noDoctors">
+              <mat-option *ngFor="let d of filteredDoctorsList" [value]="d._id">
+                {{ d.firstName }} {{ d.lastName }}
+              </mat-option>
+            </ng-container>
+            <ng-template #noDoctors>
+              <mat-option disabled>No doctors in this service</mat-option>
+            </ng-template>
+          </mat-select>
+          <mat-icon matPrefix>medical_services</mat-icon>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Insurance Number</mat-label>
-          <input matInput formControlName="insuranceNumber" />
+          <mat-label>Assigned Nurse</mat-label>
+          <mat-select formControlName="assignedNurse"
+            [disabled]="!patientForm.get('assignedService')?.value">
+            <mat-option value="">-- None --</mat-option>
+            <ng-container *ngIf="filteredNursesList.length > 0; else noNurses">
+              <mat-option *ngFor="let n of filteredNursesList" [value]="n._id">
+                {{ n.firstName }} {{ n.lastName }}
+              </mat-option>
+            </ng-container>
+            <ng-template #noNurses>
+              <mat-option disabled>No nurses in this service</mat-option>
+            </ng-template>
+          </mat-select>
+          <mat-icon matPrefix>personal_injury</mat-icon>
         </mat-form-field>
       </div>
+
+      <!-- COORDINATOR -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field full-width">
+          <mat-label>Assigned Coordinator</mat-label>
+          <mat-select formControlName="assignedCoordinator">
+            <mat-option value="">-- None --</mat-option>
+            <mat-option *ngFor="let c of coordinatorsList" [value]="c._id">
+              {{ c.firstName }} {{ c.lastName }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>manage_accounts</mat-icon>
+        </mat-form-field>
+      </div>
+
     </div>
 
     <!-- ACTIONS -->
@@ -185,10 +216,10 @@
       <button mat-stroked-button type="button" (click)="onCancel()">
         Cancel
       </button>
-
-      <button mat-raised-button color="primary" type="submit">
+      <button mat-raised-button color="primary" type="submit" [disabled]="patientForm.invalid">
         Save Patient
       </button>
     </div>
+
   </form>
 </div>
