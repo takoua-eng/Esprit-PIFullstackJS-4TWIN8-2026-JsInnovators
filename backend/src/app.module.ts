@@ -37,6 +37,7 @@ import { VideoCallsModule } from './modules/video-calls/video-calls.module';
 import { HospitalizationHandwritingModule } from './modules/hospitalization-handwriting/hospitalization-handwriting.module';
 import { QuestionnairesModule } from './modules/questionnaires/questionnaires.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 // Schemas
 import { User, UserSchema } from './modules/users/users.schema';
@@ -149,6 +150,7 @@ import { AiModule } from './modules/ai/ai.module';
     HospitalizationHandwritingModule,
     QuestionnairesModule,
     AdminModule,
+    DashboardModule,
     AiModule,
   ],
   providers: [

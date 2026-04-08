@@ -98,7 +98,7 @@ export class AppSideLoginComponent implements OnInit {
     const { email, password } = this.form.value;
 
     this.http
-      .post<{ accessToken: string; role: string; user: any }>(
+      .post<{ accessToken: string; role: string; user: any; permissions?: string[] }>(
         `${API_BASE_URL}/auth/login`,
         { email, password }
       )
@@ -113,6 +113,9 @@ export class AppSideLoginComponent implements OnInit {
         this.loading = false;
         localStorage.setItem('accessToken', res.accessToken);
         this.core.setUserFromLogin(res.user);
+        if (res.permissions) {
+          this.core.setPermissions(res.permissions);
+        }
         this.router.navigateByUrl(getPostLoginPath(res.role));
       });
   }

@@ -4,15 +4,13 @@ import { MaterialModule } from 'src/app/material.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { UserService } from 'src/app/services/users.service';
-import { MatDialog } from '@angular/material/dialog';
-import { EditProfileDialogComponent } from './edit-profile-dialog.component';
 
 @Component({
-  selector: 'app-admin-profile',
+  selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, MaterialModule, TranslateModule, TablerIconsModule],
-  templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.scss'],
+  templateUrl: './profil.component.html',
+  styleUrls: ['./profil.component.scss'],
 })
 export class ProfilComponent implements OnInit {
 
@@ -26,10 +24,7 @@ export class ProfilComponent implements OnInit {
     avatar: '/assets/images/profile/user-1.jpg',
   };
 
-  // full user object from backend (includes id)
-  currentUser: any = null;
-
-  constructor(private userService: UserService, private dialog: MatDialog) {}
+  constructor(private userService: UserService) {}
 
   ngOnInit(): void {
     this.loadProfile();
@@ -38,8 +33,6 @@ export class ProfilComponent implements OnInit {
   loadProfile() {
     this.userService.getProfile().subscribe({
       next: (user) => {
-
-        this.currentUser = user;
 
         this.profile = {
           name: `${user.firstName} ${user.lastName}`,
@@ -56,19 +49,6 @@ export class ProfilComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur chargement profil', err);
-      }
-    });
-  }
-
-  openEditDialog(): void {
-    const ref = this.dialog.open(EditProfileDialogComponent, {
-      width: '640px',
-      data: { user: this.currentUser },
-    });
-
-    ref.afterClosed().subscribe((result) => {
-      if (result) {
-        this.loadProfile();
       }
     });
   }

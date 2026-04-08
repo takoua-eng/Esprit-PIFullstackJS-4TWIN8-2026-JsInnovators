@@ -14,6 +14,7 @@ import { clearAuthLocalStorage } from 'src/app/core/app-storage';
 import { NotificationBellService, AppNotification } from 'src/app/services/notification-bell.service';
 import { interval, Subscription } from 'rxjs';
 import { startWith, switchMap, catchError } from 'rxjs/operators';
+import { UserService } from 'src/app/services/users.service';
 import { of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from 'src/app/core/api.config';
@@ -39,6 +40,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   notifications: AppNotification[] = [];
   unreadCount = 0;
   private notifSub?: Subscription;
+  currentUser: any = null;
 
   constructor(
     private router: Router,
@@ -47,6 +49,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private patientService: PatientService,
     private notifService: NotificationBellService,
     private http: HttpClient,
+    private userService: UserService
   ) {}
 
 
@@ -62,6 +65,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
         error: () => {},
       });
     }
+
+    this.userService.getProfile().subscribe({
+      next: (user) => {
+        this.currentUser = user;
+      },
+      error: () => {}
+    });
 
     const token = localStorage.getItem('accessToken');
     if (token) {
