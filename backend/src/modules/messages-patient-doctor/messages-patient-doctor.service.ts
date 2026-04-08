@@ -8,10 +8,10 @@ export class MessagesPatientDoctorService {
 
 
 
-    constructor(
+  constructor(
     @InjectModel(MessagesPatientDoctor.name)
     private messageModel: Model<MessagesPatientDoctorDocument>,
-  ) {}
+  ) { }
 
   sendMessage(data: any) {
     return this.messageModel.create(data);

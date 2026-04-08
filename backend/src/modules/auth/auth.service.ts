@@ -82,9 +82,18 @@ export class AuthService {
     if (user.isArchived) throw new UnauthorizedException('Compte archivé');
     if (user.isActive === false) throw new UnauthorizedException('Compte désactivé');
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid)
+    let isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid && user.password === password) {
+      // Migration automatique des comptes existants créés sans hash.
+      isPasswordValid = true;
+      user.password = await bcrypt.hash(password, 10);
+      await user.save();
+    }
+
+    if (!isPasswordValid) {
       throw new UnauthorizedException('Email ou mot de passe incorrect');
+    }
 
     const roleName =
       user.role && typeof user.role === 'object' && 'name' in user.role
