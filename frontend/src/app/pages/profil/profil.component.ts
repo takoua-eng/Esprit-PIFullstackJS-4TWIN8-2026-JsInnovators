@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from 'src/app/material.module';
 import { TranslateModule } from '@ngx-translate/core';
@@ -34,6 +34,14 @@ export class ProfilComponent implements OnInit {
     this.userService.getProfile().subscribe({
       next: (user) => {
 
+        let avatarUrl = '/assets/images/profile/user-1.jpg';
+        if (user.photo && typeof user.photo === 'string' && user.photo !== 'null' && user.photo !== 'undefined' && user.photo !== '') {
+          const photoPath = user.photo.replace(/\\/g, '/');
+          avatarUrl = photoPath.startsWith('uploads/') || photoPath.startsWith('http')
+            ? `http://localhost:3000/${photoPath}`
+            : `http://localhost:3000/uploads/${photoPath}`;
+        }
+
         this.profile = {
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
@@ -41,9 +49,7 @@ export class ProfilComponent implements OnInit {
           phone: user.phone,
           service: user.service?.name || '—',
           hospital: 'MediFollow Demo Hospital',
-          avatar: user.photo
-            ? `http://localhost:3000/${user.photo}`
-            : '/assets/images/profile/user-1.jpg'
+          avatar: avatarUrl
         };
 
       },
