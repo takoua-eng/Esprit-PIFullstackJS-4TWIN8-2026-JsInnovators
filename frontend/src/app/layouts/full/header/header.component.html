@@ -52,7 +52,7 @@
     aria-label="User menu"
   >
     <img
-      [src]="currentUser?.photo ? 'http://localhost:3000/' + currentUser.photo : '/assets/images/profile/user-1.jpg'"
+      [src]="currentUser?.photoUrl || '/assets/images/profile/user-1.jpg'"
       class="rounded-circle object-cover d-block"
       width="35"
       height="35"
