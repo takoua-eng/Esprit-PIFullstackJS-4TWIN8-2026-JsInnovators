@@ -5,21 +5,19 @@ import { CoordinatorService } from './coordinator.service';
 import { NotificationService } from '../notifications/notification.service';
 import { User } from '../users/users.schema';
 import { Reminder } from './reminder.schema';
+import { Role } from '../roles/role.schema';
 
 // ── Mocks ─────────────────────────────────────────────────
 
 const mockUserModel = {
   findById: jest.fn(),
   findOne: jest.fn(),
+  find: jest.fn(),
 };
 
-const mockReminderModel = {
+const mockRoleModel = {
+  findOne: jest.fn(),
   find: jest.fn(),
-  findById: jest.fn(),
-  findByIdAndUpdate: jest.fn(),
-  findByIdAndDelete: jest.fn(),
-  countDocuments: jest.fn(),
-  save: jest.fn(),
 };
 
 const mockVitalModel = {
@@ -40,14 +38,18 @@ const mockNotificationService = {
   askAI: jest.fn(),
 };
 
-// ── Helper : créer le module de test ──────────────────────
+// ── Helper : créer le ReminderModel mockable ──────────────
 
 function createMockReminderModel() {
   const instance = {
     save: jest.fn().mockResolvedValue({ _id: 'reminder123' }),
   };
-  const constructor = jest.fn().mockImplementation(() => instance);
-  Object.assign(constructor, mockReminderModel);
+  const constructor: any = jest.fn().mockImplementation(() => instance);
+  constructor.find = jest.fn();
+  constructor.findById = jest.fn();
+  constructor.findByIdAndUpdate = jest.fn();
+  constructor.findByIdAndDelete = jest.fn();
+  constructor.countDocuments = jest.fn();
   return constructor;
 }
 
@@ -55,18 +57,20 @@ function createMockReminderModel() {
 
 describe('CoordinatorService', () => {
   let service: CoordinatorService;
+  let ReminderModelMock: any;
 
   beforeEach(async () => {
-    const ReminderModelMock = createMockReminderModel();
+    ReminderModelMock = createMockReminderModel();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CoordinatorService,
-        { provide: getModelToken(User.name), useValue: mockUserModel },
-        { provide: getModelToken(Reminder.name), useValue: ReminderModelMock },
+        { provide: getModelToken(User.name),        useValue: mockUserModel },
+        { provide: getModelToken(Reminder.name),    useValue: ReminderModelMock },
+        { provide: getModelToken(Role.name),        useValue: mockRoleModel },
         { provide: getModelToken('VitalParameter'), useValue: mockVitalModel },
-        { provide: getModelToken('Symptom'), useValue: mockSymptomModel },
-        { provide: NotificationService, useValue: mockNotificationService },
+        { provide: getModelToken('Symptom'),        useValue: mockSymptomModel },
+        { provide: NotificationService,             useValue: mockNotificationService },
       ],
     }).compile();
 
@@ -99,61 +103,31 @@ describe('CoordinatorService', () => {
     });
 
     it('should detect missing temperature', () => {
-      const doc = {
-        temperature: null,
-        heartRate: 72,
-        bloodPressureSystolic: 120,
-        bloodPressureDiastolic: 80,
-        weight: 70,
-      };
+      const doc = { temperature: null, heartRate: 72, bloodPressureSystolic: 120, bloodPressureDiastolic: 80, weight: 70 };
       const result = (service as any).checkVitalFields(doc);
       expect(result).toContain('Temperature');
     });
 
     it('should detect missing heartRate', () => {
-      const doc = {
-        temperature: 37.0,
-        heartRate: null,
-        bloodPressureSystolic: 120,
-        bloodPressureDiastolic: 80,
-        weight: 70,
-      };
+      const doc = { temperature: 37.0, heartRate: null, bloodPressureSystolic: 120, bloodPressureDiastolic: 80, weight: 70 };
       const result = (service as any).checkVitalFields(doc);
       expect(result).toContain('Heart Rate');
     });
 
     it('should detect missing blood pressure when systolic is null', () => {
-      const doc = {
-        temperature: 37.0,
-        heartRate: 72,
-        bloodPressureSystolic: null,
-        bloodPressureDiastolic: 80,
-        weight: 70,
-      };
+      const doc = { temperature: 37.0, heartRate: 72, bloodPressureSystolic: null, bloodPressureDiastolic: 80, weight: 70 };
       const result = (service as any).checkVitalFields(doc);
       expect(result).toContain('Blood Pressure');
     });
 
     it('should detect missing weight', () => {
-      const doc = {
-        temperature: 37.0,
-        heartRate: 72,
-        bloodPressureSystolic: 120,
-        bloodPressureDiastolic: 80,
-        weight: null,
-      };
+      const doc = { temperature: 37.0, heartRate: 72, bloodPressureSystolic: 120, bloodPressureDiastolic: 80, weight: null };
       const result = (service as any).checkVitalFields(doc);
       expect(result).toContain('Weight');
     });
 
     it('should detect all missing vitals', () => {
-      const doc = {
-        temperature: null,
-        heartRate: null,
-        bloodPressureSystolic: null,
-        bloodPressureDiastolic: null,
-        weight: null,
-      };
+      const doc = { temperature: null, heartRate: null, bloodPressureSystolic: null, bloodPressureDiastolic: null, weight: null };
       const result = (service as any).checkVitalFields(doc);
       expect(result).toHaveLength(4);
     });
@@ -163,11 +137,7 @@ describe('CoordinatorService', () => {
 
   describe('checkSymptomFields', () => {
     it('should return empty array when all symptom fields are present', () => {
-      const doc = {
-        painLevel: 2,
-        fatigueLevel: 1,
-        symptoms: ['fatigue'],
-      };
+      const doc = { painLevel: 2, fatigueLevel: 1, symptoms: ['fatigue'] };
       const result = (service as any).checkSymptomFields(doc);
       expect(result).toEqual([]);
     });
@@ -243,11 +213,7 @@ describe('CoordinatorService', () => {
     });
 
     it('should use first name only', () => {
-      const msg = service.buildPersonalizedMessage(
-        'Karim Sassi',
-        ['Temperature'],
-        [],
-      );
+      const msg = service.buildPersonalizedMessage('Karim Sassi', ['Temperature'], []);
       expect(msg).toContain('Karim');
       expect(msg).not.toContain('Sassi');
     });
@@ -256,11 +222,15 @@ describe('CoordinatorService', () => {
   // ── 5. getTodayRange ─────────────────────────────────────
 
   describe('getTodayRange', () => {
-    it('should return start at midnight and end at 23:59:59', () => {
-      const { start, end } = (service as any).getTodayRange();
+    it('should return start at midnight', () => {
+      const { start } = (service as any).getTodayRange();
       expect(start.getHours()).toBe(0);
       expect(start.getMinutes()).toBe(0);
       expect(start.getSeconds()).toBe(0);
+    });
+
+    it('should return end at 23:59:59', () => {
+      const { end } = (service as any).getTodayRange();
       expect(end.getHours()).toBe(23);
       expect(end.getMinutes()).toBe(59);
       expect(end.getSeconds()).toBe(59);
@@ -272,7 +242,7 @@ describe('CoordinatorService', () => {
     });
   });
 
-  // ── 6. getDashboard — NotFoundException ──────────────────
+  // ── 6. getDashboard ──────────────────────────────────────
 
   describe('getDashboard', () => {
     it('should throw NotFoundException when coordinator not found', async () => {
@@ -282,9 +252,7 @@ describe('CoordinatorService', () => {
         }),
       });
 
-      await expect(service.getDashboard('nonexistentId')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.getDashboard('nonexistentId')).rejects.toThrow(NotFoundException);
     });
 
     it('should return dashboard summary when coordinator exists', async () => {
@@ -292,14 +260,10 @@ describe('CoordinatorService', () => {
         assignedPatients: [
           {
             _id: 'p1',
-            firstName: 'Nada',
-            lastName: 'Ben Khaled',
-            email: 'nada@test.com',
-            department: 'Cardio',
-            phone: '12345',
-            address: 'Tunis',
-            emergencyContact: '98765',
-            medicalRecordNumber: 'MRN001',
+            firstName: 'Nada', lastName: 'Ben Khaled',
+            email: 'nada@test.com', department: 'Cardio',
+            phone: '12345', address: 'Tunis',
+            emergencyContact: '98765', medicalRecordNumber: 'MRN001',
             updatedAt: new Date(),
           },
         ],
@@ -311,14 +275,12 @@ describe('CoordinatorService', () => {
         }),
       });
 
-      mockReminderModel.countDocuments.mockResolvedValue(2);
+      ReminderModelMock.countDocuments.mockResolvedValue(2);
       mockVitalModel.find.mockResolvedValue([]);
       mockSymptomModel.find.mockResolvedValue([]);
 
       const result = await service.getDashboard('coordinator123');
-
       expect(result).toBeDefined();
-      expect(result.summary).toBeDefined();
       expect(result.summary.totalAssignedPatients).toBe(1);
     });
   });
@@ -327,13 +289,11 @@ describe('CoordinatorService', () => {
 
   describe('cancelReminder', () => {
     it('should throw NotFoundException when reminder not found', async () => {
-      mockReminderModel.findById.mockReturnValue({
+      ReminderModelMock.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(service.cancelReminder('nonexistentId')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.cancelReminder('nonexistentId')).rejects.toThrow(NotFoundException);
     });
 
     it('should set status to cancelled', async () => {
@@ -342,11 +302,11 @@ describe('CoordinatorService', () => {
         save: jest.fn().mockResolvedValue({ status: 'cancelled' }),
       };
 
-      mockReminderModel.findById.mockReturnValue({
+      ReminderModelMock.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockReminder),
       });
 
-      const result = await service.cancelReminder('reminder123');
+      await service.cancelReminder('reminder123');
       expect(mockReminder.status).toBe('cancelled');
       expect(mockReminder.save).toHaveBeenCalled();
     });
@@ -356,22 +316,37 @@ describe('CoordinatorService', () => {
 
   describe('deleteReminder', () => {
     it('should throw NotFoundException when reminder not found', async () => {
-      mockReminderModel.findByIdAndDelete.mockReturnValue({
+      ReminderModelMock.findByIdAndDelete.mockReturnValue({
         exec: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(service.deleteReminder('nonexistentId')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.deleteReminder('nonexistentId')).rejects.toThrow(NotFoundException);
     });
 
     it('should return success message when deleted', async () => {
-      mockReminderModel.findByIdAndDelete.mockReturnValue({
+      ReminderModelMock.findByIdAndDelete.mockReturnValue({
         exec: jest.fn().mockResolvedValue({ _id: 'reminder123' }),
       });
 
       const result = await service.deleteReminder('reminder123');
       expect(result).toEqual({ message: 'Reminder deleted' });
+    });
+  });
+
+  // ── 9. getDateRange ──────────────────────────────────────
+
+  describe('getDateRange', () => {
+    it('should return range of N days back', () => {
+      const { start, end } = (service as any).getDateRange(7);
+      const diffMs = end.getTime() - start.getTime();
+      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+      expect(diffDays).toBe(7);
+    });
+
+    it('should set start hours to midnight', () => {
+      const { start } = (service as any).getDateRange(14);
+      expect(start.getHours()).toBe(0);
+      expect(start.getSeconds()).toBe(0);
     });
   });
 });
