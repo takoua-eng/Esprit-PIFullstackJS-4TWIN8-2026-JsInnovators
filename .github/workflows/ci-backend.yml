@@ -36,7 +36,7 @@ jobs:
       # 4 — Lancer les tests unitaires avec couverture
       - name: Run unit tests with coverage
         working-directory: backend
-        run: npm run test:cov
+        run: npx jest --testPathPattern=coordinator --coverage --coverageDirectory=coverage
         env:
           NODE_ENV: test
 
